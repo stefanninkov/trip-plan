@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { Compass, Search, Loader2, History, X, Sparkles } from 'lucide-react'
+import { Compass, Search, Loader2, History, X } from 'lucide-react'
 import { Input } from '@/components/shared/Input'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
+import { AiProgress } from '@/components/shared/AiProgress'
 import { useExplore, cacheOverview, getCachedOverview } from '@/hooks/useExplore'
 import {
   getExploreHistory,
@@ -23,6 +24,15 @@ const SUGGESTIONS = [
   'Iceland',
 ]
 
+const EXPLORE_STAGES = [
+  { at: 0, label: 'Looking up the place\u2026' },
+  { at: 15, label: 'Gathering history and context' },
+  { at: 35, label: 'Picking top highlights' },
+  { at: 55, label: 'Mapping neighborhoods and stays' },
+  { at: 75, label: 'Rounding up food and activities' },
+  { at: 90, label: 'Finishing up\u2026' },
+]
+
 export function ExplorePage() {
   const [query, setQuery] = useState('')
   const [overview, setOverview] = useState<DestinationOverview | null>(null)
@@ -33,6 +43,8 @@ export function ExplorePage() {
     const trimmed = q.trim()
     if (!trimmed) return
     setQuery(trimmed)
+    const cached = getCachedOverview(trimmed)
+    if (!cached) setOverview(null)
     const result = await run(trimmed)
     if (result) {
       setOverview(result)
@@ -54,6 +66,7 @@ export function ExplorePage() {
       return
     }
     // Not cached — re-run.
+    setOverview(null)
     void run(entry.query).then((r) => {
       if (r) {
         cacheOverview(entry.query, r)
@@ -127,13 +140,12 @@ export function ExplorePage() {
         </Card>
       )}
 
-      {loading && !overview && (
-        <Card>
-          <div className="flex items-center gap-3 text-text-secondary text-[13px]">
-            <Sparkles size={14} className="text-accent animate-pulse" />
-            Asking Claude to pull together an overview&hellip;
-          </div>
-        </Card>
+      {loading && (
+        <AiProgress
+          stages={EXPLORE_STAGES}
+          timeConstant={8}
+          hint="Pulling together a rich overview \u2014 usually under 20 seconds."
+        />
       )}
 
       {overview && <ExploreResult overview={overview} />}
