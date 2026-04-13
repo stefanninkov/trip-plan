@@ -45,7 +45,9 @@ export function PlanView({
   const [tab, setTab] = useState<Tab>('plan')
   const current = editor.plan
   const currency = current.totalBudget.currency
-  const homeCurrency = inputs?.homeCurrency ?? currency
+  // Force EUR as the primary display currency so every price (new trips AND
+  // historical ones) shows Euro first with the local currency underneath.
+  const homeCurrency = 'EUR'
   const canEdit = !readOnly && editing
   const coverLocation = current.days[0]?.location ?? ''
 
@@ -55,12 +57,22 @@ export function PlanView({
   const todayIndex = current.days.findIndex((d) => d.date === today)
   const defaultOpenIndex = todayIndex >= 0 ? todayIndex : 0
 
-  // Warm up currency conversion rates once per trip render
+  // Warm up currency conversion rates once per trip render. We prefetch
+  // rates for every distinct currency the plan uses (hotels, costs,
+  // totals) because individual cost items may be in different currencies
+  // than the top-level totalBudget currency.
   useEffect(() => {
-    if (currency && homeCurrency && currency !== homeCurrency) {
-      void prefetchRates(currency)
+    const seen = new Set<string>()
+    const add = (c: string | undefined | null) => {
+      if (c && c !== homeCurrency) seen.add(c)
     }
-  }, [currency, homeCurrency])
+    add(currency)
+    current.days.forEach((d) => {
+      d.costs.forEach((c) => add(c.currency))
+      d.hotels?.forEach((h) => add(h.currency))
+    })
+    seen.forEach((c) => void prefetchRates(c))
+  }, [currency, homeCurrency, current.days])
 
   // When we land on a trip and today is inside it, scroll the Today day into
   // view after a tick (gives the map / layout time to mount).

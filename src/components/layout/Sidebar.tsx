@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Home, Map, Briefcase, Compass } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
 import { useTrips } from '@/hooks/useTrips'
 import { formatDateRange } from '@/utils/date-helpers'
+import { getExploreHistory, type ExploreHistoryEntry } from '@/utils/explore-history'
+import { useExplore } from '@/hooks/useExplore'
 
 const NAV_ITEMS = [
   { to: ROUTES.home, label: 'Home', icon: Home },
@@ -16,6 +19,14 @@ export function Sidebar() {
   const location = useLocation()
   const { trips } = useTrips()
   const recentTrips = trips.slice(0, 10)
+  const { run: runExplore, overview: exploreOverview } = useExplore()
+  const [exploreHistory, setExploreHistory] = useState<ExploreHistoryEntry[]>(() =>
+    getExploreHistory()
+  )
+  // Refresh when new entries are pushed to localStorage (after a successful run).
+  useEffect(() => {
+    setExploreHistory(getExploreHistory())
+  }, [exploreOverview])
 
   return (
     <aside
@@ -77,6 +88,31 @@ export function Sidebar() {
               </Link>
             )
           })}
+        </div>
+      )}
+
+      {exploreHistory.length > 0 && (
+        <div className="px-3 pb-3 flex flex-col gap-1">
+          <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">
+            Recently explored
+          </div>
+          {exploreHistory.slice(0, 8).map((entry) => (
+            <Link
+              key={entry.query}
+              to={ROUTES.explore}
+              onClick={() => {
+                void runExplore(entry.query)
+              }}
+              className="flex flex-col gap-0.5 px-3 py-2 rounded-lg hover:bg-bg-surface transition-colors duration-150"
+            >
+              <span className="text-[13px] font-medium truncate text-text-primary">
+                {entry.name}
+              </span>
+              {entry.country && entry.name !== entry.country && (
+                <span className="text-[11px] text-text-tertiary truncate">{entry.country}</span>
+              )}
+            </Link>
+          ))}
         </div>
       )}
     </aside>

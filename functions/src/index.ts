@@ -53,10 +53,23 @@ export const generateTrip = onRequest(
     try {
       const message = await client.messages.create({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 16000,
+        max_tokens: 32000,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildUserMessage(inputs) }],
       })
+
+      // If Claude hit max_tokens, the JSON is almost certainly truncated and
+      // parsing will fail. Surface that explicitly so the client shows an
+      // error instead of hanging on the invalid JSON.
+      if (message.stop_reason === 'max_tokens') {
+        console.error('generateTrip: output was truncated at max_tokens', message.usage)
+        res.status(502).json({
+          error:
+            'The plan was too long for one response. Try reducing the number of destinations or shortening the trip.',
+          truncated: true,
+        })
+        return
+      }
 
       const textBlock = message.content.find((b): b is Anthropic.TextBlock => b.type === 'text')
       if (!textBlock) {
@@ -69,6 +82,7 @@ export const generateTrip = onRequest(
       try {
         plan = JSON.parse(jsonText)
       } catch {
+        console.error('generateTrip: JSON parse failed', textBlock.text.slice(0, 500))
         res.status(502).json({
           error: 'Claude returned invalid JSON',
           raw: textBlock.text.slice(0, 500),

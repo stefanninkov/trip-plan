@@ -1,18 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Compass, Search, Loader2, History, X } from 'lucide-react'
 import { Input } from '@/components/shared/Input'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
 import { AiProgress } from '@/components/shared/AiProgress'
-import { useExplore, cacheOverview, getCachedOverview } from '@/hooks/useExplore'
+import { useExplore } from '@/hooks/useExplore'
 import {
   getExploreHistory,
-  rememberExplore,
   clearExploreHistory,
   type ExploreHistoryEntry,
 } from '@/utils/explore-history'
 import { ExploreResult } from '@/components/explore/ExploreResult'
-import type { DestinationOverview } from '@/types/explore'
 
 const SUGGESTIONS = [
   'Tokyo, Japan',
@@ -34,45 +32,36 @@ const EXPLORE_STAGES = [
 ]
 
 export function ExplorePage() {
-  const [query, setQuery] = useState('')
-  const [overview, setOverview] = useState<DestinationOverview | null>(null)
+  // The overview / loading / currentQuery are pulled from a module-level
+  // store (see useExplore) so that generation keeps running when the user
+  // switches tabs, and the Explore tab resumes exactly where it left off.
+  const { loading, error, overview, currentQuery, run } = useExplore()
+  const [query, setQuery] = useState(currentQuery ?? '')
   const [history, setHistory] = useState<ExploreHistoryEntry[]>(() => getExploreHistory())
-  const { loading, error, run } = useExplore()
 
-  const submit = async (q: string): Promise<void> => {
+  // Sync the input when a background request finishes populating the store.
+  useEffect(() => {
+    if (currentQuery && currentQuery !== query) {
+      setQuery(currentQuery)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuery])
+
+  // Refresh the localStorage history list whenever the store updates the
+  // current overview (i.e. a run just succeeded).
+  useEffect(() => {
+    setHistory(getExploreHistory())
+  }, [overview])
+
+  const submit = (q: string): void => {
     const trimmed = q.trim()
     if (!trimmed) return
     setQuery(trimmed)
-    const cached = getCachedOverview(trimmed)
-    if (!cached) setOverview(null)
-    const result = await run(trimmed)
-    if (result) {
-      setOverview(result)
-      rememberExplore({
-        query: trimmed,
-        name: result.name,
-        country: result.country,
-        kind: result.kind,
-      })
-      setHistory(getExploreHistory())
-    }
+    void run(trimmed)
   }
 
   const openHistory = (entry: ExploreHistoryEntry): void => {
-    setQuery(entry.query)
-    const cached = getCachedOverview(entry.query)
-    if (cached) {
-      setOverview(cached)
-      return
-    }
-    // Not cached — re-run.
-    setOverview(null)
-    void run(entry.query).then((r) => {
-      if (r) {
-        cacheOverview(entry.query, r)
-        setOverview(r)
-      }
-    })
+    submit(entry.query)
   }
 
   const clearHistory = (): void => {
@@ -97,7 +86,7 @@ export function ExplorePage() {
           className="flex gap-2 mt-2"
           onSubmit={(e) => {
             e.preventDefault()
-            void submit(query)
+            submit(query)
           }}
         >
           <div className="flex-1">
@@ -122,7 +111,7 @@ export function ExplorePage() {
               <button
                 key={s}
                 type="button"
-                onClick={() => void submit(s)}
+                onClick={() => submit(s)}
                 className="px-3 py-1.5 rounded-full border border-border-default bg-bg-secondary text-[12px] text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors"
               >
                 {s}
@@ -144,11 +133,11 @@ export function ExplorePage() {
         <AiProgress
           stages={EXPLORE_STAGES}
           timeConstant={8}
-          hint="Pulling together a rich overview \u2014 usually under 20 seconds."
+          hint="Pulling together a rich overview \u2014 keeps running if you switch tabs."
         />
       )}
 
-      {overview && <ExploreResult overview={overview} />}
+      {overview && !loading && <ExploreResult overview={overview} />}
 
       {history.length > 0 && (
         <section className="flex flex-col gap-3 border-t border-border-subtle pt-6">

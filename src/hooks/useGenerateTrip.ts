@@ -60,15 +60,23 @@ export function useGenerateTrip(): UseGenerateTripState {
       setIsGenerating(true)
 
       let tripRef: Awaited<ReturnType<typeof createTripDoc>> | null = null
+      // Client-side timeout so the UI never hangs indefinitely even if the
+      // Cloud Function never responds.
+      const controller = new AbortController()
+      const timeoutId = window.setTimeout(() => controller.abort(), 180_000)
       try {
         tripRef = await createTripDoc(user.uid, inputs)
         const res = await fetch(`${FUNCTIONS_BASE_URL}/generateTrip`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ inputs }),
+          signal: controller.signal,
         })
         if (!res.ok) {
-          const body = await res.json().catch(() => ({}))
+          const body = (await res.json().catch(() => ({}))) as {
+            error?: string
+            truncated?: boolean
+          }
           throw new Error(body.error ?? `HTTP ${res.status}`)
         }
         const { plan } = (await res.json()) as { plan: TripPlan }
@@ -79,7 +87,12 @@ export function useGenerateTrip(): UseGenerateTripState {
         })
         return { tripId: tripRef.id, plan }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Generation failed'
+        const msg =
+          err instanceof Error
+            ? err.name === 'AbortError'
+              ? 'Generation timed out after 3 minutes. Try a shorter trip or try again.'
+              : err.message
+            : 'Generation failed'
         logger.error('useGenerateTrip:', msg)
         setError(msg)
         if (tripRef) {
@@ -90,6 +103,7 @@ export function useGenerateTrip(): UseGenerateTripState {
         }
         return null
       } finally {
+        window.clearTimeout(timeoutId)
         setIsGenerating(false)
       }
     },

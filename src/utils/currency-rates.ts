@@ -3,6 +3,54 @@ import { logger } from './logger'
 const CACHE_KEY = 'trip-plan.rates'
 const CACHE_TTL_MS = 1000 * 60 * 60 * 6 // 6h
 
+/**
+ * Approximate EUR conversion rates for currencies that frankfurter.dev
+ * doesn't cover (or for offline fallback). "1 EUR = FALLBACK_EUR_RATES[x]"
+ * units of x. Tuned for mid-2025 \u2014 close enough for "Euro primary"
+ * display; the UI labels the value with \u2248 so users know it's approximate.
+ */
+const FALLBACK_EUR_RATES: Record<string, number> = {
+  EUR: 1,
+  USD: 1.08,
+  GBP: 0.84,
+  CHF: 0.96,
+  RSD: 117,
+  JPY: 165,
+  CAD: 1.48,
+  AUD: 1.64,
+  TRY: 38,
+  THB: 38,
+  AED: 4.0,
+  SEK: 11.4,
+  NOK: 12.4,
+  DKK: 7.46,
+  CZK: 25.2,
+  PLN: 4.3,
+  HUF: 395,
+  MXN: 21.8,
+  BRL: 6.0,
+  INR: 92,
+  CNY: 7.85,
+  KRW: 1480,
+  ZAR: 20,
+  SGD: 1.45,
+  HKD: 8.4,
+}
+
+/**
+ * Synchronous fallback conversion using the hardcoded EUR-anchored rates.
+ * Returns null if either currency isn't in the table.
+ */
+function fallbackConvert(amount: number, from: string, to: string): number | null {
+  if (from === to) return amount
+  const fromRate = FALLBACK_EUR_RATES[from.toUpperCase()]
+  const toRate = FALLBACK_EUR_RATES[to.toUpperCase()]
+  if (typeof fromRate !== 'number' || typeof toRate !== 'number') return null
+  // amount in `from` -> EUR -> `to`
+  const inEur = amount / fromRate
+  return inEur * toRate
+}
+
 interface CachedRates {
   base: string
   rates: Record<string, number>
@@ -63,10 +111,11 @@ export async function convert(
 ): Promise<number | null> {
   if (from === to) return amount
   const rates = await loadRates(from)
-  if (!rates) return null
-  const r = rates.rates[to]
-  if (typeof r !== 'number') return null
-  return amount * r
+  if (rates) {
+    const r = rates.rates[to]
+    if (typeof r === 'number') return amount * r
+  }
+  return fallbackConvert(amount, from, to)
 }
 
 /**
@@ -90,10 +139,14 @@ export function convertSync(amount: number, from: string, to: string): number | 
       // ignore
     }
   }
-  if (!memoryCache || memoryCache.base !== from) return null
-  const r = memoryCache.rates[to]
-  if (typeof r !== 'number') return null
-  return amount * r
+  if (memoryCache && memoryCache.base === from) {
+    const r = memoryCache.rates[to]
+    if (typeof r === 'number') return amount * r
+  }
+  // Live rates weren't available (either not yet fetched, or frankfurter
+  // doesn't cover this currency \u2014 e.g. RSD). Fall back to the hardcoded
+  // EUR-anchored rates so we can still show an approximate Euro value.
+  return fallbackConvert(amount, from, to)
 }
 
 export async function prefetchRates(base: string): Promise<void> {

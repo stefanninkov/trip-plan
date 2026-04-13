@@ -37,7 +37,14 @@ export function DayWeather({ location, date }: DayWeatherProps) {
   if (!weather) return null
   const Icon = iconFor(weather.code)
   return (
-    <div className="flex items-center gap-2 text-[12px] text-text-secondary">
+    <div
+      className="flex items-center gap-2 text-[12px] text-text-secondary"
+      title={
+        weather.source === 'historical'
+          ? 'Typical weather for this date (based on last year)'
+          : 'Forecast'
+      }
+    >
       <Icon size={14} className="text-accent" />
       <span className="font-cost">
         {Math.round(weather.highC)}&deg; / {Math.round(weather.lowC)}&deg;C
@@ -47,6 +54,11 @@ export function DayWeather({ location, date }: DayWeatherProps) {
         <span className="flex items-center gap-1 text-text-tertiary">
           <Droplets size={11} />
           {weather.precipProbability}%
+        </span>
+      )}
+      {weather.source === 'historical' && (
+        <span className="text-text-tertiary text-[10px] uppercase tracking-[0.5px]">
+          typical
         </span>
       )}
     </div>

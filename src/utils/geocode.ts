@@ -88,32 +88,60 @@ export async function geocode(place: string): Promise<Coord | null> {
   return result.coord
 }
 
+/**
+ * Generate progressively simpler candidate queries from a complex location
+ * string so "Lisbon Alfama district, Portugal" still resolves to Lisbon if
+ * the full string draws a blank. Order: full, each comma part, first word.
+ */
+function buildCandidates(place: string): string[] {
+  const trimmed = place.trim()
+  if (!trimmed) return []
+  const out: string[] = []
+  const add = (s: string) => {
+    const clean = s.trim()
+    if (clean && !out.some((o) => o.toLowerCase() === clean.toLowerCase())) out.push(clean)
+  }
+  add(trimmed)
+  trimmed.split(',').forEach(add)
+  const firstWord = trimmed.split(/[\s,]/)[0]
+  add(firstWord)
+  return out
+}
+
 export async function geocodeDetailed(place: string): Promise<GeocodeResult> {
   const key = place.trim().toLowerCase()
   if (!key) return { coord: null, error: null }
   const cached = cache.get(key)
   if (cached) return cached
 
-  // Try Mapbox first when a token is present.
-  let result: GeocodeResult = TOKEN
-    ? await mapboxGeocode(place)
-    : { coord: null, error: 'No Mapbox token \u2014 using Open-Meteo fallback' }
+  const candidates = buildCandidates(place)
+  let lastError: string | null = null
 
-  if (!result.coord) {
-    const fallback = await openMeteoGeocode(place)
-    if (fallback.coord) {
-      result = fallback
-    } else if (!result.error && fallback.error) {
-      result = fallback
+  for (const candidate of candidates) {
+    // Try Mapbox first when a token is present.
+    let result: GeocodeResult = TOKEN
+      ? await mapboxGeocode(candidate)
+      : { coord: null, error: 'No Mapbox token \u2014 using Open-Meteo fallback' }
+
+    if (!result.coord) {
+      const fallback = await openMeteoGeocode(candidate)
+      if (fallback.coord) {
+        result = fallback
+      } else if (!result.error && fallback.error) {
+        result = fallback
+      }
     }
+    if (result.coord) {
+      cache.set(key, result)
+      return result
+    }
+    if (result.error) lastError = result.error
   }
 
-  if (!result.coord && result.error) {
-    logger.warn('geocode failed for', place, result.error)
-  }
-
-  cache.set(key, result)
-  return result
+  const final: GeocodeResult = { coord: null, error: lastError }
+  if (lastError) logger.warn('geocode failed for', place, lastError)
+  cache.set(key, final)
+  return final
 }
 
 export function hasMapboxToken(): boolean {
