@@ -30,6 +30,8 @@ export interface TimeBlock {
   whyPicked?: string | null
   historicalContext?: string | null
   travelMode?: TravelMode | null
+  // User marks this block as done during / after the trip
+  completed?: boolean
 }
 
 export interface CostItem {

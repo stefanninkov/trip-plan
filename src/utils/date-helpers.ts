@@ -20,3 +20,25 @@ export function daysBetween(startIso: string, endIso: string): number {
 export function toIsoDate(date: Date): string {
   return date.toISOString().slice(0, 10)
 }
+
+/** Today's date in YYYY-MM-DD form, in the traveler's local timezone. */
+export function todayIso(): string {
+  const d = new Date()
+  const pad = (n: number) => n.toString().padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+/** 'past' | 'today' | 'future' for a given YYYY-MM-DD date. */
+export function relativeDay(isoDate: string): 'past' | 'today' | 'future' {
+  const today = todayIso()
+  if (isoDate < today) return 'past'
+  if (isoDate > today) return 'future'
+  return 'today'
+}
+
+/** Add a number of days to an ISO date (can be negative). */
+export function addDays(isoDate: string, days: number): string {
+  const d = new Date(isoDate)
+  d.setDate(d.getDate() + days)
+  return toIsoDate(d)
+}

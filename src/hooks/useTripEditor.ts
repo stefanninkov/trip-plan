@@ -114,6 +114,31 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       ),
     }))
 
+  const toggleBlockCompleted = (dayId: string, blockId: string) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              blocks: d.blocks.map((b) =>
+                b.id === blockId ? { ...b, completed: !b.completed } : b
+              ),
+            }
+          : d
+      ),
+    }))
+
+  const setAllBlocksCompleted = (dayId: string, completed: boolean) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? { ...d, blocks: d.blocks.map((b) => ({ ...b, completed })) }
+          : d
+      ),
+    }))
+
   const deleteBlock = (dayId: string, blockId: string) =>
     apply((p) => ({
       ...p,
@@ -217,6 +242,8 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     replaceDay,
     addBlock,
     updateBlock,
+    toggleBlockCompleted,
+    setAllBlocksCompleted,
     deleteBlock,
     moveBlock,
     addCost,

@@ -115,6 +115,9 @@ export function PlanView({
               dayNumber: d.dayNumber,
               title: d.title,
             }))}
+            onToggleCompleted={
+              readOnly ? undefined : (dayId, blockId) => editor.toggleBlockCompleted(dayId, blockId)
+            }
           />
         ))}
       </section>

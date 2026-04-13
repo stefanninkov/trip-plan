@@ -16,6 +16,8 @@ import { BlockList } from './BlockEditor'
 import { CostList } from './CostEditor'
 import { HotelList } from './HotelEditor'
 import { BlockMoreInfo } from './BlockMoreInfo'
+import { BlockCheckbox } from './BlockCheckbox'
+import { relativeDay } from '@/utils/date-helpers'
 
 export interface DayCardProps {
   day: DayPlan
@@ -24,6 +26,11 @@ export interface DayCardProps {
   defaultOpen?: boolean
   allDays?: { id: string; dayNumber: number; title: string }[]
   tripInputs?: TripInputs
+  /**
+   * When provided (and no editor is provided), enables the read-only checkbox
+   * so users can still mark blocks done during travel without entering edit mode.
+   */
+  onToggleCompleted?: (dayId: string, blockId: string) => void
 }
 
 export function DayCard({
@@ -33,6 +40,7 @@ export function DayCard({
   defaultOpen = false,
   allDays,
   tripInputs,
+  onToggleCompleted,
 }: DayCardProps) {
   const [open, setOpen] = useState(defaultOpen)
   const readOnly = !editor
@@ -56,9 +64,20 @@ export function DayCard({
       addToast('error', 'Could not regenerate that day')
     }
   }
+  const completedCount = day.blocks.filter((b) => b.completed).length
+  const totalCount = day.blocks.length
+  const allDone = totalCount > 0 && completedCount === totalCount
+  const rel = relativeDay(day.date)
+
   // The print CSS forces everything visible regardless of local open state.
   return (
-    <div className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card">
+    <div
+      className={cn(
+        'bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card',
+        rel === 'past' && 'opacity-70',
+        rel === 'today' && 'ring-1 ring-accent'
+      )}
+    >
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
@@ -66,15 +85,47 @@ export function DayCard({
         className="w-full flex items-center justify-between gap-3 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-accent-muted text-accent font-cost font-bold flex items-center justify-center shrink-0">
+          <div
+            className={cn(
+              'w-10 h-10 rounded-full font-cost font-bold flex items-center justify-center shrink-0',
+              allDone
+                ? 'bg-success text-bg-primary'
+                : 'bg-accent-muted text-accent'
+            )}
+            style={
+              allDone
+                ? { backgroundColor: 'var(--color-success)', color: 'var(--color-bg-primary)' }
+                : undefined
+            }
+          >
             {day.dayNumber}
           </div>
           <div className="min-w-0">
-            <div className="text-[15px] lg:text-[16px] font-semibold truncate">{day.title}</div>
-            <div className="text-[12px] text-text-tertiary">
-              {formatDate(day.date)}
-              {' \u00B7 '}
-              {day.location}
+            <div
+              className={cn(
+                'text-[15px] lg:text-[16px] font-semibold truncate',
+                allDone && 'line-through'
+              )}
+            >
+              {day.title}
+            </div>
+            <div className="text-[12px] text-text-tertiary flex items-center gap-2">
+              <span>
+                {formatDate(day.date)}
+                {' \u00B7 '}
+                {day.location}
+              </span>
+              {rel === 'today' && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-[0.5px] bg-accent-muted text-accent">
+                  Today
+                </span>
+              )}
+              {totalCount > 0 && (
+                <span className="text-text-tertiary">
+                  {' \u00B7 '}
+                  {completedCount}/{totalCount} done
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -172,6 +223,9 @@ export function DayCard({
               blocks={day.blocks}
               location={day.location}
               dayTitle={day.title}
+              onToggleCompleted={
+                onToggleCompleted ? (_d, blockId) => onToggleCompleted(day.id, blockId) : undefined
+              }
             />
           )}
 
@@ -209,33 +263,56 @@ function ReadOnlyBlocks({
   blocks,
   location,
   dayTitle,
+  onToggleCompleted,
 }: {
   blocks: DayPlan['blocks']
   location: string
   dayTitle: string
+  onToggleCompleted?: (dayId: string, blockId: string) => void
 }) {
   if (blocks.length === 0) return null
   return (
     <div className="flex flex-col gap-3">
       {blocks.map((b) => {
         const ModeIcon = b.travelMode ? TRAVEL_MODES[b.travelMode].icon : null
+        const done = Boolean(b.completed)
         return (
           <div
             key={b.id}
-            className="bg-bg-secondary border border-border-subtle rounded-lg p-3 flex flex-col gap-1.5"
+            className={cn(
+              'bg-bg-secondary border border-border-subtle rounded-lg p-3 flex gap-3 transition-opacity',
+              done && 'opacity-60'
+            )}
+            style={{
+              borderLeft: b.travelMode
+                ? `3px solid var(--color-cat-transport)`
+                : `3px solid var(--color-cat-activity)`,
+            }}
           >
-            <div className="flex items-center gap-2">
-              <span className="font-cost text-[12px] text-text-tertiary">{b.time}</span>
-              {ModeIcon && (
-                <span className="flex items-center gap-1 text-[11px] text-accent">
-                  <ModeIcon size={12} />
-                  {b.travelMode && TRAVEL_MODES[b.travelMode].label}
-                </span>
-              )}
+            {onToggleCompleted && (
+              <div className="pt-1">
+                <BlockCheckbox
+                  completed={done}
+                  onToggle={() => onToggleCompleted('_day', b.id)}
+                />
+              </div>
+            )}
+            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <span className="font-cost text-[12px] text-text-tertiary">{b.time}</span>
+                {ModeIcon && (
+                  <span className="flex items-center gap-1 text-[11px] text-accent">
+                    <ModeIcon size={12} />
+                    {b.travelMode && TRAVEL_MODES[b.travelMode].label}
+                  </span>
+                )}
+              </div>
+              <div className={cn('text-[14px] font-semibold', done && 'line-through')}>
+                {b.title}
+              </div>
+              <p className="text-[13px] text-text-secondary leading-[20px]">{b.description}</p>
+              <BlockMoreInfo block={b} location={location} dayTitle={dayTitle} />
             </div>
-            <div className="text-[14px] font-semibold">{b.title}</div>
-            <p className="text-[13px] text-text-secondary leading-[20px]">{b.description}</p>
-            <BlockMoreInfo block={b} location={location} dayTitle={dayTitle} />
           </div>
         )
       })}

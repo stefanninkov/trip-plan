@@ -26,6 +26,7 @@ import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { EditableText } from '@/components/shared/EditableText'
 import { BlockMoreInfo } from './BlockMoreInfo'
+import { BlockCheckbox } from './BlockCheckbox'
 
 interface Props {
   dayId: string
@@ -121,11 +122,20 @@ function SortableBlock({
     opacity: isDragging ? 0.6 : 1,
   }
   const ModeIcon = block.travelMode ? TRAVEL_MODES[block.travelMode].icon : null
+  const done = Boolean(block.completed)
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="bg-bg-secondary border border-border-subtle rounded-lg p-3 flex gap-2 group"
+      style={{
+        ...style,
+        borderLeft: block.travelMode
+          ? `3px solid var(--color-cat-transport)`
+          : `3px solid var(--color-cat-activity)`,
+      }}
+      className={cn(
+        'bg-bg-secondary border border-border-subtle rounded-lg p-3 flex gap-2 group transition-opacity',
+        done && 'opacity-60'
+      )}
     >
       <button
         type="button"
@@ -136,6 +146,12 @@ function SortableBlock({
       >
         <GripVertical size={14} />
       </button>
+      <div className="pt-0.5">
+        <BlockCheckbox
+          completed={done}
+          onToggle={() => editor.toggleBlockCompleted(dayId, block.id)}
+        />
+      </div>
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
         <div className="flex items-baseline justify-between gap-2">
           <div className="flex items-center gap-2">
@@ -143,7 +159,7 @@ function SortableBlock({
               value={block.time}
               onCommit={(v) => editor.updateBlock(dayId, block.id, { time: v })}
               placeholder="HH:MM-HH:MM"
-              className="font-cost text-[12px] text-text-tertiary"
+              className={cn('font-cost text-[12px] text-text-tertiary', done && 'line-through')}
               as="span"
             />
             {ModeIcon && <ModeIcon size={12} className="text-accent" />}
