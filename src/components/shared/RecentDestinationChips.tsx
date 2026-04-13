@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Clock, X } from 'lucide-react'
 import {
   clearRecentDestinations,
   getRecentDestinations,
   type RecentDestination,
 } from '@/utils/recent-destinations'
+import { useTrips } from '@/hooks/useTrips'
 import { cn } from '@/utils/cn'
 
 export interface RecentDestinationChipsProps {
@@ -19,11 +20,44 @@ export function RecentDestinationChips({
   exclude = [],
   className,
 }: RecentDestinationChipsProps) {
-  const [recents, setRecents] = useState<RecentDestination[]>([])
+  const [localRecents, setLocalRecents] = useState<RecentDestination[]>([])
+  const { trips } = useTrips()
 
   useEffect(() => {
-    setRecents(getRecentDestinations())
+    setLocalRecents(getRecentDestinations())
   }, [])
+
+  // Merge localStorage picks with destinations pulled from the user's saved
+  // trips in Firestore, so a fresh browser session still sees places they've
+  // already planned for. Localstorage entries win on usedAt, then Firestore
+  // destinations fill in by createdAt order.
+  const recents = useMemo<RecentDestination[]>(() => {
+    const byKey = new Map<string, RecentDestination>()
+    const add = (r: RecentDestination): void => {
+      const key = r.displayName.toLowerCase()
+      const existing = byKey.get(key)
+      if (!existing || existing.usedAt < r.usedAt) {
+        byKey.set(key, r)
+      }
+    }
+    localRecents.forEach(add)
+    trips.forEach((t) => {
+      const createdAt = t.createdAt ? new Date(t.createdAt).getTime() : 0
+      t.inputs.destinations.forEach((d) => {
+        if (!d.city) return
+        const display = d.country ? `${d.city}, ${d.country}` : d.city
+        add({
+          city: d.city,
+          country: d.country ?? '',
+          displayName: display,
+          usedAt: createdAt,
+        })
+      })
+    })
+    return Array.from(byKey.values())
+      .sort((a, b) => b.usedAt - a.usedAt)
+      .slice(0, 8)
+  }, [localRecents, trips])
 
   const excludeSet = new Set(exclude.map((s) => s.toLowerCase()))
   const visible = recents.filter((r) => !excludeSet.has(r.displayName.toLowerCase()))
@@ -49,7 +83,7 @@ export function RecentDestinationChips({
         type="button"
         onClick={() => {
           clearRecentDestinations()
-          setRecents([])
+          setLocalRecents([])
         }}
         aria-label="Clear recent destinations"
         className="ml-1 text-text-tertiary hover:text-text-secondary"

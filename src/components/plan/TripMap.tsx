@@ -1,17 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
-import { MapPinOff, Loader2 } from 'lucide-react'
+import { Loader2, MapPinOff } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
-import { geocode, hasMapboxToken, type Coord } from '@/utils/geocode'
-import { Card } from '@/components/shared/Card'
+import { geocodeDetailed, hasMapboxToken, type Coord } from '@/utils/geocode'
 
 interface DayCoord {
   day: TripPlan['days'][number]
   coord: Coord | null
+  error: string | null
 }
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN ?? ''
+
+// Free OSM raster tile style used when we don't have a Mapbox token. Lets the
+// map still render (with coordinates resolved via Open-Meteo) instead of
+// showing an empty placeholder.
+const OSM_STYLE: mapboxgl.StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+      tileSize: 256,
+      attribution: '\u00A9 OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+}
 
 export interface TripMapProps {
   plan: TripPlan
@@ -23,18 +39,23 @@ export function TripMap({ plan }: TripMapProps) {
   const [dayCoords, setDayCoords] = useState<DayCoord[]>([])
   const [loading, setLoading] = useState(true)
 
+  const [errors, setErrors] = useState<string[]>([])
+
   // Geocode every unique location
   useEffect(() => {
     let cancelled = false
     const run = async () => {
       setLoading(true)
       const results: DayCoord[] = []
+      const seenErrors = new Set<string>()
       for (const day of plan.days) {
-        const coord = await geocode(day.location)
+        const r = await geocodeDetailed(day.location)
         if (cancelled) return
-        results.push({ day, coord })
+        results.push({ day, coord: r.coord, error: r.error })
+        if (r.error) seenErrors.add(r.error)
       }
       setDayCoords(results)
+      setErrors(Array.from(seenErrors))
       setLoading(false)
     }
     void run()
@@ -46,13 +67,16 @@ export function TripMap({ plan }: TripMapProps) {
   // Build the map once we have at least one coord
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
-    if (!hasMapboxToken()) return
     const pts = dayCoords.filter((d) => d.coord).map((d) => d.coord as Coord)
     if (pts.length === 0) return
 
+    const style: mapboxgl.StyleSpecification | string = hasMapboxToken()
+      ? 'mapbox://styles/mapbox/dark-v11'
+      : OSM_STYLE
+
     const map = new mapboxgl.Map({
       container: containerRef.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style,
       center: [pts[0].lng, pts[0].lat],
       zoom: 4,
     })
@@ -114,20 +138,8 @@ export function TripMap({ plan }: TripMapProps) {
     }
   }, [dayCoords])
 
-  if (!hasMapboxToken()) {
-    return (
-      <Card className="flex flex-col items-center text-center gap-2 py-10">
-        <MapPinOff size={24} className="text-text-tertiary" />
-        <h3>Map unavailable</h3>
-        <p className="text-text-secondary">
-          VITE_MAPBOX_TOKEN is not set. Add it to .env.production and redeploy to enable the
-          map.
-        </p>
-      </Card>
-    )
-  }
-
   const placed = dayCoords.filter((d) => d.coord)
+  const unresolved = dayCoords.filter((d) => !d.coord)
   return (
     <div className="flex flex-col gap-3">
       <div
@@ -141,17 +153,48 @@ export function TripMap({ plan }: TripMapProps) {
           Geocoding locations&hellip;
         </div>
       )}
+      {!loading && !hasMapboxToken() && placed.length > 0 && (
+        <div className="flex items-start gap-2 rounded-lg border border-border-subtle bg-bg-secondary p-3 text-[12px] text-text-tertiary">
+          <MapPinOff size={14} className="mt-0.5 shrink-0" />
+          <p>
+            Using OpenStreetMap fallback tiles because <code>VITE_MAPBOX_TOKEN</code> is not
+            set. Add a Mapbox token for the dark themed map style.
+          </p>
+        </div>
+      )}
       {!loading && placed.length === 0 && (
-        <div className="flex flex-col gap-1 text-[13px]">
-          <p className="text-text-tertiary">
-            Could not resolve any locations on the map.
+        <div className="flex flex-col gap-2 rounded-lg border border-error bg-[#D9555510] p-3 text-[13px]">
+          <p className="text-error font-semibold">Could not resolve any locations on the map.</p>
+          {errors.length > 0 && (
+            <ul className="flex flex-col gap-1 text-text-secondary">
+              {errors.map((e) => (
+                <li key={e} className="font-cost text-[12px]">
+                  {e}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="text-text-tertiary text-[12px]">
+            Tried Mapbox first, then Open-Meteo as a fallback. If both failed, day locations
+            may be too generic or your network blocks geocoding APIs.
           </p>
-          <p className="text-text-tertiary">
-            This usually means the Mapbox token isn&apos;t reaching the browser, or the day
-            locations are too generic. Check your browser console for Mapbox errors, and verify
-            the <code>MAPBOX_TOKEN</code> GitHub secret is set and the workflow re-ran after you
-            added it.
+        </div>
+      )}
+      {!loading && placed.length > 0 && unresolved.length > 0 && (
+        <div className="flex flex-col gap-1 rounded-lg border border-border-subtle bg-bg-secondary p-3 text-[12px] text-text-tertiary">
+          <p className="text-text-secondary">
+            Couldn&apos;t place {unresolved.length} day{unresolved.length === 1 ? '' : 's'} on the map:
           </p>
+          <ul className="flex flex-wrap gap-1.5">
+            {unresolved.map(({ day }) => (
+              <li
+                key={day.id}
+                className="px-2 py-0.5 rounded-full bg-bg-elevated text-text-tertiary"
+              >
+                Day {day.dayNumber} &middot; {day.location}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
       {!loading && placed.length > 0 && (
@@ -166,7 +209,7 @@ export function TripMap({ plan }: TripMapProps) {
               </span>
               <span className="truncate">
                 <span className="text-text-primary">{day.title}</span>{' '}
-                <span className="text-text-tertiary">\u00B7 {day.location}</span>
+                <span className="text-text-tertiary">· {day.location}</span>
               </span>
             </li>
           ))}

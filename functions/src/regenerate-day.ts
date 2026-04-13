@@ -51,7 +51,15 @@ Return ONLY a JSON object matching this TypeScript shape, no markdown:
 }
 
 Use REAL place names. Include hour-by-hour blocks, whyPicked and historicalContext.
-Match the existing trip's tone, budget level, pace, and interests.`
+Match the existing trip's tone, budget level, pace, and interests.
+
+COSTS: every day must include realistic costs for all four categories when applicable:
+- transport (intra-city transit, taxis, airport transfers; inter-city travel if this day has a travel leg)
+- hotel (hotel price \u00D7 1 night for the chosen tier matching the user's budget level)
+- food (3 meals/day \u00D7 travelers at local prices appropriate for the budget tier)
+- activity (admission / tours / tickets \u00D7 travelers)
+All amounts are TOTAL for the group; put per-person math in the note (e.g. "~\u20AC60/person").
+dailyTotal MUST equal the sum of that day's costs (min and max separately).`
 
 export const regenerateDay = onRequest(
   {
