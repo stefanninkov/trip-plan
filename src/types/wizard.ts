@@ -11,6 +11,9 @@ export interface Destination {
   city: string
   country: string
   nights: number
+  // Optional precise date range per stop (within the overall trip range)
+  startDate?: string
+  endDate?: string
 }
 
 export type PacePreference = 'relaxed' | 'moderate' | 'packed'

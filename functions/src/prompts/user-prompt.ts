@@ -1,7 +1,13 @@
 interface TripInputsInput {
   origin: string
   originCountry: string
-  destinations: { city: string; country: string; nights: number }[]
+  destinations: {
+    city: string
+    country: string
+    nights: number
+    startDate?: string
+    endDate?: string
+  }[]
   startDate: string
   endDate: string
   travelers: number
@@ -17,7 +23,13 @@ interface TripInputsInput {
 
 export function buildUserMessage(inputs: TripInputsInput): string {
   const destList = inputs.destinations
-    .map((d) => `${d.city}${d.country ? `, ${d.country}` : ''} (${d.nights} nights)`)
+    .map((d) => {
+      const dates =
+        d.startDate && d.endDate
+          ? `, ${d.startDate} to ${d.endDate}`
+          : ''
+      return `${d.city}${d.country ? `, ${d.country}` : ''} (${d.nights} nights${dates})`
+    })
     .join(' -> ')
 
   const interests = inputs.interests.length ? inputs.interests.join(', ') : '(none specified)'

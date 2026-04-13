@@ -43,7 +43,11 @@ export function validateStep(step: WizardStep, inputs: TripInputs): boolean {
           (d) =>
             d.city.trim().length >= 2 &&
             d.country.trim().length > 0 &&
-            d.nights > 0
+            d.nights > 0 &&
+            // If explicit dates are set, they must be a valid range
+            (!d.startDate ||
+              !d.endDate ||
+              new Date(d.endDate).getTime() > new Date(d.startDate).getTime())
         )
       )
     case 'dates':
