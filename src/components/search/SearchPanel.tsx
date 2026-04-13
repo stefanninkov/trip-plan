@@ -45,9 +45,11 @@ export interface SearchPanelProps {
   editor?: TripEditor
   days?: DayPlan[]
   currency?: string
+  /** Origin location from trip inputs (used by Flights tab to pre-fill). */
+  origin?: string
 }
 
-export function SearchPanel({ editor, days, currency }: SearchPanelProps) {
+export function SearchPanel({ editor, days, currency, origin }: SearchPanelProps) {
   const [tab, setTab] = useState<Tab>('flights')
 
   return (
@@ -74,7 +76,7 @@ export function SearchPanel({ editor, days, currency }: SearchPanelProps) {
         ))}
       </div>
 
-      {tab === 'flights' && <FlightsTab editor={editor} days={days} />}
+      {tab === 'flights' && <FlightsTab editor={editor} days={days} origin={origin} />}
       {tab === 'hotels' && <HotelsTab editor={editor} days={days} />}
       {tab === 'places' && <PlacesTab editor={editor} days={days} currency={currency} />}
       {tab === 'activities' && <ActivitiesTab editor={editor} days={days} currency={currency} />}
@@ -131,15 +133,81 @@ function useDayPicker(ctx: AddToPlanCtx) {
   return { request, modal, canAdd: Boolean(ctx.editor && ctx.days && ctx.days.length > 0) }
 }
 
+interface FlightLeg {
+  from: string
+  to: string
+  date: string
+  returnDate?: string
+  label: string
+}
+
+function computeFlightLegs(origin: string | undefined, days: DayPlan[]): FlightLeg[] {
+  if (days.length === 0) return []
+  const legs: FlightLeg[] = []
+  const firstDay = days[0]
+  const lastDay = days[days.length - 1]
+
+  if (origin && firstDay.location) {
+    legs.push({
+      from: origin,
+      to: firstDay.location,
+      date: firstDay.date,
+      returnDate: lastDay.date,
+      label: `${origin} \u2192 ${firstDay.location} (round trip ${firstDay.date} / ${lastDay.date})`,
+    })
+    legs.push({
+      from: origin,
+      to: firstDay.location,
+      date: firstDay.date,
+      label: `${origin} \u2192 ${firstDay.location} (one-way ${firstDay.date})`,
+    })
+    legs.push({
+      from: lastDay.location,
+      to: origin,
+      date: lastDay.date,
+      label: `${lastDay.location} \u2192 ${origin} (return ${lastDay.date})`,
+    })
+  }
+  // Intra-trip legs: any destination change
+  for (let i = 1; i < days.length; i += 1) {
+    const prev = days[i - 1]
+    const cur = days[i]
+    if (prev.location !== cur.location && prev.location && cur.location) {
+      legs.push({
+        from: prev.location,
+        to: cur.location,
+        date: cur.date,
+        label: `${prev.location} \u2192 ${cur.location} (${cur.date})`,
+      })
+    }
+  }
+  return legs
+}
+
 // ---- Flights ----
-function FlightsTab({ editor, days }: AddToPlanCtx) {
-  const [origin, setOrigin] = useState('')
-  const [destination, setDestination] = useState('')
-  const [date, setDate] = useState('')
-  const [returnDate, setReturnDate] = useState('')
+function FlightsTab({
+  editor,
+  days,
+  origin: tripOrigin,
+}: AddToPlanCtx & { origin?: string }) {
+  const legs = days ? computeFlightLegs(tripOrigin, days) : []
+  const [legIndex, setLegIndex] = useState(legs.length > 0 ? 0 : -1)
+  const [customOrigin, setCustomOrigin] = useState('')
+  const [customDest, setCustomDest] = useState('')
+  const [customDate, setCustomDate] = useState(days?.[0]?.date ?? '')
+  const [customReturn, setCustomReturn] = useState(
+    days && days.length > 0 ? days[days.length - 1].date : ''
+  )
   const { results, loading, error, run } = useFlightSearch()
   const addToast = useUiStore((s) => s.addToast)
   const dayPicker = useDayPicker({ editor, days })
+
+  const isCustomLeg = legIndex === -1 || legs.length === 0
+  const activeLeg = !isCustomLeg ? legs[legIndex] : null
+  const origin = activeLeg?.from ?? customOrigin
+  const destination = activeLeg?.to ?? customDest
+  const date = activeLeg?.date ?? customDate
+  const returnDate = activeLeg?.returnDate ?? customReturn
 
   const addFlight = (flight: FlightResult, dayId: string) => {
     if (!editor) return
@@ -165,12 +233,52 @@ function FlightsTab({ editor, days }: AddToPlanCtx) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <Input placeholder="From (airport code)" value={origin} onChange={(e) => setOrigin(e.target.value.toUpperCase())} />
-        <Input placeholder="To (airport code)" value={destination} onChange={(e) => setDestination(e.target.value.toUpperCase())} />
-        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        <Input type="date" value={returnDate} placeholder="Return (optional)" onChange={(e) => setReturnDate(e.target.value)} />
-      </div>
+      {legs.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+            Leg (from your trip)
+          </label>
+          <select
+            value={legIndex}
+            onChange={(e) => setLegIndex(Number(e.target.value))}
+            className="w-full appearance-none bg-bg-secondary text-text-primary border border-border-default rounded-lg px-3 py-2.5 pr-9 text-[14px] focus:outline-none focus:border-accent"
+          >
+            {legs.map((l, i) => (
+              <option key={i} value={i}>
+                {l.label}
+              </option>
+            ))}
+            <option value={-1}>Custom route / dates…</option>
+          </select>
+        </div>
+      )}
+      {isCustomLeg && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <Input
+            placeholder="From (airport code)"
+            value={customOrigin}
+            onChange={(e) => setCustomOrigin(e.target.value.toUpperCase())}
+          />
+          <Input
+            placeholder="To (airport code)"
+            value={customDest}
+            onChange={(e) => setCustomDest(e.target.value.toUpperCase())}
+          />
+          <Input type="date" value={customDate} onChange={(e) => setCustomDate(e.target.value)} />
+          <Input
+            type="date"
+            value={customReturn}
+            placeholder="Return (optional)"
+            onChange={(e) => setCustomReturn(e.target.value)}
+          />
+        </div>
+      )}
+      {!isCustomLeg && activeLeg && (
+        <div className="text-[12px] text-text-tertiary">
+          {activeLeg.from} → {activeLeg.to} · {activeLeg.date}
+          {activeLeg.returnDate ? ` · return ${activeLeg.returnDate}` : ''}
+        </div>
+      )}
       <Button
         disabled={!origin || !destination || !date || loading}
         onClick={() => run({ origin, destination, date, returnDate: returnDate || undefined })}
@@ -212,14 +320,68 @@ function FlightsTab({ editor, days }: AddToPlanCtx) {
   )
 }
 
+/**
+ * Collapse consecutive days with the same location into "stays" so the
+ * Hotels tab can just show a dropdown and fill check-in / check-out.
+ */
+interface Stay {
+  location: string
+  checkIn: string
+  checkOut: string
+  nights: number
+}
+
+function computeStays(days: DayPlan[]): Stay[] {
+  if (days.length === 0) return []
+  const stays: Stay[] = []
+  let current: Stay | null = null
+  for (const d of days) {
+    if (current && current.location === d.location) {
+      current.checkOut = addOneDay(d.date)
+      current.nights = daysDiff(current.checkIn, current.checkOut)
+    } else {
+      if (current) stays.push(current)
+      current = {
+        location: d.location,
+        checkIn: d.date,
+        checkOut: addOneDay(d.date),
+        nights: 1,
+      }
+    }
+  }
+  if (current) stays.push(current)
+  return stays
+}
+
+function addOneDay(iso: string): string {
+  const d = new Date(iso)
+  d.setDate(d.getDate() + 1)
+  return d.toISOString().slice(0, 10)
+}
+
+function daysDiff(a: string, b: string): number {
+  return Math.max(
+    1,
+    Math.round((new Date(b).getTime() - new Date(a).getTime()) / (1000 * 60 * 60 * 24))
+  )
+}
+
 // ---- Hotels ----
 function HotelsTab({ editor, days }: AddToPlanCtx) {
-  const [location, setLocation] = useState('')
-  const [checkIn, setCheckIn] = useState('')
-  const [checkOut, setCheckOut] = useState('')
+  const stays = days ? computeStays(days) : []
+  const [stayIndex, setStayIndex] = useState(stays.length > 0 ? 0 : -1)
+  const [customLocation, setCustomLocation] = useState('')
+  const [customCheckIn, setCustomCheckIn] = useState('')
+  const [customCheckOut, setCustomCheckOut] = useState('')
   const { results, loading, error, run } = useHotelSearch()
   const addToast = useUiStore((s) => s.addToast)
   const dayPicker = useDayPicker({ editor, days })
+
+  const isCustom = stayIndex === -1 || stays.length === 0
+  const activeStay = !isCustom ? stays[stayIndex] : null
+  const location = activeStay?.location ?? customLocation
+  const checkIn = activeStay?.checkIn ?? customCheckIn
+  const checkOut = activeStay?.checkOut ?? customCheckOut
 
   const addHotel = (hotel: HotelResult, dayId: string) => {
     if (!editor) return
@@ -231,18 +393,69 @@ function HotelsTab({ editor, days }: AddToPlanCtx) {
       highlight:
         hotel.highlights.slice(0, 3).join(' \u00B7 ') ||
         (hotel.rating > 0 ? `Rated ${hotel.rating.toFixed(1)} from ${hotel.reviewCount} reviews` : ''),
-      tier: hotel.pricePerNight < 80 ? 'budget' : hotel.pricePerNight < 200 ? 'mid' : 'comfortable',
+      tier:
+        hotel.pricePerNight < 80
+          ? 'budget'
+          : hotel.pricePerNight < 200
+            ? 'mid'
+            : hotel.pricePerNight < 400
+              ? 'comfortable'
+              : 'luxury',
     })
     addToast('success', 'Hotel added to trip')
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <Input placeholder="Destination (city)" value={location} onChange={(e) => setLocation(e.target.value)} />
-      <div className="grid grid-cols-2 gap-2">
-        <Input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
-        <Input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
-      </div>
+      {stays.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+            Destination (from your trip)
+          </label>
+          <div className="relative">
+            <select
+              value={stayIndex}
+              onChange={(e) => setStayIndex(Number(e.target.value))}
+              className="w-full appearance-none bg-bg-secondary text-text-primary border border-border-default rounded-lg px-3 py-2.5 pr-9 text-[14px] focus:outline-none focus:border-accent"
+            >
+              {stays.map((s, i) => (
+                <option key={i} value={i}>
+                  {s.location} — {s.nights} night{s.nights === 1 ? '' : 's'} (
+                  {s.checkIn} → {s.checkOut})
+                </option>
+              ))}
+              <option value={-1}>Custom destination / dates…</option>
+            </select>
+          </div>
+        </div>
+      )}
+      {isCustom && (
+        <>
+          <Input
+            placeholder="Destination (city)"
+            value={customLocation}
+            onChange={(e) => setCustomLocation(e.target.value)}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="date"
+              value={customCheckIn}
+              onChange={(e) => setCustomCheckIn(e.target.value)}
+            />
+            <Input
+              type="date"
+              value={customCheckOut}
+              onChange={(e) => setCustomCheckOut(e.target.value)}
+            />
+          </div>
+        </>
+      )}
+      {!isCustom && activeStay && (
+        <div className="text-[12px] text-text-tertiary">
+          {activeStay.checkIn} → {activeStay.checkOut} · {activeStay.nights} night
+          {activeStay.nights === 1 ? '' : 's'}
+        </div>
+      )}
       <Button
         disabled={!location || !checkIn || !checkOut || loading}
         onClick={() => run({ location, checkIn, checkOut })}
@@ -358,7 +571,7 @@ function ActivitiesTab({
       editor={editor}
       days={days}
       currency={currency}
-      defaultQuery="things to do"
+      defaultQuery=""
       prompt="e.g. walking tours, day trips, free things to do"
     />
   )
@@ -371,8 +584,14 @@ function SearchPlaceForm({
   defaultQuery,
   prompt,
 }: AddToPlanCtx & { currency: string; defaultQuery: string; prompt: string }) {
+  // Unique non-empty locations from the trip, ordered as they appear.
+  const tripLocations = days
+    ? Array.from(new Set(days.map((d) => d.location).filter(Boolean)))
+    : []
   const [query, setQuery] = useState(defaultQuery)
-  const [location, setLocation] = useState('')
+  const [selectedLoc, setSelectedLoc] = useState(tripLocations[0] ?? '_custom')
+  const [customLocation, setCustomLocation] = useState('')
+  const location = selectedLoc === '_custom' ? customLocation : selectedLoc
   const { results, loading, error, run } = usePlaceSearch()
   const addToast = useUiStore((s) => s.addToast)
   const dayPicker = useDayPicker({ editor, days })
@@ -399,11 +618,32 @@ function SearchPlaceForm({
   return (
     <div className="flex flex-col gap-3">
       <Input placeholder={prompt} value={query} onChange={(e) => setQuery(e.target.value)} />
-      <Input
-        placeholder="Location (required) \u2014 city, neighborhood"
-        value={location}
-        onChange={(e) => setLocation(e.target.value)}
-      />
+      {tripLocations.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+            Location (from your trip)
+          </label>
+          <select
+            value={selectedLoc}
+            onChange={(e) => setSelectedLoc(e.target.value)}
+            className="w-full appearance-none bg-bg-secondary text-text-primary border border-border-default rounded-lg px-3 py-2.5 pr-9 text-[14px] focus:outline-none focus:border-accent"
+          >
+            {tripLocations.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+            <option value="_custom">Custom location…</option>
+          </select>
+        </div>
+      )}
+      {(tripLocations.length === 0 || selectedLoc === '_custom') && (
+        <Input
+          placeholder="Location (required) — city, neighborhood"
+          value={customLocation}
+          onChange={(e) => setCustomLocation(e.target.value)}
+        />
+      )}
       <Button
         disabled={!canSearch || loading}
         onClick={() => run({ query, location })}

@@ -215,7 +215,12 @@ export function PlanView({
       <GrandTotal plan={current} homeCurrency={homeCurrency} />
       {!readOnly && (
         <div className="print:hidden">
-          <SearchPanel editor={editor} days={current.days} currency={currency} />
+          <SearchPanel
+            editor={editor}
+            days={current.days}
+            currency={currency}
+            origin={inputs?.origin}
+          />
         </div>
       )}
         </>

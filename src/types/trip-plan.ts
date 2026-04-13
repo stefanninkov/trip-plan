@@ -19,6 +19,17 @@ export interface CostRange {
   max: number
 }
 
+export interface BlockPlaceInfo {
+  address?: string | null
+  phone?: string | null
+  website?: string | null
+  hours?: string | null
+  rating?: number | null
+  priceLevel?: string | null
+  mapsUrl?: string | null
+  thumbnailUrl?: string | null
+}
+
 export interface TimeBlock {
   id: string
   time: string
@@ -32,6 +43,8 @@ export interface TimeBlock {
   travelMode?: TravelMode | null
   // User marks this block as done during / after the trip
   completed?: boolean
+  // Cached lookup result from the Places search so we don't re-hit SerpAPI
+  placeInfo?: BlockPlaceInfo | null
 }
 
 export interface CostItem {
