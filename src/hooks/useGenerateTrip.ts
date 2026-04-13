@@ -10,6 +10,7 @@ import { db, FUNCTIONS_BASE_URL } from '@/lib/firebase'
 import { useAuthStore } from '@/store/auth-store'
 import { logger } from '@/utils/logger'
 import { buildSkeletonPlan } from '@/utils/skeleton-plan'
+import { sanitizeForFirestore } from '@/utils/sanitize'
 import type { TripInputs } from '@/types/wizard'
 import type { TripPlan } from '@/types/trip-plan'
 
@@ -31,7 +32,7 @@ async function createTripDoc(userId: string, inputs: TripInputs) {
     userId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    inputs,
+    inputs: sanitizeForFirestore(inputs),
     plan: null,
     status: 'generating',
     shared: false,
@@ -72,7 +73,7 @@ export function useGenerateTrip(): UseGenerateTripState {
         }
         const { plan } = (await res.json()) as { plan: TripPlan }
         await updateDoc(doc(db, 'trips', tripRef.id), {
-          plan,
+          plan: sanitizeForFirestore(plan),
           status: 'complete',
           updatedAt: serverTimestamp(),
         })
@@ -107,7 +108,7 @@ export function useGenerateTrip(): UseGenerateTripState {
         const plan = buildSkeletonPlan(inputs)
         const tripRef = await createTripDoc(user.uid, inputs)
         await updateDoc(doc(db, 'trips', tripRef.id), {
-          plan,
+          plan: sanitizeForFirestore(plan),
           status: 'complete',
           updatedAt: serverTimestamp(),
         })

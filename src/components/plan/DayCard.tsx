@@ -22,6 +22,7 @@ import { relativeDay } from '@/utils/date-helpers'
 export interface DayCardProps {
   day: DayPlan
   currency: string
+  homeCurrency?: string
   editor?: TripEditor
   defaultOpen?: boolean
   allDays?: { id: string; dayNumber: number; title: string }[]
@@ -36,6 +37,7 @@ export interface DayCardProps {
 export function DayCard({
   day,
   currency,
+  homeCurrency,
   editor,
   defaultOpen = false,
   allDays,
@@ -134,6 +136,7 @@ export function DayCard({
             min={day.dailyTotal.min}
             max={day.dailyTotal.max}
             currency={currency}
+            homeCurrency={homeCurrency}
             size="sm"
           />
           <ChevronDown

@@ -7,9 +7,10 @@ import { EditableText } from '@/components/shared/EditableText'
 export interface PlanHeaderProps {
   plan: TripPlan
   editor?: TripEditor
+  homeCurrency?: string
 }
 
-export function PlanHeader({ plan, editor }: PlanHeaderProps) {
+export function PlanHeader({ plan, editor, homeCurrency }: PlanHeaderProps) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center gap-2 text-text-tertiary text-[12px] uppercase tracking-[1.5px]">
@@ -48,6 +49,7 @@ export function PlanHeader({ plan, editor }: PlanHeaderProps) {
           min={plan.grandTotal.total.min}
           max={plan.grandTotal.total.max}
           currency={plan.totalBudget.currency}
+          homeCurrency={homeCurrency}
           size="lg"
         />
       </div>

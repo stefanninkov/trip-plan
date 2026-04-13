@@ -5,9 +5,10 @@ import { CATEGORIES } from '@/constants/categories'
 
 export interface GrandTotalProps {
   plan: TripPlan
+  homeCurrency?: string
 }
 
-export function GrandTotal({ plan }: GrandTotalProps) {
+export function GrandTotal({ plan, homeCurrency }: GrandTotalProps) {
   const currency = plan.totalBudget.currency
   return (
     <Card className="flex flex-col gap-4">
@@ -31,6 +32,7 @@ export function GrandTotal({ plan }: GrandTotalProps) {
                   min={amount.min}
                   max={amount.max}
                   currency={currency}
+                  homeCurrency={homeCurrency}
                   size="md"
                   className="items-start"
                 />
@@ -45,6 +47,7 @@ export function GrandTotal({ plan }: GrandTotalProps) {
           min={plan.grandTotal.total.min}
           max={plan.grandTotal.total.max}
           currency={currency}
+          homeCurrency={homeCurrency}
           size="lg"
         />
       </div>

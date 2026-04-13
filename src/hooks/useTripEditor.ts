@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { recalcTotals } from '@/utils/skeleton-plan'
+import { sanitizeForFirestore } from '@/utils/sanitize'
 import { logger } from '@/utils/logger'
 import type {
   TripPlan,
@@ -42,7 +43,7 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       saveTimer.current = setTimeout(async () => {
         try {
           await updateDoc(doc(db, 'trips', tripId), {
-            plan: latestPlan.current,
+            plan: sanitizeForFirestore(latestPlan.current),
             updatedAt: serverTimestamp(),
           })
         } catch (err) {

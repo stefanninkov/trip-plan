@@ -1,9 +1,10 @@
-import { useState, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Eye, Pencil, Wand2, List, Map as MapIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { TripPlan } from '@/types/trip-plan'
 import type { TripInputs } from '@/types/wizard'
 import { useTripEditor } from '@/hooks/useTripEditor'
+import { prefetchRates } from '@/utils/currency-rates'
 import { Button } from '@/components/shared/Button'
 import { CardSkeleton } from '@/components/shared/Skeleton'
 import { cn } from '@/utils/cn'
@@ -41,7 +42,15 @@ export function PlanView({
   const [tab, setTab] = useState<Tab>('plan')
   const current = editor.plan
   const currency = current.totalBudget.currency
+  const homeCurrency = inputs?.homeCurrency ?? currency
   const canEdit = !readOnly && editing
+
+  // Warm up currency conversion rates once per trip render
+  useEffect(() => {
+    if (currency && homeCurrency && currency !== homeCurrency) {
+      void prefetchRates(currency)
+    }
+  }, [currency, homeCurrency])
 
   return (
     <div className="flex flex-col gap-8 print:gap-4">
@@ -84,7 +93,7 @@ export function PlanView({
         </div>
       )}
 
-      <PlanHeader plan={current} editor={canEdit ? editor : undefined} />
+      <PlanHeader plan={current} editor={canEdit ? editor : undefined} homeCurrency={homeCurrency} />
 
       <div className="flex items-center gap-1 border-b border-border-subtle print:hidden">
         <TabButton active={tab === 'plan'} onClick={() => setTab('plan')} icon={List} label="Plan" />
@@ -107,6 +116,7 @@ export function PlanView({
             key={day.id}
             day={day}
             currency={currency}
+            homeCurrency={homeCurrency}
             editor={canEdit ? editor : undefined}
             defaultOpen={idx === 0}
             tripInputs={canEdit ? inputs : undefined}
@@ -121,7 +131,7 @@ export function PlanView({
           />
         ))}
       </section>
-      <GrandTotal plan={current} />
+      <GrandTotal plan={current} homeCurrency={homeCurrency} />
       {!readOnly && (
         <div className="print:hidden">
           <SearchPanel editor={editor} days={current.days} currency={currency} />
