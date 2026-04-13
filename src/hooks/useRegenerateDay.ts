@@ -7,7 +7,7 @@ import type { DayPlan } from '@/types/trip-plan'
 interface RegenArgs {
   inputs: TripInputs
   day: { id: string; dayNumber: number; date: string; location: string }
-  instructions?: string
+  feedback?: string
 }
 
 export function useRegenerateDay() {

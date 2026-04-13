@@ -1,6 +1,6 @@
 export type CostCategory = 'transport' | 'hotel' | 'food' | 'activity'
 
-export type BudgetTier = 'budget' | 'mid' | 'comfortable'
+export type BudgetTier = 'budget' | 'mid' | 'comfortable' | 'luxury'
 
 export type TravelMode =
   | 'plane'

@@ -11,5 +11,9 @@ export const ACCOMMODATION_OPTIONS: SelectOption<AccommodationPref>[] = [
   { value: 'any', label: 'Any' },
   { value: 'hostel', label: 'Hostel' },
   { value: 'hotel', label: 'Hotel' },
+  { value: 'bnb', label: 'Bed & breakfast' },
   { value: 'apartment', label: 'Apartment / Airbnb' },
+  { value: 'house', label: 'House' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'resort', label: 'Resort' },
 ]

@@ -18,7 +18,15 @@ export interface Destination {
 
 export type PacePreference = 'relaxed' | 'moderate' | 'packed'
 
-export type AccommodationPref = 'hostel' | 'hotel' | 'apartment' | 'any'
+export type AccommodationPref =
+  | 'hostel'
+  | 'hotel'
+  | 'apartment'
+  | 'villa'
+  | 'house'
+  | 'bnb'
+  | 'resort'
+  | 'any'
 
 export interface TripInputs {
   origin: string
@@ -30,7 +38,7 @@ export interface TripInputs {
   budgetLevel: BudgetTier
   interests: string[]
   pace: PacePreference
-  accommodationType: AccommodationPref
+  accommodationType: AccommodationPref | AccommodationPref[]
   dietaryNeeds: string
   mobilityNotes: string
   homeCurrency: string

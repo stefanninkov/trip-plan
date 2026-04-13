@@ -11,7 +11,7 @@ interface TripInputsInput {
   startDate: string
   endDate: string
   travelers: number
-  budgetLevel: 'budget' | 'mid' | 'comfortable'
+  budgetLevel: 'budget' | 'mid' | 'comfortable' | 'luxury'
   interests: string[]
   pace: 'relaxed' | 'moderate' | 'packed'
   accommodationType: 'hostel' | 'hotel' | 'apartment' | 'any'

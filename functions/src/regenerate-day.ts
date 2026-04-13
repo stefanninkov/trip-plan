@@ -46,7 +46,7 @@ Return ONLY a JSON object matching this TypeScript shape, no markdown:
     "pricePerNight": number,
     "currency": string,
     "highlight": string,
-    "tier": "budget" | "mid" | "comfortable"
+    "tier": "budget" | "mid" | "comfortable" | "luxury"
   }] | null
 }
 
@@ -71,10 +71,11 @@ export const regenerateDay = onRequest(
       return
     }
 
-    const { inputs, day, instructions } = (req.body ?? {}) as {
+    const { inputs, day, instructions, feedback } = (req.body ?? {}) as {
       inputs?: unknown
       day?: { dayNumber: number; date: string; location: string; id: string }
       instructions?: string
+      feedback?: string
     }
 
     if (!inputs || !day) {
@@ -82,9 +83,11 @@ export const regenerateDay = onRequest(
       return
     }
 
+    const userFeedback = (feedback ?? instructions ?? '').trim()
+
     const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY.value(), maxRetries: 3 })
     const userMessage = `Trip inputs:\n${JSON.stringify(inputs, null, 2)}\n\nRegenerate day ${day.dayNumber} (${day.date}) in ${day.location}. Use this same id: "${day.id}".${
-      instructions ? `\n\nExtra instructions: ${instructions}` : ''
+      userFeedback ? `\n\nUser feedback for this day: ${userFeedback}` : ''
     }\n\nReturn ONLY the day JSON.`
 
     try {

@@ -12,6 +12,8 @@ import { CURRENCIES } from '@/constants/currencies'
 import type { BudgetTier } from '@/types/trip-plan'
 import type { AccommodationPref, PacePreference } from '@/types/wizard'
 
+const ACCOMMODATION_MULTI = ACCOMMODATION_OPTIONS.filter((o) => o.value !== 'any')
+
 const CURRENCY_OPTIONS: SelectOption[] = CURRENCIES.map((c) => ({
   value: c.code,
   label: `${c.code} \u2014 ${c.name}`,
@@ -41,7 +43,7 @@ export function StepAdvanced() {
         <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
           Budget tier
         </span>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {BUDGET_LEVELS.map((level) => {
             const active = inputs.budgetLevel === level.id
             return (
@@ -119,14 +121,9 @@ export function StepAdvanced() {
               onChange={(e) => setField('pace', e.target.value as PacePreference)}
               options={PACE_OPTIONS}
             />
-            <Select
-              label="Accommodation preference"
-              name="accommodationType"
+            <AccommodationPicker
               value={inputs.accommodationType}
-              onChange={(e) =>
-                setField('accommodationType', e.target.value as AccommodationPref)
-              }
-              options={ACCOMMODATION_OPTIONS}
+              onChange={(v) => setField('accommodationType', v)}
             />
           </div>
 
@@ -174,6 +171,71 @@ export function StepAdvanced() {
           </div>
         </Card>
       )}
+    </div>
+  )
+}
+
+function AccommodationPicker({
+  value,
+  onChange,
+}: {
+  value: AccommodationPref | AccommodationPref[]
+  onChange: (v: AccommodationPref | AccommodationPref[]) => void
+}) {
+  const selected: AccommodationPref[] = Array.isArray(value)
+    ? value
+    : value === 'any' || !value
+      ? []
+      : [value]
+  const noneSelected = selected.length === 0
+
+  const toggle = (id: AccommodationPref): void => {
+    if (selected.includes(id)) {
+      const next = selected.filter((x) => x !== id)
+      onChange(next.length === 0 ? 'any' : next)
+    } else {
+      onChange([...selected, id])
+    }
+  }
+  const clear = () => onChange('any')
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+          Accommodation preference
+        </span>
+        <button
+          type="button"
+          onClick={clear}
+          className={cn(
+            'text-[11px] transition-colors',
+            noneSelected ? 'text-accent' : 'text-text-tertiary hover:text-text-secondary'
+          )}
+        >
+          {noneSelected ? 'Any (selected)' : 'Any'}
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {ACCOMMODATION_MULTI.map((o) => {
+          const active = selected.includes(o.value as AccommodationPref)
+          return (
+            <button
+              key={o.value}
+              type="button"
+              onClick={() => toggle(o.value as AccommodationPref)}
+              className={cn(
+                'px-3 py-1.5 rounded-full border text-[12px] font-medium transition-colors duration-150',
+                active
+                  ? 'border-accent bg-accent-muted text-accent'
+                  : 'border-border-default text-text-secondary hover:border-border-strong hover:text-text-primary'
+              )}
+            >
+              {o.label}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

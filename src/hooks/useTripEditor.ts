@@ -91,6 +91,53 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       days: p.days.map((d) => (d.id === dayId ? { ...next, id: d.id } : d)),
     }))
 
+  // Add a blank day after the given index (or at the end if -1)
+  const addDay = (afterIndex = -1) =>
+    apply((p) => {
+      const lastDate = p.days[p.days.length - 1]?.date ?? new Date().toISOString().slice(0, 10)
+      const nextDate = new Date(new Date(lastDate).getTime() + 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10)
+      const location =
+        afterIndex >= 0
+          ? p.days[afterIndex]?.location ?? ''
+          : p.days[p.days.length - 1]?.location ?? ''
+      const newDay: DayPlan = {
+        id: `day-${crypto.randomUUID()}`,
+        dayNumber: p.days.length + 1,
+        date: nextDate,
+        title: 'Free day',
+        location,
+        blocks: [],
+        costs: [],
+        dailyTotal: { min: 0, max: 0 },
+        hotels: [],
+      }
+      const days = [...p.days]
+      const insertAt = afterIndex < 0 ? days.length : afterIndex + 1
+      days.splice(insertAt, 0, newDay)
+      const renumbered = days.map((d, i) => ({ ...d, dayNumber: i + 1 }))
+      return { ...p, days: renumbered }
+    })
+
+  const deleteDay = (dayId: string) =>
+    apply((p) => {
+      const remaining = p.days.filter((d) => d.id !== dayId)
+      const renumbered = remaining.map((d, i) => ({ ...d, dayNumber: i + 1 }))
+      return { ...p, days: renumbered }
+    })
+
+  // Shift every day's date by N days (can be negative).
+  const shiftTripDates = (deltaDays: number) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        const date = new Date(d.date)
+        date.setDate(date.getDate() + deltaDays)
+        return { ...d, date: date.toISOString().slice(0, 10) }
+      }),
+    }))
+
   // === Blocks ===
   const addBlock = (dayId: string, block: Omit<TimeBlock, 'id'>) =>
     apply((p) => ({
@@ -241,6 +288,9 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     setListField,
     updateDay,
     replaceDay,
+    addDay,
+    deleteDay,
+    shiftTripDates,
     addBlock,
     updateBlock,
     toggleBlockCompleted,

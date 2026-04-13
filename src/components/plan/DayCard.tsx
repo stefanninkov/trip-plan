@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ChevronDown, Sparkles, Loader2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { ChevronDown, Sparkles, Loader2, Trash2 } from 'lucide-react'
 import type { DayPlan } from '@/types/trip-plan'
 import type { TripInputs } from '@/types/wizard'
 import type { TripEditor } from '@/hooks/useTripEditor'
@@ -11,13 +11,13 @@ import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
 import { EditableText } from '@/components/shared/EditableText'
 import { CATEGORIES } from '@/constants/categories'
 import { TRAVEL_MODES } from '@/constants/travel-modes'
-import { formatDate } from '@/utils/date-helpers'
+import { formatDate, relativeDay } from '@/utils/date-helpers'
 import { BlockList } from './BlockEditor'
 import { CostList } from './CostEditor'
 import { HotelList } from './HotelEditor'
 import { BlockMoreInfo } from './BlockMoreInfo'
 import { BlockCheckbox } from './BlockCheckbox'
-import { relativeDay } from '@/utils/date-helpers'
+import { DayWeather } from './DayWeather'
 
 export interface DayCardProps {
   day: DayPlan
@@ -45,23 +45,24 @@ export function DayCard({
   onToggleCompleted,
 }: DayCardProps) {
   const [open, setOpen] = useState(defaultOpen)
+  const [regenOpen, setRegenOpen] = useState(false)
+  const [feedback, setFeedback] = useState('')
   const readOnly = !editor
   const { loading: regenerating, run: runRegenerate } = useRegenerateDay()
   const addToast = useUiStore((s) => s.addToast)
 
-  const handleRegenerate = async () => {
+  const handleRegenerate = async (): Promise<void> => {
     if (!editor || !tripInputs) return
-    const ok = window.confirm(
-      `Replace Day ${day.dayNumber} with a fresh AI-generated version? This overwrites your current blocks, costs and hotels for this day.`
-    )
-    if (!ok) return
     const next = await runRegenerate({
       inputs: tripInputs,
       day: { id: day.id, dayNumber: day.dayNumber, date: day.date, location: day.location },
+      feedback: feedback.trim() || undefined,
     })
     if (next) {
       editor.replaceDay(day.id, next)
       addToast('success', `Day ${day.dayNumber} regenerated`)
+      setRegenOpen(false)
+      setFeedback('')
     } else {
       addToast('error', 'Could not regenerate that day')
     }
@@ -71,11 +72,14 @@ export function DayCard({
   const allDone = totalCount > 0 && completedCount === totalCount
   const rel = relativeDay(day.date)
 
+  const ref = useRef<HTMLDivElement>(null)
   // The print CSS forces everything visible regardless of local open state.
   return (
     <div
+      ref={ref}
+      id={`day-${day.dayNumber}`}
       className={cn(
-        'bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card',
+        'bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card scroll-mt-24',
         rel === 'past' && 'opacity-70',
         rel === 'today' && 'ring-1 ring-accent'
       )}
@@ -132,6 +136,9 @@ export function DayCard({
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <div className="hidden md:block">
+            <DayWeather location={day.location} date={day.date} />
+          </div>
           <CurrencyDisplay
             min={day.dailyTotal.min}
             max={day.dailyTotal.max}
@@ -195,19 +202,56 @@ export function DayCard({
                 </div>
               </div>
               {tripInputs && (
-                <Button
-                  variant="secondary"
-                  onClick={handleRegenerate}
-                  disabled={regenerating}
-                  className="self-start flex items-center gap-1.5"
-                >
-                  {regenerating ? (
-                    <Loader2 size={14} className="animate-spin" />
+                <div className="flex flex-col gap-2 self-start w-full md:max-w-lg">
+                  {!regenOpen ? (
+                    <Button
+                      variant="secondary"
+                      onClick={() => setRegenOpen(true)}
+                      disabled={regenerating}
+                      className="flex items-center gap-1.5 self-start"
+                    >
+                      <Sparkles size={14} />
+                      Regenerate this day with AI
+                    </Button>
                   ) : (
-                    <Sparkles size={14} />
+                    <div className="flex flex-col gap-2 bg-bg-secondary border border-border-default rounded-lg p-3">
+                      <label className="text-[12px] font-medium text-text-secondary">
+                        Any feedback for Claude? (optional)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={feedback}
+                        onChange={(e) => setFeedback(e.target.value)}
+                        placeholder="e.g. make it more relaxed, less museums, include more local food"
+                        className="bg-bg-secondary text-text-primary border border-border-default rounded-md px-3 py-2 text-[13px] focus:outline-none focus:border-accent resize-y"
+                      />
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setRegenOpen(false)
+                            setFeedback('')
+                          }}
+                          disabled={regenerating}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleRegenerate}
+                          disabled={regenerating}
+                          className="flex items-center gap-1.5"
+                        >
+                          {regenerating ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <Sparkles size={14} />
+                          )}
+                          {regenerating ? 'Regenerating\u2026' : 'Regenerate'}
+                        </Button>
+                      </div>
+                    </div>
                   )}
-                  {regenerating ? 'Regenerating\u2026' : 'Regenerate this day with AI'}
-                </Button>
+                </div>
               )}
             </div>
           )}
@@ -256,6 +300,27 @@ export function DayCard({
 
           {readOnly && day.blocks.length === 0 && day.costs.length === 0 && (
             <p className="text-[13px] text-text-tertiary italic">Nothing scheduled yet.</p>
+          )}
+
+          {editor && (
+            <div className="flex justify-between pt-3 border-t border-border-subtle">
+              <button
+                type="button"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Delete Day ${day.dayNumber}? This removes all its blocks, costs and hotels.`
+                    )
+                  ) {
+                    editor.deleteDay(day.id)
+                  }
+                }}
+                className="flex items-center gap-1.5 text-[12px] text-text-tertiary hover:text-error transition-colors"
+              >
+                <Trash2 size={12} />
+                Delete day
+              </button>
+            </div>
           )}
         </div>
     </div>
