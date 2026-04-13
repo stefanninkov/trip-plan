@@ -1,6 +1,6 @@
 import { MapPin } from 'lucide-react'
 import { useWizardStore } from '@/store/wizard-store'
-import { Input } from '@/components/shared/Input'
+import { CityAutocomplete } from '@/components/shared/CityAutocomplete'
 
 export function StepOrigin() {
   const origin = useWizardStore((s) => s.inputs.origin)
@@ -15,17 +15,15 @@ export function StepOrigin() {
           Where are you starting from?
         </h2>
         <p className="text-text-secondary">
-          The city or airport where your trip begins. Example:{' '}
-          <span className="text-text-primary">Belgrade</span>,{' '}
-          <span className="text-text-primary">BEG</span>, or{' '}
-          <span className="text-text-primary">Belgrade, Serbia</span>.
+          Search for your departure city. Pick a result, or type freely and continue.
         </p>
       </div>
-      <Input
+      <CityAutocomplete
         name="origin"
-        placeholder="e.g. Belgrade, Serbia"
         value={origin}
-        onChange={(e) => setField('origin', e.target.value)}
+        onChange={(v) => setField('origin', v)}
+        onSelect={(s) => setField('origin', s.displayName)}
+        placeholder="e.g. Belgrade, Serbia"
         autoFocus
       />
     </div>

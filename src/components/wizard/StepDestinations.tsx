@@ -1,6 +1,6 @@
 import { Map, Plus, Trash2 } from 'lucide-react'
 import { useWizardStore } from '@/store/wizard-store'
-import { Input } from '@/components/shared/Input'
+import { CityAutocomplete } from '@/components/shared/CityAutocomplete'
 import { NumberStepper } from '@/components/shared/NumberStepper'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
@@ -29,11 +29,15 @@ export function StepDestinations() {
         {destinations.map((dest, index) => (
           <Card key={index} className="flex flex-col gap-3 md:flex-row md:items-end">
             <div className="flex-1 min-w-0">
-              <Input
-                label={`City ${index + 1}`}
-                placeholder="e.g. Rome, Italy"
+              <CityAutocomplete
+                name={`destination-${index}`}
+                label={`Stop ${index + 1}`}
                 value={dest.city}
-                onChange={(e) => updateDestination(index, { city: e.target.value })}
+                onChange={(v) => updateDestination(index, { city: v })}
+                onSelect={(s) =>
+                  updateDestination(index, { city: s.displayName, country: s.country })
+                }
+                placeholder="e.g. Rome, Italy"
               />
             </div>
             <div className="flex items-end gap-2">
@@ -48,7 +52,7 @@ export function StepDestinations() {
                 <button
                   type="button"
                   onClick={() => removeDestination(index)}
-                  aria-label={`Remove ${dest.city || 'destination'}`}
+                  aria-label={`Remove stop ${index + 1}`}
                   className="w-9 h-9 rounded-lg flex items-center justify-center text-text-tertiary hover:bg-bg-elevated hover:text-error transition-colors"
                 >
                   <Trash2 size={16} />
