@@ -25,16 +25,18 @@ import type { TripEditor } from '@/hooks/useTripEditor'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { EditableText } from '@/components/shared/EditableText'
-import { TipBlock } from './TipBlock'
+import { BlockMoreInfo } from './BlockMoreInfo'
 
 interface Props {
   dayId: string
   blocks: TimeBlock[]
   editor: TripEditor
   allDays?: { id: string; dayNumber: number; title: string }[]
+  location?: string
+  dayTitle?: string
 }
 
-export function BlockList({ dayId, blocks, editor, allDays }: Props) {
+export function BlockList({ dayId, blocks, editor, allDays, location, dayTitle }: Props) {
   const [adding, setAdding] = useState(false)
 
   const sensors = useSensors(
@@ -64,6 +66,8 @@ export function BlockList({ dayId, blocks, editor, allDays }: Props) {
                 dayId={dayId}
                 editor={editor}
                 allDays={allDays}
+                location={location ?? ''}
+                dayTitle={dayTitle ?? ''}
               />
             ))}
           </div>
@@ -98,11 +102,15 @@ function SortableBlock({
   dayId,
   editor,
   allDays,
+  location,
+  dayTitle,
 }: {
   block: TimeBlock
   dayId: string
   editor: TripEditor
   allDays?: { id: string; dayNumber: number; title: string }[]
+  location: string
+  dayTitle: string
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: block.id,
@@ -177,10 +185,13 @@ function SortableBlock({
           current={block.travelMode ?? null}
           onChange={(mode) => editor.updateBlock(dayId, block.id, { travelMode: mode })}
         />
-        {block.whyPicked && <TipBlock kind="why" text={block.whyPicked} />}
-        {block.historicalContext && <TipBlock kind="history" text={block.historicalContext} />}
-        {block.tip && <TipBlock kind="tip" text={block.tip} />}
-        {block.warning && <TipBlock kind="warning" text={block.warning} />}
+        <BlockMoreInfo
+          block={block}
+          location={location}
+          dayTitle={dayTitle}
+          editor={editor}
+          dayId={dayId}
+        />
       </div>
     </div>
   )

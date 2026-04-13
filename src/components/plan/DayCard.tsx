@@ -15,7 +15,7 @@ import { formatDate } from '@/utils/date-helpers'
 import { BlockList } from './BlockEditor'
 import { CostList } from './CostEditor'
 import { HotelList } from './HotelEditor'
-import { TipBlock } from './TipBlock'
+import { BlockMoreInfo } from './BlockMoreInfo'
 
 export interface DayCardProps {
   day: DayPlan
@@ -164,9 +164,15 @@ export function DayCard({
               blocks={day.blocks}
               editor={editor}
               allDays={allDays}
+              location={day.location}
+              dayTitle={day.title}
             />
           ) : (
-            <ReadOnlyBlocks blocks={day.blocks} />
+            <ReadOnlyBlocks
+              blocks={day.blocks}
+              location={day.location}
+              dayTitle={day.title}
+            />
           )}
 
           {editor ? (
@@ -199,7 +205,15 @@ export function DayCard({
   )
 }
 
-function ReadOnlyBlocks({ blocks }: { blocks: DayPlan['blocks'] }) {
+function ReadOnlyBlocks({
+  blocks,
+  location,
+  dayTitle,
+}: {
+  blocks: DayPlan['blocks']
+  location: string
+  dayTitle: string
+}) {
   if (blocks.length === 0) return null
   return (
     <div className="flex flex-col gap-3">
@@ -221,10 +235,7 @@ function ReadOnlyBlocks({ blocks }: { blocks: DayPlan['blocks'] }) {
             </div>
             <div className="text-[14px] font-semibold">{b.title}</div>
             <p className="text-[13px] text-text-secondary leading-[20px]">{b.description}</p>
-            {b.whyPicked && <TipBlock kind="why" text={b.whyPicked} />}
-            {b.historicalContext && <TipBlock kind="history" text={b.historicalContext} />}
-            {b.tip && <TipBlock kind="tip" text={b.tip} />}
-            {b.warning && <TipBlock kind="warning" text={b.warning} />}
+            <BlockMoreInfo block={b} location={location} dayTitle={dayTitle} />
           </div>
         )
       })}
