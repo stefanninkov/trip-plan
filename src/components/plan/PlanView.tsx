@@ -7,6 +7,7 @@ import { PlanHeader } from './PlanHeader'
 import { PracticalInfo } from './PracticalInfo'
 import { DayCard } from './DayCard'
 import { GrandTotal } from './GrandTotal'
+import { SearchPanel } from '@/components/search/SearchPanel'
 
 export interface PlanViewProps {
   plan: TripPlan
@@ -61,6 +62,7 @@ export function PlanView({ plan, tripId }: PlanViewProps) {
         ))}
       </section>
       <GrandTotal plan={current} />
+      <SearchPanel />
     </div>
   )
 }

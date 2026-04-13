@@ -5,6 +5,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { SYSTEM_PROMPT } from './prompts/system-prompt.js'
 import { buildUserMessage } from './prompts/user-prompt.js'
 
+export { searchFlights, searchHotels, searchPlaces, searchWeb } from './search.js'
+
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 
 const ANTHROPIC_API_KEY = defineSecret('ANTHROPIC_API_KEY')
