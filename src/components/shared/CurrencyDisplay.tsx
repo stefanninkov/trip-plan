@@ -6,13 +6,19 @@ export interface CurrencyDisplayProps {
   min: number
   max?: number
   currency: string
-  /** If set and different from `currency`, the home currency is shown as the PRIMARY line and the local currency as the small secondary line. */
+  /**
+   * Explicit primary display currency. If omitted, defaults to EUR so that
+   * every price in the app shows in Euro first and the local currency
+   * underneath, regardless of what the user picked for home currency.
+   */
   homeCurrency?: string
   /** Optional override (legacy). If omitted, conversion uses the session-cached FX rates. */
   homeRate?: number
   className?: string
   size?: 'sm' | 'md' | 'lg'
 }
+
+const FORCED_PRIMARY_CURRENCY = 'EUR'
 
 const AMOUNT_CLASSES = {
   sm: 'text-[14px] leading-[18px] font-cost font-semibold tracking-[-0.1px]',
@@ -86,17 +92,22 @@ export function CurrencyDisplay({
   className,
   size = 'md',
 }: CurrencyDisplayProps) {
+  // Product decision: always display EUR as the primary currency so prices
+  // are immediately legible. Callers can still override by passing an
+  // explicit homeCurrency prop, but by default we force EUR.
+  const primaryCurrency = homeCurrency ?? FORCED_PRIMARY_CURRENCY
+
   // Pick conversion rate: explicit homeRate prop -> session FX cache.
   let effectiveRate: number | null = null
-  if (homeCurrency && homeCurrency !== currency) {
+  if (primaryCurrency !== currency) {
     if (typeof homeRate === 'number') {
       effectiveRate = homeRate
     } else {
-      effectiveRate = convertSync(1, currency, homeCurrency)
+      effectiveRate = convertSync(1, currency, primaryCurrency)
     }
   }
 
-  const homeAvailable = Boolean(homeCurrency && effectiveRate && homeCurrency !== currency)
+  const homeAvailable = Boolean(effectiveRate && primaryCurrency !== currency)
 
   // When the user has a home currency that differs from the local one, show
   // the home currency as the primary (big) line and keep the local price as
@@ -108,7 +119,7 @@ export function CurrencyDisplay({
           <AmountRow
             min={min * effectiveRate}
             max={max !== undefined ? max * effectiveRate : undefined}
-            currency={homeCurrency!}
+            currency={primaryCurrency}
             amountClass={AMOUNT_CLASSES[size]}
             symbolClass={SYMBOL_CLASSES[size]}
           />

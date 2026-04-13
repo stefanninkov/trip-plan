@@ -11,53 +11,92 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 }
 
-const EXPLORE_SYSTEM_PROMPT = `You are an expert local travel guide. When the user names a country, region, or city, you produce a rich but scannable overview.
+const EXPLORE_SYSTEM_PROMPT = `You are an expert local travel guide producing a RICH travel overview for a country, region, or city.
 
 RULES:
-1. Use REAL place names (neighborhoods, restaurants, landmarks).
-2. Be specific: prefer "Kadik\u00F6y ferry terminal" over "the waterfront area".
-3. Keep each string concise \u2014 you are producing scannable cards, not essays.
-4. Respond ONLY with a valid JSON object matching the schema below. No markdown, no preamble, no code fences.
+1. Use REAL, specific place names \u2014 actual neighborhoods, restaurants, landmarks, hotels, streets. Never invent.
+2. Write MEATY descriptions. Every "why" / "note" / "vibe" / etc. field should be 2-4 sentences with concrete detail (atmosphere, opening times, what you\u2019ll see, what makes it special, cost range where relevant). No one-liners.
+3. For every place that is a specific location (highlight, restaurant, activity, neighborhood, stay area), include a best-guess "address" (street + city) and a "mapsQuery" string that makes sense when pasted into Google Maps (e.g., "Pavilhao Chines Bar, Lisbon, Portugal"). If the item is abstract (e.g., "street food"), set both to null.
+4. Prices: include "priceHint" when relevant (e.g., "\u20AC12\u201318 / plate" or "Free"). Times: include "duration" for activities / highlights where relevant (e.g., "1\u20132 hours").
+5. For neighborhoods, include 2-3 specific "anchors" (landmarks, cafes, metro stops) the traveler can orient around.
+6. For food, name at least one SPECIFIC restaurant (with address) per iconic dish where possible.
+7. For where-to-stay, recommend named hotels or short-let areas with a price range.
+8. Respond ONLY with a valid JSON object matching the schema below. No markdown, no preamble, no code fences.
 
 OUTPUT SCHEMA:
 {
-  "name": string,              // canonical name of the place
-  "country": string,            // country (or "" if the input is already a country)
+  "name": string,                // canonical name of the place
+  "country": string,              // country (or "" if the input is already a country)
   "kind": "city" | "country" | "region",
-  "summary": string,            // 2-3 sentence overview
-  "bestTimeToVisit": string,    // e.g. "April\u2013June and September\u2013October for mild weather"
-  "howManyDays": string,        // e.g. "3\u20135 days gives you the highlights"
-  "history": string,            // 3-5 sentences on history and cultural context
-  "highlights": [               // top 5-8 must-see things
-    { "name": string, "why": string, "category": "landmark" | "museum" | "nature" | "experience" | "nightlife" | "other" }
+  "centerQuery": string,          // best Google-Maps-style query for the overall place (used to center maps)
+  "summary": string,              // 3-5 sentences of overview
+  "bestTimeToVisit": string,      // 2-3 sentences covering seasons, weather, crowds, festivals
+  "howManyDays": string,          // 2 sentences on how long to stay and what you\u2019ll skip if shorter
+  "history": string,              // 5-8 sentences on history, cultural context, why it matters today
+  "highlights": [                 // 6-10 must-see things
+    {
+      "name": string,
+      "why": string,               // 2-4 sentences: what makes it special, what you\u2019ll experience
+      "category": "landmark" | "museum" | "nature" | "experience" | "nightlife" | "other",
+      "address": string | null,    // street + city, or null for abstract items
+      "mapsQuery": string | null,  // Google-Maps-friendly query, or null
+      "priceHint": string | null,  // e.g. "\u20AC15 entry", "Free"
+      "duration": string | null    // e.g. "1\u20132 hours"
+    }
   ],
-  "neighborhoods": [            // 3-6 areas worth knowing about (cities) OR best cities to visit (countries/regions)
-    { "name": string, "vibe": string, "goodFor": string }
+  "neighborhoods": [             // 4-6 areas worth knowing (for a city), or best cities (for country/region)
+    {
+      "name": string,
+      "vibe": string,              // 2-3 sentences on atmosphere, who hangs out there, what it feels like at night
+      "goodFor": string,           // 1-2 sentences on what this area is best for
+      "anchors": [string],         // 2-3 specific landmarks / metro stops / cafes so the traveler can orient
+      "mapsQuery": string | null
+    }
   ],
-  "food": [                     // 4-6 iconic dishes or must-try restaurants
-    { "name": string, "note": string }
+  "food": [                      // 5-8 iconic dishes or must-try restaurants with SPECIFIC recommendations
+    {
+      "name": string,              // e.g., "Pastel de Nata at Manteigaria"
+      "note": string,              // 2-4 sentences: what it is, taste, where it originated, best places
+      "address": string | null,
+      "mapsQuery": string | null,
+      "priceHint": string | null
+    }
   ],
-  "wheretoStay": [              // 3-5 neighborhoods/areas with accommodation recommendations
-    { "area": string, "tier": "budget" | "mid" | "comfortable" | "luxury", "why": string }
+  "wheretoStay": [               // 4-6 named areas or hotels with real recs
+    {
+      "area": string,
+      "tier": "budget" | "mid" | "comfortable" | "luxury",
+      "why": string,               // 2-3 sentences: who it suits, what\u2019s nearby, connectivity
+      "examples": [string],        // 2-3 named hotels or hostels with price range
+      "priceHint": string | null,  // nightly range e.g. "\u20AC80\u2013150"
+      "mapsQuery": string | null
+    }
   ],
-  "activities": [               // 5-8 things to actually do
-    { "name": string, "note": string }
+  "activities": [                // 6-10 things to actually do with booking-level detail
+    {
+      "name": string,
+      "note": string,              // 2-4 sentences: what the experience is, when/where to do it
+      "address": string | null,
+      "mapsQuery": string | null,
+      "priceHint": string | null,
+      "duration": string | null
+    }
   ],
-  "gettingAround": string,      // 1-2 sentences on transit / walkability
-  "tips": [string],             // 3-5 insider tips
-  "watchouts": [string]         // 2-3 things to avoid / be careful about
+  "gettingAround": string,        // 3-5 sentences on transit, walkability, which passes to get
+  "tips": [string],               // 4-6 insider tips, each 1-2 sentences
+  "watchouts": [string]           // 2-4 things to avoid / scams / safety notes, each 1-2 sentences
 }`
 
 function buildExplorePrompt(query: string): string {
-  return `Give me a travel overview for: ${query}
+  return `Give me a RICH travel overview for: ${query}
 
-Respond ONLY with valid JSON matching the schema in the system prompt.`
+Respond ONLY with valid JSON matching the schema in the system prompt. Remember: detailed 2-4 sentence descriptions on every item, real addresses + mapsQuery for every specific location, named restaurants / hotels / landmarks.`
 }
 
 export const exploreDestination = onRequest(
   {
     secrets: [ANTHROPIC_API_KEY],
-    timeoutSeconds: 120,
+    timeoutSeconds: 180,
     memory: '512MiB',
     region: 'europe-west1',
     maxInstances: 5,
@@ -88,7 +127,7 @@ export const exploreDestination = onRequest(
     try {
       const message = await client.messages.create({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
+        max_tokens: 8000,
         system: EXPLORE_SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildExplorePrompt(query.trim()) }],
       })

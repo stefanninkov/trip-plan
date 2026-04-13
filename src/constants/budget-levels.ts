@@ -22,4 +22,9 @@ export const BUDGET_LEVELS: BudgetLevelConfig[] = [
     label: 'Comfortable',
     description: '4-star hotels, wine with dinner, taxis when convenient',
   },
+  {
+    id: 'luxury',
+    label: 'Luxury',
+    description: '5-star hotels, fine dining, private tours, business class',
+  },
 ]

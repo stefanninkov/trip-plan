@@ -1,6 +1,6 @@
 import { CalendarDays } from 'lucide-react'
 import { useWizardStore } from '@/store/wizard-store'
-import { Input } from '@/components/shared/Input'
+import { DateRangePicker } from '@/components/shared/DateRangePicker'
 import { daysBetween, formatDateRange } from '@/utils/date-helpers'
 import type { Destination } from '@/types/wizard'
 import type { TravelMode } from '@/types/trip-plan'
@@ -20,25 +20,22 @@ export function StepDates() {
       ? daysBetween(firstStart, lastEnd) + 1
       : 0
 
-  const setDate = (index: number, field: 'startDate' | 'endDate', value: string) => {
-    const current = destinations[index]
-    const patch: Partial<Destination> = { [field]: value }
-    // Auto-calculate nights when both dates are set
-    const nextStart = field === 'startDate' ? value : current.startDate
-    const nextEnd = field === 'endDate' ? value : current.endDate
-    if (nextStart && nextEnd) {
-      const n = daysBetween(nextStart, nextEnd)
+  const setRange = (index: number, start: string, end: string) => {
+    const patch: Partial<Destination> = { startDate: start || undefined, endDate: end || undefined }
+    if (start && end) {
+      const n = daysBetween(start, end)
       if (n > 0) patch.nights = n
+    } else {
+      patch.nights = 0
     }
     updateDestination(index, patch)
 
-    // Auto-chain: if user sets a start date on a later stop that leaves a gap,
-    // or sets an end date and the next stop has no start yet, prefill the next
-    // stop's start to this stop's end so ranges stay contiguous by default.
-    if (field === 'endDate' && value) {
+    // Auto-chain: setting an end date populates the next stop's arrive if
+    // empty, so ranges stay contiguous by default.
+    if (end) {
       const next = destinations[index + 1]
       if (next && !next.startDate) {
-        updateDestination(index + 1, { startDate: value })
+        updateDestination(index + 1, { startDate: end })
       }
     }
   }
@@ -67,8 +64,6 @@ export function StepDates() {
             d.startDate &&
             d.endDate &&
             new Date(d.endDate).getTime() <= new Date(d.startDate).getTime()
-          const nights =
-            d.startDate && d.endDate && !invalid ? daysBetween(d.startDate, d.endDate) : 0
           const fromLabel =
             i === 0 ? origin.trim() || 'your origin' : destinations[i - 1].city || `Stop ${i}`
           const toLabel = d.city || `Stop ${i + 1}`
@@ -85,30 +80,14 @@ export function StepDates() {
                   {d.city || `Stop ${i + 1}`}
                 </span>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_120px] gap-3">
-                <Input
-                  label="Arrive"
-                  type="date"
-                  value={d.startDate ?? ''}
-                  onChange={(e) => setDate(i, 'startDate', e.target.value)}
-                />
-                <Input
-                  label="Leave"
-                  type="date"
-                  value={d.endDate ?? ''}
-                  min={d.startDate || undefined}
-                  onChange={(e) => setDate(i, 'endDate', e.target.value)}
-                  error={invalid ? 'Leave must be after arrive' : undefined}
-                />
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
-                    Nights
-                  </span>
-                  <div className="h-[42px] rounded-lg bg-bg-secondary border border-border-default flex items-center justify-center font-cost font-semibold">
-                    {nights || '\u2014'}
-                  </div>
-                </div>
-              </div>
+              <DateRangePicker
+                startDate={d.startDate ?? ''}
+                endDate={d.endDate ?? ''}
+                onChange={(s, e) => setRange(i, s, e)}
+                minDate={i === 0 ? undefined : destinations[i - 1].startDate}
+                title={`Stop ${i + 1}: ${toLabel}`}
+                error={invalid ? 'Leave must be after arrive' : undefined}
+              />
               <div className="flex flex-col gap-1.5">
                 <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
                   How you travel from {fromLabel} to {toLabel}
