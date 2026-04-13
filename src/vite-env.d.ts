@@ -11,6 +11,7 @@ interface ImportMetaEnv {
   readonly VITE_FIREBASE_MEASUREMENT_ID: string
   readonly VITE_FUNCTIONS_BASE_URL: string
   readonly VITE_GOOGLE_CLIENT_ID: string
+  readonly VITE_MAPBOX_TOKEN: string
 }
 
 interface ImportMeta {

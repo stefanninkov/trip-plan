@@ -65,6 +65,7 @@ interface WizardStoreState {
   currentStep: WizardStep
   inputs: TripInputs
   setField: <K extends keyof TripInputs>(key: K, value: TripInputs[K]) => void
+  setInputs: (inputs: TripInputs) => void
   addDestination: () => void
   updateDestination: (index: number, patch: Partial<Destination>) => void
   removeDestination: (index: number) => void
@@ -81,6 +82,8 @@ export const useWizardStore = create<WizardStoreState>((set, get) => ({
 
   setField: (key, value) =>
     set((s) => ({ inputs: { ...s.inputs, [key]: value } })),
+
+  setInputs: (inputs) => set({ inputs, currentStep: 'origin' }),
 
   addDestination: () =>
     set((s) => ({

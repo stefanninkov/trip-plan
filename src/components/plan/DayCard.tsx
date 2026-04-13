@@ -103,7 +103,7 @@ export function DayCard({
       >
           {editor && (
             <div className="flex flex-col gap-3">
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_160px] gap-3">
                 <div>
                   <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
                     Title
@@ -126,6 +126,17 @@ export function DayCard({
                     value={day.location}
                     onCommit={(v) => editor.updateDay(day.id, { location: v })}
                     placeholder="City or area"
+                  />
+                </div>
+                <div>
+                  <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
+                    Date
+                  </span>
+                  <input
+                    type="date"
+                    value={day.date}
+                    onChange={(e) => editor.updateDay(day.id, { date: e.target.value })}
+                    className="w-full bg-bg-secondary text-text-primary border border-border-default rounded-md px-2 py-1.5 text-[13px] focus:outline-none focus:border-accent"
                   />
                 </div>
               </div>
