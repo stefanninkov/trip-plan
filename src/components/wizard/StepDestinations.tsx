@@ -3,6 +3,8 @@ import { useWizardStore } from '@/store/wizard-store'
 import { CityAutocomplete } from '@/components/shared/CityAutocomplete'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
+import { RecentDestinationChips } from '@/components/shared/RecentDestinationChips'
+import { rememberDestination } from '@/utils/recent-destinations'
 
 export function StepDestinations() {
   const destinations = useWizardStore((s) => s.inputs.destinations)
@@ -30,7 +32,7 @@ export function StepDestinations() {
           return (
             <Card key={index} className="flex flex-col gap-3">
               <div className="flex flex-col gap-3 md:flex-row md:items-end">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
                   <CityAutocomplete
                     name={`destination-${index}`}
                     label={`Stop ${index + 1}`}
@@ -39,10 +41,31 @@ export function StepDestinations() {
                       updateDestination(index, { city: v })
                       if (dest.country) updateDestination(index, { country: '' })
                     }}
-                    onSelect={(s) =>
+                    onSelect={(s) => {
                       updateDestination(index, { city: s.displayName, country: s.country })
-                    }
+                      rememberDestination({
+                        city: s.city,
+                        country: s.country,
+                        displayName: s.displayName,
+                      })
+                    }}
                     placeholder="e.g. Rome, Italy"
+                  />
+                  <RecentDestinationChips
+                    exclude={destinations
+                      .map((d) => d.city)
+                      .filter((c) => c && c !== dest.city)}
+                    onPick={(r) => {
+                      updateDestination(index, {
+                        city: r.displayName,
+                        country: r.country,
+                      })
+                      rememberDestination({
+                        city: r.city,
+                        country: r.country,
+                        displayName: r.displayName,
+                      })
+                    }}
                   />
                 </div>
                 {destinations.length > 1 && (

@@ -1,6 +1,8 @@
 import { MapPin } from 'lucide-react'
 import { useWizardStore } from '@/store/wizard-store'
 import { CityAutocomplete } from '@/components/shared/CityAutocomplete'
+import { RecentDestinationChips } from '@/components/shared/RecentDestinationChips'
+import { rememberDestination } from '@/utils/recent-destinations'
 
 export function StepOrigin() {
   const origin = useWizardStore((s) => s.inputs.origin)
@@ -30,9 +32,25 @@ export function StepOrigin() {
         onSelect={(s) => {
           setField('origin', s.displayName)
           setField('originCountry', s.country)
+          rememberDestination({
+            city: s.city,
+            country: s.country,
+            displayName: s.displayName,
+          })
         }}
         placeholder="e.g. Belgrade, Serbia"
         autoFocus
+      />
+      <RecentDestinationChips
+        onPick={(r) => {
+          setField('origin', r.displayName)
+          setField('originCountry', r.country)
+          rememberDestination({
+            city: r.city,
+            country: r.country,
+            displayName: r.displayName,
+          })
+        }}
       />
       {!originCountry && origin.length >= 2 && (
         <p className="text-[12px] text-text-tertiary">
