@@ -1,18 +1,29 @@
-import type { ReactElement } from 'react'
+import { lazy, Suspense, type ReactElement } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthListener } from '@/hooks/useAuth'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { AppShell } from '@/components/layout/AppShell'
 import { ToastContainer } from '@/components/shared/Toast'
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary'
+import { CardSkeleton } from '@/components/shared/Skeleton'
 import { ROUTES, ROUTE_PATTERNS } from '@/constants/routes'
-import { HomePage } from '@/pages/HomePage'
-import { NewTripPage } from '@/pages/NewTripPage'
-import { TripPage } from '@/pages/TripPage'
-import { HistoryPage } from '@/pages/HistoryPage'
 import { SignInPage } from '@/pages/SignInPage'
-import { SharedTripPage } from '@/pages/SharedTripPage'
-import { NotFoundPage } from '@/pages/NotFoundPage'
+import { HomePage } from '@/pages/HomePage'
+
+// Lazy-load heavier routes so the initial bundle stays small
+const NewTripPage = lazy(() =>
+  import('@/pages/NewTripPage').then((m) => ({ default: m.NewTripPage }))
+)
+const TripPage = lazy(() => import('@/pages/TripPage').then((m) => ({ default: m.TripPage })))
+const HistoryPage = lazy(() =>
+  import('@/pages/HistoryPage').then((m) => ({ default: m.HistoryPage }))
+)
+const SharedTripPage = lazy(() =>
+  import('@/pages/SharedTripPage').then((m) => ({ default: m.SharedTripPage }))
+)
+const NotFoundPage = lazy(() =>
+  import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage }))
+)
 
 // Vite sets BASE_URL from vite.config.ts `base` ('/trip-plan/' in prod, '/' in dev).
 // BrowserRouter basename must not have a trailing slash.
@@ -22,33 +33,44 @@ function AuthedRoute({ element }: { element: ReactElement }) {
   return <AuthGuard>{element}</AuthGuard>
 }
 
+function LazyFallback() {
+  return (
+    <div className="p-6 max-w-3xl mx-auto flex flex-col gap-3">
+      <CardSkeleton />
+      <CardSkeleton />
+    </div>
+  )
+}
+
 export function App() {
   useAuthListener()
 
   return (
     <ErrorBoundary>
       <BrowserRouter basename={ROUTER_BASENAME}>
-        <Routes>
-          <Route path={ROUTES.signIn} element={<SignInPage />} />
-          <Route path={ROUTE_PATTERNS.shared} element={<SharedTripPage />} />
-          <Route
-            path={ROUTES.home}
-            element={<AuthedRoute element={<AppShell><HomePage /></AppShell>} />}
-          />
-          <Route
-            path={ROUTES.newTrip}
-            element={<AuthedRoute element={<AppShell><NewTripPage /></AppShell>} />}
-          />
-          <Route
-            path={ROUTE_PATTERNS.trip}
-            element={<AuthedRoute element={<AppShell><TripPage /></AppShell>} />}
-          />
-          <Route
-            path={ROUTES.history}
-            element={<AuthedRoute element={<AppShell><HistoryPage /></AppShell>} />}
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        <Suspense fallback={<LazyFallback />}>
+          <Routes>
+            <Route path={ROUTES.signIn} element={<SignInPage />} />
+            <Route path={ROUTE_PATTERNS.shared} element={<SharedTripPage />} />
+            <Route
+              path={ROUTES.home}
+              element={<AuthedRoute element={<AppShell><HomePage /></AppShell>} />}
+            />
+            <Route
+              path={ROUTES.newTrip}
+              element={<AuthedRoute element={<AppShell><NewTripPage /></AppShell>} />}
+            />
+            <Route
+              path={ROUTE_PATTERNS.trip}
+              element={<AuthedRoute element={<AppShell><TripPage /></AppShell>} />}
+            />
+            <Route
+              path={ROUTES.history}
+              element={<AuthedRoute element={<AppShell><HistoryPage /></AppShell>} />}
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
         <ToastContainer />
       </BrowserRouter>
     </ErrorBoundary>

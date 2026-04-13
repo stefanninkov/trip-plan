@@ -1,6 +1,11 @@
 import { initializeApp, type FirebaseApp } from 'firebase/app'
 import { getAuth, type Auth } from 'firebase/auth'
-import { getFirestore, type Firestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  type Firestore,
+} from 'firebase/firestore'
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 import { logger } from '@/utils/logger'
 
@@ -16,7 +21,14 @@ const firebaseConfig = {
 
 export const firebaseApp: FirebaseApp = initializeApp(firebaseConfig)
 export const auth: Auth = getAuth(firebaseApp)
-export const db: Firestore = getFirestore(firebaseApp)
+
+// Firestore with IndexedDB persistence — saved trips are readable offline once
+// they've been loaded at least once while online.
+export const db: Firestore = initializeFirestore(firebaseApp, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+})
 
 export const FUNCTIONS_BASE_URL: string =
   import.meta.env.VITE_FUNCTIONS_BASE_URL ?? ''
@@ -24,11 +36,11 @@ export const FUNCTIONS_BASE_URL: string =
 // Analytics loads only in supported environments (skipped during SSR / dev preview)
 export let analytics: Analytics | null = null
 if (firebaseConfig.measurementId && import.meta.env.PROD) {
-  void isSupported().then((supported) => {
-    if (supported) {
-      analytics = getAnalytics(firebaseApp)
-    }
-  }).catch((err) => {
-    logger.warn('Analytics init failed:', err)
-  })
+  void isSupported()
+    .then((supported) => {
+      if (supported) analytics = getAnalytics(firebaseApp)
+    })
+    .catch((err) => {
+      logger.warn('Analytics init failed:', err)
+    })
 }

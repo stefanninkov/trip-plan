@@ -1,7 +1,7 @@
 # Progress
 
-## Current Phase: Phase B — Trip Wizard Complete
-## Current Task: Ready to start Phase C (AI trip generation via Claude API)
+## Current Phase: Phase H (Polish) complete \u2014 all phases delivered
+## Current Task: Feature-complete v1
 ## Blockers: None
 
 ---
@@ -10,7 +10,13 @@
 - [x] Phase 0 — Q&A with user (2026-04-11)
 - [x] Phase 1 — Project management files (2026-04-11)
 - [x] Phase A — Project setup, Tailwind, Firebase config, auth (2026-04-13)
-- [x] Phase B — Trip wizard with progressive disclosure (2026-04-13)
+- [x] Phase B — Trip wizard with progressive disclosure + city autocomplete (2026-04-13)
+- [x] Phase C — Claude API integration + plan view + inline editing + manual fallback (2026-04-13)
+- [x] Phase D — Drag-and-drop block reordering (2026-04-13)
+- [x] Phase E — SerpAPI web search (flights/hotels/places/web) (2026-04-13)
+- [x] Phase F — Trip history + sidebar recents + delete with confirm (2026-04-13)
+- [x] Phase G — Export (print/PDF, copy text, shareable secret link) (2026-04-13)
+- [x] Phase H — PWA polish: lazy routes, manual chunks, Firestore IndexedDB persistence, print styles, Google Fonts runtime cache (2026-04-13)
   - Zustand wizard-store (5-step flow, TripInputs defaults, per-step validation)
   - WizardProgress (linear bar + clickable step labels)
   - WizardNav (back / next / generate with validation gating)
