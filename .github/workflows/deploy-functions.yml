@@ -1,0 +1,55 @@
+name: Deploy Firebase Functions
+
+on:
+  push:
+    branches:
+      - main
+      - claude/setup-trip-planner-project-EvGks
+    paths:
+      - 'functions/**'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-functions.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install deps
+        working-directory: functions
+        run: npm install
+
+      - name: Build
+        working-directory: functions
+        run: npm run build
+
+      - name: Write service account
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > /tmp/sa.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=/tmp/sa.json" >> $GITHUB_ENV
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIP_PLAN_MAIN }}
+
+      - name: Set Anthropic secret in Firebase
+        run: |
+          echo -n "$ANTHROPIC_API_KEY" | npx firebase-tools@latest functions:secrets:set ANTHROPIC_API_KEY --project trip-plan-main --data-file -
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Deploy functions
+        run: npx firebase-tools@latest deploy --only functions --project trip-plan-main --force --non-interactive
+
+      - name: Cleanup
+        if: always()
+        run: rm -f /tmp/sa.json
