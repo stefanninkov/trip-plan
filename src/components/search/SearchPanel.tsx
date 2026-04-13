@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Loader2, ExternalLink, Star } from 'lucide-react'
+import { Search, Loader2, ExternalLink, Star, Clock, Phone, Globe, MapPin } from 'lucide-react'
 import {
   useFlightSearch,
   useHotelSearch,
@@ -161,36 +161,117 @@ function PlacesTab() {
   const [location, setLocation] = useState('')
   const { results, loading, error, run } = usePlaceSearch()
 
+  const canSearch = query.trim().length > 0 && location.trim().length > 0
+
   return (
     <div className="flex flex-col gap-3">
       <Input placeholder="e.g. best trattorias, rooftop bars" value={query} onChange={(e) => setQuery(e.target.value)} />
-      <Input placeholder="Location (city, neighborhood)" value={location} onChange={(e) => setLocation(e.target.value)} />
+      <Input
+        placeholder="Location (required) \u2014 city, neighborhood, or landmark"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+      />
       <Button
-        disabled={!query || loading}
+        disabled={!canSearch || loading}
         onClick={() => run({ query, location })}
         className="self-start flex items-center gap-1.5"
       >
         {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
         Search places
       </Button>
+      {!canSearch && !loading && (
+        <p className="text-[12px] text-text-tertiary">
+          Add both a query and a location to avoid getting generic results.
+        </p>
+      )}
       {error && <p className="text-[13px] text-error">{error}</p>}
       {results.length > 0 && (
         <ul className="flex flex-col gap-2">
           {results.map((r, i) => (
-            <li key={i} className="p-3 rounded-lg bg-bg-secondary border border-border-subtle flex flex-col gap-1 text-[13px]">
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-semibold truncate">{r.name}</span>
-                {r.rating > 0 && (
-                  <span className="flex items-center gap-1 text-text-tertiary text-[12px]">
-                    <Star size={12} fill="currentColor" /> {r.rating.toFixed(1)}
+            <li
+              key={i}
+              className="p-3 rounded-lg bg-bg-secondary border border-border-subtle flex flex-col gap-1.5 text-[13px]"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex flex-col gap-0.5">
+                  <span className="font-semibold truncate">{r.name}</span>
+                  <div className="text-text-tertiary text-[12px]">
+                    {r.type}
+                    {r.priceLevel && ` \u00B7 ${r.priceLevel}`}
+                  </div>
+                </div>
+                <div className="flex flex-col items-end gap-0.5 shrink-0">
+                  {r.rating > 0 && (
+                    <span className="flex items-center gap-1 text-text-tertiary text-[12px]">
+                      <Star size={12} fill="currentColor" /> {r.rating.toFixed(1)}
+                      {r.reviewCount > 0 && (
+                        <span className="text-text-tertiary">({r.reviewCount})</span>
+                      )}
+                    </span>
+                  )}
+                  {r.openNow !== null && (
+                    <span
+                      className="text-[11px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded"
+                      style={{
+                        color: r.openNow ? 'var(--color-success)' : 'var(--color-error)',
+                        backgroundColor: r.openNow
+                          ? 'var(--cat-activity-muted)'
+                          : '#D9555520',
+                      }}
+                    >
+                      {r.openNow ? 'Open' : 'Closed'}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {r.description && (
+                <p className="text-text-secondary text-[12px] leading-snug">{r.description}</p>
+              )}
+              <div className="flex flex-col gap-1 text-[12px] text-text-tertiary">
+                {r.address && (
+                  <span className="flex items-start gap-1.5">
+                    <MapPin size={12} className="mt-0.5 shrink-0" />
+                    {r.address}
+                  </span>
+                )}
+                {r.hours && (
+                  <span className="flex items-start gap-1.5">
+                    <Clock size={12} className="mt-0.5 shrink-0" />
+                    <span className="truncate">{r.hours}</span>
+                  </span>
+                )}
+                {r.phone && (
+                  <span className="flex items-center gap-1.5">
+                    <Phone size={12} className="shrink-0" />
+                    <a href={`tel:${r.phone}`} className="text-text-secondary hover:text-text-primary">
+                      {r.phone}
+                    </a>
+                  </span>
+                )}
+                {r.website && (
+                  <span className="flex items-center gap-1.5">
+                    <Globe size={12} className="shrink-0" />
+                    <a
+                      href={r.website}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-accent truncate"
+                    >
+                      {new URL(r.website).hostname.replace(/^www\./, '')}
+                    </a>
                   </span>
                 )}
               </div>
-              <div className="text-text-tertiary text-[12px]">
-                {r.type}
-                {r.priceLevel && ` \u00B7 ${r.priceLevel}`}
-              </div>
-              <div className="text-text-tertiary text-[12px]">{r.address}</div>
+              {r.mapsUrl && (
+                <a
+                  href={r.mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-accent text-[12px] flex items-center gap-1 self-start mt-1"
+                >
+                  Open in Google Maps <ExternalLink size={10} />
+                </a>
+              )}
             </li>
           ))}
         </ul>

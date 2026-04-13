@@ -128,10 +128,11 @@ export const searchPlaces = onRequest(
   { secrets: [SERPAPI_KEY], region: 'europe-west1', timeoutSeconds: 60 },
   async (req, res) =>
     handlePost(req, res, async (body) => {
+      const q = `${body.query} ${body.location ?? ''}`.trim()
       const params = {
         engine: 'google_maps',
         api_key: SERPAPI_KEY.value(),
-        q: `${body.query} ${body.location ?? ''}`.trim(),
+        q,
         type: 'search',
         hl: 'en',
       }
@@ -139,15 +140,38 @@ export const searchPlaces = onRequest(
       const local = (data.local_results as unknown[]) ?? []
       const results = local.slice(0, 10).map((p) => {
         const place = p as Record<string, unknown>
+        const hoursInfo = place.hours as Record<string, unknown> | string | undefined
+        const operatingHours = place.operating_hours as Record<string, string> | undefined
+        let hoursStr = ''
+        if (typeof hoursInfo === 'string') hoursStr = hoursInfo
+        else if (operatingHours) {
+          // Build a compact "Mon 09:00-18:00 \u00B7 Tue 09:00-18:00" style string
+          hoursStr = Object.entries(operatingHours)
+            .slice(0, 7)
+            .map(([day, times]) => `${day.slice(0, 3)} ${times}`)
+            .join(' \u00B7 ')
+        }
+        const openNow =
+          typeof hoursInfo === 'object' && hoursInfo !== null && 'open' in hoursInfo
+            ? Boolean((hoursInfo as Record<string, unknown>).open)
+            : null
         return {
           name: (place.title as string) ?? '',
-          type: (place.type as string) ?? '',
+          type: (place.type as string) ?? (((place.types as string[]) ?? [])[0] ?? ''),
           rating: (place.rating as number) ?? 0,
           reviewCount: (place.reviews as number) ?? 0,
           priceLevel: (place.price as string) ?? '',
           address: (place.address as string) ?? '',
           thumbnailUrl: (place.thumbnail as string) ?? '',
-          mapsUrl: (place.place_id_search as string) ?? '',
+          mapsUrl:
+            (place.place_id
+              ? `https://www.google.com/maps/place/?q=place_id:${place.place_id}`
+              : (place.link as string)) ?? '',
+          phone: (place.phone as string) ?? '',
+          website: (place.website as string) ?? '',
+          hours: hoursStr,
+          openNow,
+          description: (place.description as string) ?? (place.snippet as string) ?? '',
         }
       })
       return { results }

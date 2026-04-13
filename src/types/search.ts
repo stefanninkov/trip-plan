@@ -30,6 +30,11 @@ export interface PlaceResult {
   address: string
   thumbnailUrl: string
   mapsUrl: string
+  phone: string
+  website: string
+  hours: string
+  openNow: boolean | null
+  description: string
 }
 
 export interface WebSearchResult {
