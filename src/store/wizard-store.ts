@@ -1,14 +1,36 @@
 import { create } from 'zustand'
 import type { TripInputs, WizardStep, Destination } from '@/types/wizard'
 import { DEFAULT_CURRENCY } from '@/constants/currencies'
-import { toIsoDate } from '@/utils/date-helpers'
+
+/**
+ * Derive the overall trip date range from per-destination dates.
+ * Returns an object with startDate (first stop's arrive) and endDate
+ * (last stop's leave). Either may be '' if the user hasn't filled them in.
+ */
+export function deriveTripDates(inputs: TripInputs): {
+  startDate: string
+  endDate: string
+} {
+  const first = inputs.destinations[0]?.startDate ?? ''
+  const last = inputs.destinations[inputs.destinations.length - 1]?.endDate ?? ''
+  return { startDate: first, endDate: last }
+}
+
+/**
+ * Return a fresh TripInputs object with top-level startDate/endDate synced
+ * from the destinations. Pass this into anywhere that needs the trip range.
+ */
+export function tripInputsWithDerivedDates(inputs: TripInputs): TripInputs {
+  const { startDate, endDate } = deriveTripDates(inputs)
+  return { ...inputs, startDate, endDate }
+}
 
 const DEFAULT_INPUTS: TripInputs = {
   origin: '',
   originCountry: '',
-  destinations: [{ city: '', country: '', nights: 3 }],
-  startDate: toIsoDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
-  endDate: toIsoDate(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)),
+  destinations: [{ city: '', country: '', nights: 0 }],
+  startDate: '',
+  endDate: '',
   travelers: 2,
   budgetLevel: 'mid',
   interests: [],
@@ -40,21 +62,16 @@ export function validateStep(step: WizardStep, inputs: TripInputs): boolean {
       return (
         inputs.destinations.length > 0 &&
         inputs.destinations.every(
-          (d) =>
-            d.city.trim().length >= 2 &&
-            d.country.trim().length > 0 &&
-            d.nights > 0 &&
-            // If explicit dates are set, they must be a valid range
-            (!d.startDate ||
-              !d.endDate ||
-              new Date(d.endDate).getTime() > new Date(d.startDate).getTime())
+          (d) => d.city.trim().length >= 2 && d.country.trim().length > 0
         )
       )
     case 'dates':
       return (
-        Boolean(inputs.startDate) &&
-        Boolean(inputs.endDate) &&
-        new Date(inputs.endDate).getTime() > new Date(inputs.startDate).getTime()
+        inputs.destinations.length > 0 &&
+        inputs.destinations.every((d) => {
+          if (!d.startDate || !d.endDate) return false
+          return new Date(d.endDate).getTime() > new Date(d.startDate).getTime()
+        })
       )
     case 'travelers':
       return inputs.travelers >= 1
@@ -93,7 +110,7 @@ export const useWizardStore = create<WizardStoreState>((set, get) => ({
     set((s) => ({
       inputs: {
         ...s.inputs,
-        destinations: [...s.inputs.destinations, { city: '', country: '', nights: 2 }],
+        destinations: [...s.inputs.destinations, { city: '', country: '', nights: 0 }],
       },
     })),
 

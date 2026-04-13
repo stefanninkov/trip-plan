@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { useWizardStore } from '@/store/wizard-store'
+import { useWizardStore, tripInputsWithDerivedDates } from '@/store/wizard-store'
 import { useTripStore } from '@/store/trip-store'
 import { useUiStore } from '@/store/ui-store'
 import { useGenerateTrip } from '@/hooks/useGenerateTrip'
@@ -23,7 +23,8 @@ export function TripWizard() {
 
   const handleGenerate = async (): Promise<void> => {
     clearError()
-    const result = await generate(inputs)
+    const finalInputs = tripInputsWithDerivedDates(inputs)
+    const result = await generate(finalInputs)
     if (result) {
       setCurrent(result.tripId, result.plan)
       addToast('success', 'Trip plan generated')
@@ -33,7 +34,8 @@ export function TripWizard() {
 
   const handleBuildManually = async (): Promise<void> => {
     clearError()
-    const result = await createBlank(inputs)
+    const finalInputs = tripInputsWithDerivedDates(inputs)
+    const result = await createBlank(finalInputs)
     if (result) {
       setCurrent(result.tripId, result.plan)
       addToast('info', 'Blank trip created. Fill it in as you go.')

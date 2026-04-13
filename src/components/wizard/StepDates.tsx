@@ -2,14 +2,42 @@ import { CalendarDays } from 'lucide-react'
 import { useWizardStore } from '@/store/wizard-store'
 import { Input } from '@/components/shared/Input'
 import { daysBetween, formatDateRange } from '@/utils/date-helpers'
+import type { Destination } from '@/types/wizard'
 
 export function StepDates() {
-  const startDate = useWizardStore((s) => s.inputs.startDate)
-  const endDate = useWizardStore((s) => s.inputs.endDate)
-  const setField = useWizardStore((s) => s.setField)
+  const destinations = useWizardStore((s) => s.inputs.destinations)
+  const updateDestination = useWizardStore((s) => s.updateDestination)
 
-  const days = daysBetween(startDate, endDate)
-  const invalid = startDate && endDate && new Date(endDate).getTime() <= new Date(startDate).getTime()
+  // Trip total is the range from the first stop's start to the last stop's end
+  const firstStart = destinations[0]?.startDate ?? ''
+  const lastEnd = destinations[destinations.length - 1]?.endDate ?? ''
+  const totalDays =
+    firstStart && lastEnd && new Date(lastEnd) > new Date(firstStart)
+      ? daysBetween(firstStart, lastEnd) + 1
+      : 0
+
+  const setDate = (index: number, field: 'startDate' | 'endDate', value: string) => {
+    const current = destinations[index]
+    const patch: Partial<Destination> = { [field]: value }
+    // Auto-calculate nights when both dates are set
+    const nextStart = field === 'startDate' ? value : current.startDate
+    const nextEnd = field === 'endDate' ? value : current.endDate
+    if (nextStart && nextEnd) {
+      const n = daysBetween(nextStart, nextEnd)
+      if (n > 0) patch.nights = n
+    }
+    updateDestination(index, patch)
+
+    // Auto-chain: if user sets a start date on a later stop that leaves a gap,
+    // or sets an end date and the next stop has no start yet, prefill the next
+    // stop's start to this stop's end so ranges stay contiguous by default.
+    if (field === 'endDate' && value) {
+      const next = destinations[index + 1]
+      if (next && !next.startDate) {
+        updateDestination(index + 1, { startDate: value })
+      }
+    }
+  }
 
   return (
     <div className="flex flex-col gap-5">
@@ -17,37 +45,69 @@ export function StepDates() {
         <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">Step 3</p>
         <h2 className="flex items-center gap-2.5">
           <CalendarDays size={22} className="text-accent shrink-0" />
-          When is the trip?
+          When are you in each city?
         </h2>
         <p className="text-text-secondary">
-          Pick your departure and return dates. The AI will build a day-by-day plan inside this
-          window.
+          Set the arrive and leave date for every stop. Nights are auto-calculated. The trip&apos;s
+          overall range is derived from these.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="Start date"
-          type="date"
-          name="startDate"
-          value={startDate}
-          onChange={(e) => setField('startDate', e.target.value)}
-        />
-        <Input
-          label="End date"
-          type="date"
-          name="endDate"
-          value={endDate}
-          onChange={(e) => setField('endDate', e.target.value)}
-          error={invalid ? 'End date must be after start date' : undefined}
-        />
+      <div className="flex flex-col gap-3">
+        {destinations.map((d, i) => {
+          const invalid =
+            d.startDate &&
+            d.endDate &&
+            new Date(d.endDate).getTime() <= new Date(d.startDate).getTime()
+          const nights =
+            d.startDate && d.endDate && !invalid ? daysBetween(d.startDate, d.endDate) : 0
+          return (
+            <div
+              key={i}
+              className="bg-bg-surface border border-border-subtle rounded-xl p-3 lg:p-4 flex flex-col gap-3"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-full bg-accent-muted text-accent font-cost font-bold flex items-center justify-center shrink-0 text-[12px]">
+                  {i + 1}
+                </span>
+                <span className="text-[14px] font-semibold text-text-primary truncate">
+                  {d.city || `Stop ${i + 1}`}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_120px] gap-3">
+                <Input
+                  label="Arrive"
+                  type="date"
+                  value={d.startDate ?? ''}
+                  onChange={(e) => setDate(i, 'startDate', e.target.value)}
+                />
+                <Input
+                  label="Leave"
+                  type="date"
+                  value={d.endDate ?? ''}
+                  min={d.startDate || undefined}
+                  onChange={(e) => setDate(i, 'endDate', e.target.value)}
+                  error={invalid ? 'Leave must be after arrive' : undefined}
+                />
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+                    Nights
+                  </span>
+                  <div className="h-[42px] rounded-lg bg-bg-secondary border border-border-default flex items-center justify-center font-cost font-semibold">
+                    {nights || '\u2014'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
 
-      {!invalid && startDate && endDate && (
+      {totalDays > 0 && (
         <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-[13px] text-text-secondary">
-          <span className="text-text-primary font-semibold">{days} days</span>
+          Trip total: <span className="text-text-primary font-semibold">{totalDays} days</span>
           {' \u00B7 '}
-          {formatDateRange(startDate, endDate)}
+          {formatDateRange(firstStart, lastEnd)}
         </div>
       )}
     </div>
