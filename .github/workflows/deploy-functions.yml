@@ -39,12 +39,6 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIP_PLAN_MAIN }}
 
-      - name: Set Anthropic secret in Firebase
-        run: |
-          echo -n "$ANTHROPIC_API_KEY" | npx firebase-tools@latest functions:secrets:set ANTHROPIC_API_KEY --project trip-plan-main --data-file -
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-
       - name: Deploy functions
         run: npx firebase-tools@latest deploy --only functions --project trip-plan-main --force --non-interactive
 
