@@ -218,35 +218,74 @@
 
 /* === Print styles === */
 @media print {
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+
   html,
   body {
     background: white !important;
     color: black !important;
   }
+
   :root {
     --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f7f7f7;
+    --color-bg-secondary: #ffffff;
     --color-bg-surface: #ffffff;
     --color-bg-elevated: #fafafa;
     --color-text-primary: #111111;
     --color-text-secondary: #333333;
     --color-text-tertiary: #666666;
-    --color-border-subtle: #e1e1e1;
-    --color-border-default: #d0d0d0;
+    --color-border-subtle: #d0d0d0;
+    --color-border-default: #b0b0b0;
   }
+
   header,
   aside,
   nav[aria-label='Primary mobile'] {
     display: none !important;
   }
+
   main {
     padding: 0 !important;
   }
+
+  /* Make page content use the full print width */
+  .max-w-\[960px\] {
+    max-width: 100% !important;
+  }
+
+  /* Every card / section should stay together where possible */
+  .day-card,
+  section,
+  article {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Force all collapsibles open when printing */
+  .day-card > button {
+    pointer-events: none;
+  }
+
+  /* Kill the auto-shim backgrounds so text stays legible */
+  .bg-bg-surface,
+  .bg-bg-secondary,
+  .bg-bg-elevated,
+  .bg-bg-primary {
+    background: #ffffff !important;
+  }
+
+  /* Ensure link colours print */
   a {
     color: #000;
     text-decoration: underline;
   }
-  button {
+
+  /* Hide interactive chrome */
+  button:not(.day-card button),
+  [role='button'] {
     display: none !important;
   }
 }

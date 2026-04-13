@@ -21,14 +21,14 @@ export interface DayCardProps {
 export function DayCard({ day, currency, editor, defaultOpen = false }: DayCardProps) {
   const [open, setOpen] = useState(defaultOpen)
   const readOnly = !editor
-
+  // The print CSS forces everything visible regardless of local open state.
   return (
-    <div className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden">
+    <div className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left"
+        className="w-full flex items-center justify-between gap-3 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-10 h-10 rounded-full bg-accent-muted text-accent font-cost font-bold flex items-center justify-center shrink-0">
@@ -60,8 +60,12 @@ export function DayCard({ day, currency, editor, defaultOpen = false }: DayCardP
         </div>
       </button>
 
-      {open && (
-        <div className="border-t border-border-subtle px-4 lg:px-5 py-5 flex flex-col gap-5">
+      <div
+        className={cn(
+          'border-t border-border-subtle px-4 lg:px-5 py-5 flex flex-col gap-5 print:!block',
+          !open && 'hidden print:!block'
+        )}
+      >
           {editor && (
             <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3">
               <div>
@@ -123,7 +127,6 @@ export function DayCard({ day, currency, editor, defaultOpen = false }: DayCardP
             <p className="text-[13px] text-text-tertiary italic">Nothing scheduled yet.</p>
           )}
         </div>
-      )}
     </div>
   )
 }

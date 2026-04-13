@@ -128,14 +128,25 @@ function ShareContent({
   onClose: () => void
 }) {
   const [working, setWorking] = useState(false)
+  // Track locally so the UI updates instantly after enable/disable without
+  // waiting for the Firestore snapshot to round-trip.
+  const [localShared, setLocalShared] = useState(shared)
+  const [localToken, setLocalToken] = useState<string | null>(shareToken)
   const addToast = useUiStore((s) => s.addToast)
 
-  const url = shareToken ? buildShareUrl(shareToken) : null
+  useEffect(() => {
+    setLocalShared(shared)
+    setLocalToken(shareToken)
+  }, [shared, shareToken])
+
+  const url = localToken ? buildShareUrl(localToken) : null
 
   const enable = async () => {
     setWorking(true)
     try {
-      await enableSharing(tripId)
+      const token = await enableSharing(tripId)
+      setLocalToken(token)
+      setLocalShared(true)
       addToast('success', 'Sharing enabled')
     } catch (err) {
       addToast('error', err instanceof Error ? err.message : 'Failed')
@@ -148,6 +159,8 @@ function ShareContent({
     setWorking(true)
     try {
       await disableSharing(tripId)
+      setLocalShared(false)
+      setLocalToken(null)
       addToast('info', 'Sharing disabled')
     } catch (err) {
       addToast('error', err instanceof Error ? err.message : 'Failed')
@@ -167,7 +180,7 @@ function ShareContent({
     }
   }
 
-  if (!shared || !url) {
+  if (!localShared || !url) {
     return (
       <div className="flex flex-col gap-4">
         <p className="text-text-secondary text-[13px]">
