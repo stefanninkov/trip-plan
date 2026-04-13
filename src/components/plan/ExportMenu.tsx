@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Printer, Copy, Share2, Check, LinkIcon, Calendar } from 'lucide-react'
+import { Printer, Copy, Share2, Check, LinkIcon, Calendar, CalendarSync, Loader2 } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
 import { Button } from '@/components/shared/Button'
 import { Modal } from '@/components/shared/Modal'
@@ -7,6 +7,7 @@ import { useUiStore } from '@/store/ui-store'
 import { planToText } from '@/utils/export-text'
 import { downloadIcs } from '@/utils/export-ics'
 import { buildShareUrl, disableSharing, enableSharing } from '@/utils/share-link'
+import { getCalendarAccessToken, hasGoogleClientId, pushPlanToGoogleCalendar } from '@/utils/google-calendar'
 import { logger } from '@/utils/logger'
 
 export interface ExportMenuProps {
@@ -20,8 +21,33 @@ export function ExportMenu({ plan, tripId, shared, shareToken }: ExportMenuProps
   const [open, setOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [syncing, setSyncing] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const addToast = useUiStore((s) => s.addToast)
+
+  const pushToGoogle = async (): Promise<void> => {
+    if (!hasGoogleClientId()) {
+      addToast('error', 'Google Calendar sign-in is not configured')
+      return
+    }
+    setSyncing(true)
+    setOpen(false)
+    try {
+      const token = await getCalendarAccessToken()
+      const { created, skipped } = await pushPlanToGoogleCalendar(plan, token)
+      addToast(
+        'success',
+        `Added ${created} event${created === 1 ? '' : 's'} to Google Calendar${
+          skipped > 0 ? ` (${skipped} skipped)` : ''
+        }`
+      )
+    } catch (err) {
+      logger.error('Google Calendar push failed:', err)
+      addToast('error', err instanceof Error ? err.message : 'Could not sync calendar')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -53,16 +79,24 @@ export function ExportMenu({ plan, tripId, shared, shareToken }: ExportMenuProps
       <Button
         variant="secondary"
         onClick={() => setOpen((o) => !o)}
+        disabled={syncing}
         className="flex items-center gap-1.5"
       >
-        <Share2 size={14} />
+        {syncing ? <Loader2 size={14} className="animate-spin" /> : <Share2 size={14} />}
         Export
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-11 w-60 bg-bg-elevated border border-border-default rounded-xl p-1.5 shadow-[0_8px_24px_#00000066] z-20 flex flex-col">
+        <div className="absolute right-0 top-11 w-64 bg-bg-elevated border border-border-default rounded-xl p-1.5 shadow-[0_8px_24px_#00000066] z-20 flex flex-col">
           <MenuButton icon={Printer} label="Print / save PDF" onClick={printPdf} />
           <MenuButton icon={Copy} label="Copy as text" onClick={copyText} />
+          {hasGoogleClientId() && (
+            <MenuButton
+              icon={CalendarSync}
+              label="Send to Google Calendar"
+              onClick={pushToGoogle}
+            />
+          )}
           <MenuButton
             icon={Calendar}
             label="Download calendar (.ics)"
