@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Map, Briefcase, Compass } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
@@ -17,6 +17,7 @@ const NAV_ITEMS = [
 
 export function Sidebar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { trips } = useTrips()
   const recentTrips = trips.slice(0, 10)
   const { run: runExplore, overview: exploreOverview } = useExplore()
@@ -97,13 +98,20 @@ export function Sidebar() {
             Recently explored
           </div>
           {exploreHistory.slice(0, 8).map((entry) => (
-            <Link
+            <button
               key={entry.query}
-              to={ROUTES.explore}
-              onClick={() => {
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                // Kick the run off first (synchronous cache hit will populate
+                // the overview immediately) then navigate so ExplorePage
+                // mounts reading the freshly-populated store state.
                 void runExplore(entry.query)
+                if (location.pathname !== ROUTES.explore) {
+                  navigate(ROUTES.explore)
+                }
               }}
-              className="flex flex-col gap-0.5 px-3 py-2 rounded-lg hover:bg-bg-surface transition-colors duration-150"
+              className="text-left flex flex-col gap-0.5 px-3 py-2 rounded-lg hover:bg-bg-surface transition-colors duration-150"
             >
               <span className="text-[13px] font-medium truncate text-text-primary">
                 {entry.name}
@@ -111,7 +119,7 @@ export function Sidebar() {
               {entry.country && entry.name !== entry.country && (
                 <span className="text-[11px] text-text-tertiary truncate">{entry.country}</span>
               )}
-            </Link>
+            </button>
           ))}
         </div>
       )}

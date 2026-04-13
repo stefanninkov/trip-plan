@@ -133,7 +133,7 @@ export function ExplorePage() {
         <AiProgress
           stages={EXPLORE_STAGES}
           timeConstant={8}
-          hint="Pulling together a rich overview \u2014 keeps running if you switch tabs."
+          hint="Pulling together a rich overview — keeps running if you switch tabs."
         />
       )}
 

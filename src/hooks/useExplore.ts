@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { create } from 'zustand'
 import { FUNCTIONS_BASE_URL } from '@/lib/firebase'
 import { logger } from '@/utils/logger'
-import { rememberExplore } from '@/utils/explore-history'
+import {
+  rememberExplore,
+  loadStoredResults,
+  saveExploreResult,
+} from '@/utils/explore-history'
 import type { DestinationOverview } from '@/types/explore'
 
 /**
@@ -30,7 +34,10 @@ const useExploreStore = create<ExploreStoreState>((set, get) => ({
   loading: false,
   error: null,
   overview: null,
-  cache: {},
+  // Seed the in-memory cache from localStorage so previously explored
+  // destinations show up instantly when the user clicks their history, even
+  // on a fresh page load.
+  cache: loadStoredResults(),
 
   run: async (query: string): Promise<DestinationOverview | null> => {
     const trimmed = query.trim()
@@ -73,6 +80,8 @@ const useExploreStore = create<ExploreStoreState>((set, get) => ({
         country: data.overview.country,
         kind: data.overview.kind,
       })
+      // Persist the result so future clicks (even after a reload) are instant.
+      saveExploreResult(trimmed, data.overview)
       set((s) => ({
         overview: data.overview,
         loading: false,

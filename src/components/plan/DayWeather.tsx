@@ -16,6 +16,8 @@ import { Skeleton } from '@/components/shared/Skeleton'
 export interface DayWeatherProps {
   location: string
   date: string
+  /** Compact variant: just icon + high/low temp. No label/precip/tag. */
+  compact?: boolean
 }
 
 function iconFor(code: number): LucideIcon {
@@ -29,21 +31,40 @@ function iconFor(code: number): LucideIcon {
   return Cloud
 }
 
-export function DayWeather({ location, date }: DayWeatherProps) {
+export function DayWeather({ location, date, compact = false }: DayWeatherProps) {
   const weather = useWeather(location, date)
   if (weather === 'loading') {
-    return <Skeleton width="140px" height="18px" />
+    return <Skeleton width={compact ? '64px' : '140px'} height="16px" />
   }
   if (!weather) return null
   const Icon = iconFor(weather.code)
+  const tooltip =
+    weather.source === 'historical'
+      ? `Typical ${weather.label} (based on last year)`
+      : `Forecast: ${weather.label}`
+
+  if (compact) {
+    return (
+      <div
+        className="inline-flex items-center gap-1.5 text-[12px] text-text-secondary whitespace-nowrap"
+        title={tooltip}
+      >
+        <Icon
+          size={13}
+          className={weather.source === 'historical' ? 'text-text-tertiary' : 'text-accent'}
+        />
+        <span className="font-cost">
+          {Math.round(weather.highC)}&deg;
+          <span className="text-text-tertiary">/{Math.round(weather.lowC)}&deg;</span>
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div
       className="flex items-center gap-2 text-[12px] text-text-secondary"
-      title={
-        weather.source === 'historical'
-          ? 'Typical weather for this date (based on last year)'
-          : 'Forecast'
-      }
+      title={tooltip}
     >
       <Icon size={14} className="text-accent" />
       <span className="font-cost">
@@ -54,11 +75,6 @@ export function DayWeather({ location, date }: DayWeatherProps) {
         <span className="flex items-center gap-1 text-text-tertiary">
           <Droplets size={11} />
           {weather.precipProbability}%
-        </span>
-      )}
-      {weather.source === 'historical' && (
-        <span className="text-text-tertiary text-[10px] uppercase tracking-[0.5px]">
-          typical
         </span>
       )}
     </div>

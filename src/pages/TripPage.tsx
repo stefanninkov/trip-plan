@@ -85,7 +85,7 @@ export function TripPage() {
         <AiProgress
           stages={GENERATION_STAGES}
           timeConstant={22}
-          hint="Takes about 30\u201360 seconds. You can keep this tab open or leave \u2014 the plan saves automatically."
+          hint="Takes about 30–60 seconds. You can keep this tab open or leave — the plan saves automatically."
         />
         {isStale && (
           <Card className="flex flex-col gap-3">

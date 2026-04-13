@@ -88,68 +88,77 @@ export function DayCard({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
+        className="w-full flex items-center gap-4 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
       >
-        <div className="flex items-center gap-3 min-w-0">
-          <div
-            className={cn(
-              'w-10 h-10 rounded-full font-cost font-bold flex items-center justify-center shrink-0',
-              allDone
-                ? 'bg-success text-bg-primary'
-                : 'bg-accent-muted text-accent'
-            )}
-            style={
-              allDone
-                ? { backgroundColor: 'var(--color-success)', color: 'var(--color-bg-primary)' }
-                : undefined
-            }
-          >
-            {day.dayNumber}
-          </div>
-          <div className="min-w-0">
-            <div
+        {/* Left: day number */}
+        <div
+          className={cn(
+            'w-10 h-10 rounded-full font-cost font-bold flex items-center justify-center shrink-0',
+            allDone ? 'bg-success text-bg-primary' : 'bg-accent-muted text-accent'
+          )}
+          style={
+            allDone
+              ? { backgroundColor: 'var(--color-success)', color: 'var(--color-bg-primary)' }
+              : undefined
+          }
+        >
+          {day.dayNumber}
+        </div>
+
+        {/* Middle: title + meta row */}
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
               className={cn(
                 'text-[15px] lg:text-[16px] font-semibold truncate',
                 allDone && 'line-through'
               )}
             >
               {day.title}
-            </div>
-            <div className="text-[12px] text-text-tertiary flex items-center gap-2">
-              <span>
-                {formatDate(day.date)}
-                {' \u00B7 '}
-                {day.location}
+            </span>
+            {rel === 'today' && (
+              <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-[0.5px] bg-accent-muted text-accent">
+                Today
               </span>
-              {rel === 'today' && (
-                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-[0.5px] bg-accent-muted text-accent">
-                  Today
-                </span>
-              )}
-              {totalCount > 0 && (
-                <span className="text-text-tertiary">
-                  {' \u00B7 '}
-                  {completedCount}/{totalCount} done
-                </span>
-              )}
-            </div>
+            )}
+          </div>
+          <div className="text-[12px] text-text-tertiary flex items-center gap-2 flex-wrap">
+            <span className="truncate">
+              {formatDate(day.date)} · {day.location}
+            </span>
+            {totalCount > 0 && (
+              <span className="shrink-0">
+                {completedCount}/{totalCount} done
+              </span>
+            )}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="hidden md:block">
-            <DayWeather location={day.location} date={day.date} />
+
+        {/* Right: compact weather, price, chevron \u2014 stacked on mobile */}
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="hidden sm:flex flex-col items-end gap-1">
+            <DayWeather location={day.location} date={day.date} compact />
+            <CurrencyDisplay
+              min={day.dailyTotal.min}
+              max={day.dailyTotal.max}
+              currency={currency}
+              homeCurrency={homeCurrency}
+              size="sm"
+            />
           </div>
-          <CurrencyDisplay
-            min={day.dailyTotal.min}
-            max={day.dailyTotal.max}
-            currency={currency}
-            homeCurrency={homeCurrency}
-            size="sm"
-          />
+          <div className="sm:hidden">
+            <CurrencyDisplay
+              min={day.dailyTotal.min}
+              max={day.dailyTotal.max}
+              currency={currency}
+              homeCurrency={homeCurrency}
+              size="sm"
+            />
+          </div>
           <ChevronDown
             size={18}
             className={cn(
-              'text-text-tertiary transition-transform duration-200',
+              'text-text-tertiary transition-transform duration-200 shrink-0',
               open && 'rotate-180'
             )}
           />
