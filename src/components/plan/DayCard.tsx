@@ -17,7 +17,7 @@ import { CostList } from './CostEditor'
 import { HotelList } from './HotelEditor'
 import { BlockMoreInfo } from './BlockMoreInfo'
 import { BlockCheckbox } from './BlockCheckbox'
-import { DayWeather } from './DayWeather'
+import { DayWeather, DayWeatherNote } from './DayWeather'
 
 export interface DayCardProps {
   day: DayPlan
@@ -312,6 +312,10 @@ export function DayCard({
           {readOnly && day.blocks.length === 0 && day.costs.length === 0 && (
             <p className="text-[13px] text-text-tertiary italic">Nothing scheduled yet.</p>
           )}
+
+          {/* Richer weather note with practical advice, at the bottom of the
+              expanded day content. */}
+          <DayWeatherNote location={day.location} date={day.date} />
 
           {editor && (
             <div className="flex justify-between pt-3 border-t border-border-subtle">
