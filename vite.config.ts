@@ -11,7 +11,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'icons/*.png'],
+      includeAssets: ['favicon.svg'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         runtimeCaching: [
@@ -35,8 +35,7 @@ export default defineConfig({
         start_url: '/trip-plan/',
         scope: '/trip-plan/',
         icons: [
-          { src: '/trip-plan/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/trip-plan/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/trip-plan/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
     }),

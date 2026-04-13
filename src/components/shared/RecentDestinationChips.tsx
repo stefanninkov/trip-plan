@@ -43,8 +43,10 @@ export function RecentDestinationChips({
     localRecents.forEach(add)
     trips.forEach((t) => {
       const createdAt = t.createdAt ? new Date(t.createdAt).getTime() : 0
-      t.inputs.destinations.forEach((d) => {
-        if (!d.city) return
+      const dests = t.inputs?.destinations
+      if (!Array.isArray(dests)) return
+      dests.forEach((d) => {
+        if (!d?.city) return
         const display = d.country ? `${d.city}, ${d.country}` : d.city
         add({
           city: d.city,
