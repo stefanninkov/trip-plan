@@ -37,7 +37,7 @@ export function SharedTripPage() {
     <div className="min-h-dvh">
       <div className="max-w-[960px] mx-auto px-4 md:px-8 lg:px-10 py-6 lg:py-10">
         <div className="mb-4 text-[12px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">
-          Shared with you \u00B7 read-only
+          Shared with you · read-only
         </div>
         <PlanView
           plan={applyShareOptions(trip.plan, trip.shareOptions)}

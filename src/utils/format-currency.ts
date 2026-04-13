@@ -20,7 +20,7 @@ export function formatAmount(amount: number): string {
  * the currency and the value read as two pieces rather than one jammed token.
  */
 export function formatCurrency(amount: number, currencyCode: string): string {
-  return `${currencySymbol(currencyCode)}\u202F${formatAmount(amount)}`
+  return `${currencySymbol(currencyCode)} ${formatAmount(amount)}`
 }
 
 export function formatRange(min: number, max: number, currencyCode: string): string {
@@ -28,5 +28,5 @@ export function formatRange(min: number, max: number, currencyCode: string): str
     return formatCurrency(min, currencyCode)
   }
   const sym = currencySymbol(currencyCode)
-  return `${sym}\u202F${formatAmount(min)}\u2013${formatAmount(max)}`
+  return `${sym} ${formatAmount(min)}–${formatAmount(max)}`
 }

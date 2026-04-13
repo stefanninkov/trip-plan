@@ -23,7 +23,7 @@ import { logger } from '@/utils/logger'
 export function ExploreResult({ overview }: { overview: DestinationOverview }) {
   const subtitle = [overview.kind === 'country' ? null : overview.country, kindLabel(overview.kind)]
     .filter(Boolean)
-    .join(' \u00B7 ')
+    .join(' · ')
 
   const centerQuery =
     overview.centerQuery ||
@@ -406,7 +406,7 @@ function ExploreMap({ overview }: { overview: DestinationOverview }) {
 
   const token = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
   if (token && center) {
-    // Static Mapbox image with markers \u2014 no extra JS bundle, cheap and fast.
+    // Static Mapbox image with markers — no extra JS bundle, cheap and fast.
     const allPoints = [{ coord: center, color: 'e49b5a', label: '' }, ...pins.map((p) => ({
       coord: p.coord,
       color: colorFor(p.kind),
@@ -438,7 +438,7 @@ function ExploreMap({ overview }: { overview: DestinationOverview }) {
       <div className="rounded-xl border border-border-subtle bg-bg-secondary p-4">
         <div className="flex items-center gap-2 text-[12px] text-text-tertiary mb-2">
           <MapPin size={12} />
-          Map preview unavailable \u2014 click a place to open it in Google Maps.
+          Map preview unavailable — click a place to open it in Google Maps.
         </div>
         <div className="flex flex-wrap gap-1.5">
           {pins.map((p, i) => (

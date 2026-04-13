@@ -51,8 +51,10 @@ export const generateTrip = onRequest(
     })
 
     try {
+      // Use Sonnet 4.6 — faster and better than 4.0. Significantly speeds
+      // up generation vs claude-sonnet-4-20250514.
       const message = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 32000,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: buildUserMessage(inputs) }],
@@ -77,12 +79,23 @@ export const generateTrip = onRequest(
         return
       }
 
-      const jsonText = textBlock.text.trim().replace(/^```json\s*/, '').replace(/```$/, '')
+      // Tolerant JSON extractor: strip markdown fences, find the outer {...}.
+      let jsonText = textBlock.text.trim()
+      jsonText = jsonText.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim()
+      const first = jsonText.indexOf('{')
+      const last = jsonText.lastIndexOf('}')
+      if (first > 0 && last > first) {
+        jsonText = jsonText.slice(first, last + 1)
+      }
       let plan: unknown
       try {
         plan = JSON.parse(jsonText)
-      } catch {
-        console.error('generateTrip: JSON parse failed', textBlock.text.slice(0, 500))
+      } catch (parseErr) {
+        console.error(
+          'generateTrip: JSON parse failed',
+          parseErr instanceof Error ? parseErr.message : parseErr,
+          textBlock.text.slice(0, 800)
+        )
         res.status(502).json({
           error: 'Claude returned invalid JSON',
           raw: textBlock.text.slice(0, 500),

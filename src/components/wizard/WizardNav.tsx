@@ -1,14 +1,20 @@
-import { ArrowLeft, ArrowRight, Sparkles, PencilLine } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Sparkles, Globe, PencilLine } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
 import { useWizardStore, WIZARD_STEP_ORDER, validateStep } from '@/store/wizard-store'
 
 export interface WizardNavProps {
   onGenerate: () => void
+  onBuildFromSearch: () => void
   onBuildManually: () => void
   isGenerating?: boolean
 }
 
-export function WizardNav({ onGenerate, onBuildManually, isGenerating = false }: WizardNavProps) {
+export function WizardNav({
+  onGenerate,
+  onBuildFromSearch,
+  onBuildManually,
+  isGenerating = false,
+}: WizardNavProps) {
   const currentStep = useWizardStore((s) => s.currentStep)
   const canAdvance = useWizardStore((s) => validateStep(s.currentStep, s.inputs))
   const nextStep = useWizardStore((s) => s.nextStep)
@@ -40,7 +46,7 @@ export function WizardNav({ onGenerate, onBuildManually, isGenerating = false }:
             className="flex items-center gap-1.5"
           >
             <Sparkles size={14} />
-            {isGenerating ? 'Generating\u2026' : 'Generate with AI'}
+            {isGenerating ? 'Generating…' : 'Generate with AI'}
           </Button>
         ) : (
           <Button
@@ -55,15 +61,26 @@ export function WizardNav({ onGenerate, onBuildManually, isGenerating = false }:
         )}
       </div>
       {isLast && (
-        <button
-          type="button"
-          onClick={onBuildManually}
-          disabled={!canAdvance || isGenerating}
-          className="self-end flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
-        >
-          <PencilLine size={14} />
-          Or build manually (no AI)
-        </button>
+        <div className="flex items-center gap-3 self-end">
+          <button
+            type="button"
+            onClick={onBuildFromSearch}
+            disabled={!canAdvance || isGenerating}
+            className="flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+          >
+            <Globe size={14} />
+            Build without AI (Google search)
+          </button>
+          <button
+            type="button"
+            onClick={onBuildManually}
+            disabled={!canAdvance || isGenerating}
+            className="flex items-center gap-1.5 text-[13px] text-text-tertiary hover:text-text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+          >
+            <PencilLine size={14} />
+            Start blank
+          </button>
+        </div>
       )}
     </div>
   )

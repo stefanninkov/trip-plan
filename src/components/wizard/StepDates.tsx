@@ -141,7 +141,7 @@ export function StepDates() {
       {totalDays > 0 && (
         <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-[13px] text-text-secondary">
           Trip total: <span className="text-text-primary font-semibold">{totalDays} days</span>
-          {' \u00B7 '}
+          {' · '}
           {formatDateRange(firstStart, lastEnd)}
         </div>
       )}

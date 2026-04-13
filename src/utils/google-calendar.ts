@@ -142,7 +142,7 @@ export async function pushPlanToGoogleCalendar(
     if (day.blocks.length === 0) {
       // All-day event for the day itself
       await insertEvent(accessToken, {
-        summary: `${plan.tripTitle} \u00B7 Day ${day.dayNumber}: ${day.title}`,
+        summary: `${plan.tripTitle} · Day ${day.dayNumber}: ${day.title}`,
         description: day.location,
         location: day.location,
         start: { date: day.date },
@@ -152,7 +152,7 @@ export async function pushPlanToGoogleCalendar(
       continue
     }
     for (const b of day.blocks) {
-      const match = b.time.match(/^(\d{2}):(\d{2})\s*[-\u2013]\s*(\d{2}):(\d{2})$/)
+      const match = b.time.match(/^(\d{2}):(\d{2})\s*[-–]\s*(\d{2}):(\d{2})$/)
       if (!match) {
         skipped += 1
         continue
@@ -171,7 +171,7 @@ export async function pushPlanToGoogleCalendar(
         .trim()
       try {
         await insertEvent(accessToken, {
-          summary: `${b.title} \u00B7 ${plan.tripTitle}`,
+          summary: `${b.title} · ${plan.tripTitle}`,
           description,
           location: day.location,
           start: { dateTime: startIso, timeZone: tz },

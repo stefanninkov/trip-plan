@@ -23,12 +23,12 @@ const SUGGESTIONS = [
 ]
 
 const EXPLORE_STAGES = [
-  { at: 0, label: 'Looking up the place\u2026' },
+  { at: 0, label: 'Looking up the place…' },
   { at: 15, label: 'Gathering history and context' },
   { at: 35, label: 'Picking top highlights' },
   { at: 55, label: 'Mapping neighborhoods and stays' },
   { at: 75, label: 'Rounding up food and activities' },
-  { at: 90, label: 'Finishing up\u2026' },
+  { at: 90, label: 'Finishing up…' },
 ]
 
 export function ExplorePage() {
@@ -99,7 +99,7 @@ export function ExplorePage() {
           <Button type="submit" disabled={loading || !query.trim()}>
             <span className="flex items-center gap-2">
               {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-              {loading ? 'Exploring\u2026' : 'Explore'}
+              {loading ? 'Exploring…' : 'Explore'}
             </span>
           </Button>
         </form>

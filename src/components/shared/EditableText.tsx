@@ -16,7 +16,7 @@ export interface EditableTextProps {
 export function EditableText({
   value,
   onCommit,
-  placeholder = 'Click to edit\u2026',
+  placeholder = 'Click to edit…',
   multiline = false,
   className,
   as = 'p',

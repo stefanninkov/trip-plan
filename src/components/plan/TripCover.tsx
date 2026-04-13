@@ -25,7 +25,7 @@ function hashHue(s: string): number {
 /**
  * Render a cover banner for the trip. Uses the Mapbox Static Images API
  * when we have a token AND can resolve coords for the location. Falls back
- * to a stylized gradient + location text so there\u2019s always something
+ * to a stylized gradient + location text so there’s always something
  * visual at the top of the trip.
  */
 export function TripCover({ location, className }: TripCoverProps) {
@@ -77,7 +77,7 @@ export function TripCover({ location, className }: TripCoverProps) {
         />
       )}
 
-      {/* Stylised label \u2014 always visible over the gradient, fades behind
+      {/* Stylised label — always visible over the gradient, fades behind
           the real image once it loads. */}
       {(!loaded || failed) && (
         <div className="absolute inset-0 flex items-end p-5">

@@ -121,7 +121,7 @@ function useDayPicker(ctx: AddToPlanCtx) {
                 {d.title}
               </span>
               <span className="block text-[11px] text-text-tertiary">
-                {formatDate(d.date)} \u00B7 {d.location}
+                {formatDate(d.date)} · {d.location}
               </span>
             </span>
           </button>
@@ -153,19 +153,19 @@ function computeFlightLegs(origin: string | undefined, days: DayPlan[]): FlightL
       to: firstDay.location,
       date: firstDay.date,
       returnDate: lastDay.date,
-      label: `${origin} \u2192 ${firstDay.location} (round trip ${firstDay.date} / ${lastDay.date})`,
+      label: `${origin} → ${firstDay.location} (round trip ${firstDay.date} / ${lastDay.date})`,
     })
     legs.push({
       from: origin,
       to: firstDay.location,
       date: firstDay.date,
-      label: `${origin} \u2192 ${firstDay.location} (one-way ${firstDay.date})`,
+      label: `${origin} → ${firstDay.location} (one-way ${firstDay.date})`,
     })
     legs.push({
       from: lastDay.location,
       to: origin,
       date: lastDay.date,
-      label: `${lastDay.location} \u2192 ${origin} (return ${lastDay.date})`,
+      label: `${lastDay.location} → ${origin} (return ${lastDay.date})`,
     })
   }
   // Intra-trip legs: any destination change
@@ -177,7 +177,7 @@ function computeFlightLegs(origin: string | undefined, days: DayPlan[]): FlightL
         from: prev.location,
         to: cur.location,
         date: cur.date,
-        label: `${prev.location} \u2192 ${cur.location} (${cur.date})`,
+        label: `${prev.location} → ${cur.location} (${cur.date})`,
       })
     }
   }
@@ -212,7 +212,7 @@ function FlightsTab({
   const addFlight = (flight: FlightResult, dayId: string) => {
     if (!editor) return
     editor.addCost(dayId, {
-      item: `Flight: ${flight.airline} (${flight.departure} \u2192 ${flight.arrival})`,
+      item: `Flight: ${flight.airline} (${flight.departure} → ${flight.arrival})`,
       category: 'transport',
       amount: { min: flight.price, max: flight.price },
       currency: flight.currency,
@@ -221,7 +221,7 @@ function FlightsTab({
     editor.addBlock(dayId, {
       time: `${flight.departure}-${flight.arrival}`,
       title: `Flight ${flight.airline}`,
-      description: `${flight.departure} \u2192 ${flight.arrival}, ${flight.duration}`,
+      description: `${flight.departure} → ${flight.arrival}, ${flight.duration}`,
       tip: null,
       warning: null,
       whyPicked: null,
@@ -295,7 +295,7 @@ function FlightsTab({
               <div className="flex-1 min-w-0">
                 <div className="font-semibold">{r.airline}</div>
                 <div className="text-text-tertiary text-[12px]">
-                  {r.departure} \u2192 {r.arrival} \u00B7 {r.duration} \u00B7{' '}
+                  {r.departure} → {r.arrival} · {r.duration} ·{' '}
                   {r.stops === 0 ? 'nonstop' : `${r.stops} stop${r.stops > 1 ? 's' : ''}`}
                 </div>
               </div>
@@ -391,7 +391,7 @@ function HotelsTab({ editor, days }: AddToPlanCtx) {
       pricePerNight: hotel.pricePerNight,
       currency: hotel.currency,
       highlight:
-        hotel.highlights.slice(0, 3).join(' \u00B7 ') ||
+        hotel.highlights.slice(0, 3).join(' · ') ||
         (hotel.rating > 0 ? `Rated ${hotel.rating.toFixed(1)} from ${hotel.reviewCount} reviews` : ''),
       tier:
         hotel.pricePerNight < 80
@@ -495,7 +495,7 @@ function HotelsTab({ editor, days }: AddToPlanCtx) {
                 </div>
                 <div className="text-text-tertiary text-[12px]">
                   {r.stars > 0 ? `${r.stars}-star` : 'Unrated'}
-                  {r.reviewCount > 0 && ` \u00B7 ${r.reviewCount} reviews`}
+                  {r.reviewCount > 0 && ` · ${r.reviewCount} reviews`}
                 </div>
                 {r.highlights && r.highlights.length > 0 && (
                   <ul className="text-[12px] text-text-secondary leading-snug flex flex-wrap gap-x-2 gap-y-0.5">
@@ -605,7 +605,7 @@ function SearchPlaceForm({
       title: place.name,
       description:
         place.description ||
-        `${place.type || 'Place'}${place.address ? ` \u2014 ${place.address}` : ''}`,
+        `${place.type || 'Place'}${place.address ? ` — ${place.address}` : ''}`,
       tip: place.hours || null,
       warning: null,
       whyPicked: null,
@@ -679,7 +679,7 @@ function SearchPlaceForm({
                     <span className="font-semibold truncate">{r.name}</span>
                     <div className="text-text-tertiary text-[12px]">
                       {r.type}
-                      {r.priceLevel && ` \u00B7 ${r.priceLevel}`}
+                      {r.priceLevel && ` · ${r.priceLevel}`}
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-0.5 shrink-0">

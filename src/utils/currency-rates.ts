@@ -6,8 +6,8 @@ const CACHE_TTL_MS = 1000 * 60 * 60 * 6 // 6h
 /**
  * Approximate EUR conversion rates for currencies that frankfurter.dev
  * doesn't cover (or for offline fallback). "1 EUR = FALLBACK_EUR_RATES[x]"
- * units of x. Tuned for mid-2025 \u2014 close enough for "Euro primary"
- * display; the UI labels the value with \u2248 so users know it's approximate.
+ * units of x. Tuned for mid-2025 — close enough for "Euro primary"
+ * display; the UI labels the value with ≈ so users know it's approximate.
  */
 const FALLBACK_EUR_RATES: Record<string, number> = {
   EUR: 1,
@@ -144,7 +144,7 @@ export function convertSync(amount: number, from: string, to: string): number | 
     if (typeof r === 'number') return amount * r
   }
   // Live rates weren't available (either not yet fetched, or frankfurter
-  // doesn't cover this currency \u2014 e.g. RSD). Fall back to the hardcoded
+  // doesn't cover this currency — e.g. RSD). Fall back to the hardcoded
   // EUR-anchored rates so we can still show an approximate Euro value.
   return fallbackConvert(amount, from, to)
 }

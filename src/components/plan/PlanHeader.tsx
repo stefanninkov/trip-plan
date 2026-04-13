@@ -42,7 +42,7 @@ export function PlanHeader({ plan, editor, homeCurrency }: PlanHeaderProps) {
       <div className="flex flex-wrap items-end justify-between gap-4 pt-2 border-t border-border-subtle">
         <div className="text-[13px] text-text-secondary">
           <span className="text-text-primary font-semibold">{plan.days.length} days</span>
-          {' \u00B7 '}
+          {' · '}
           <span>{plan.travelers} travelers</span>
         </div>
         <CurrencyDisplay

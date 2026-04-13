@@ -20,7 +20,7 @@ export function CityAutocomplete({
   onChange,
   onSelect,
   label,
-  placeholder = 'Start typing a city\u2026',
+  placeholder = 'Start typing a city…',
   name,
   autoFocus,
   id,

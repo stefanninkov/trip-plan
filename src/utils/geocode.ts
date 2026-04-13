@@ -121,7 +121,7 @@ export async function geocodeDetailed(place: string): Promise<GeocodeResult> {
     // Try Mapbox first when a token is present.
     let result: GeocodeResult = TOKEN
       ? await mapboxGeocode(candidate)
-      : { coord: null, error: 'No Mapbox token \u2014 using Open-Meteo fallback' }
+      : { coord: null, error: 'No Mapbox token — using Open-Meteo fallback' }
 
     if (!result.coord) {
       const fallback = await openMeteoGeocode(candidate)

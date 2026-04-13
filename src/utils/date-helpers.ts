@@ -8,7 +8,7 @@ export function formatDate(isoDate: string): string {
 }
 
 export function formatDateRange(startIso: string, endIso: string): string {
-  return `${formatDate(startIso)} \u2013 ${formatDate(endIso)}`
+  return `${formatDate(startIso)} – ${formatDate(endIso)}`
 }
 
 export function daysBetween(startIso: string, endIso: string): number {

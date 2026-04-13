@@ -16,7 +16,7 @@ const ACCOMMODATION_MULTI = ACCOMMODATION_OPTIONS.filter((o) => o.value !== 'any
 
 const CURRENCY_OPTIONS: SelectOption[] = CURRENCIES.map((c) => ({
   value: c.code,
-  label: `${c.code} \u2014 ${c.name}`,
+  label: `${c.code} — ${c.name}`,
 }))
 
 export function StepAdvanced() {

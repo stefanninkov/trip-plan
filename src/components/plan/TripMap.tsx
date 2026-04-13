@@ -23,7 +23,7 @@ const OSM_STYLE: mapboxgl.StyleSpecification = {
       type: 'raster',
       tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
       tileSize: 256,
-      attribution: '\u00A9 OpenStreetMap contributors',
+      attribution: '© OpenStreetMap contributors',
     },
   },
   layers: [{ id: 'osm', type: 'raster', source: 'osm' }],

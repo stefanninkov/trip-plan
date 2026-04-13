@@ -134,7 +134,7 @@ export function DayCard({
           </div>
         </div>
 
-        {/* Right: compact weather, price, chevron \u2014 stacked on mobile */}
+        {/* Right: compact weather, price, chevron — stacked on mobile */}
         <div className="flex items-center gap-3 shrink-0">
           <div className="hidden sm:flex flex-col items-end gap-1">
             <DayWeather location={day.location} date={day.date} compact />
@@ -255,7 +255,7 @@ export function DayCard({
                           ) : (
                             <Sparkles size={14} />
                           )}
-                          {regenerating ? 'Regenerating\u2026' : 'Regenerate'}
+                          {regenerating ? 'Regenerating…' : 'Regenerate'}
                         </Button>
                       </div>
                     </div>

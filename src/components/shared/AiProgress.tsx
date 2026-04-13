@@ -17,29 +17,40 @@ export interface AiProgressProps {
 
 /**
  * Shared indeterminate-ish AI progress bar. Ramps toward 95% asymptotically
- * so it never reaches 100 without truth \u2014 the call completing is what
+ * so it never reaches 100 without truth — the call completing is what
  * unmounts it. Pass different `stages` + `timeConstant` per caller.
  */
 export function AiProgress({ stages, timeConstant = 22, hint }: AiProgressProps) {
   const [pct, setPct] = useState(4)
+  const [elapsedSec, setElapsedSec] = useState(0)
 
   useEffect(() => {
     const startedAt = Date.now()
     const id = window.setInterval(() => {
       const elapsed = (Date.now() - startedAt) / 1000
-      const target = 95 * (1 - Math.exp(-elapsed / timeConstant))
+      setElapsedSec(elapsed)
+      // Two-phase ramp: first phase approaches 85% smoothly over ~timeConstant.
+      // Once we're past that, creep toward 95% very slowly so the bar doesn't
+      // plateau visibly if the call takes longer than expected.
+      const fast = 85 * (1 - Math.exp(-elapsed / timeConstant))
+      const slow = 10 * (1 - Math.exp(-Math.max(0, elapsed - timeConstant * 2) / (timeConstant * 3)))
+      const target = Math.min(95, fast + slow)
       setPct((p) => (target > p ? target : p))
     }, 250)
     return () => window.clearInterval(id)
   }, [timeConstant])
 
   const stage = [...stages].reverse().find((s) => pct >= s.at) ?? stages[0]
+  // Show a friendly overtime note once we've been waiting > 90s.
+  const overtime = elapsedSec > 90
 
   return (
     <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-4 flex flex-col gap-3">
       <div className="flex items-center gap-2 text-[13px] text-text-primary">
         <Sparkles size={14} className="text-accent animate-pulse" />
-        <span className="font-medium">{stage.label}</span>
+        <span className="font-medium">
+          {overtime ? 'Still working — heavy requests can take a few minutes' : stage.label}
+        </span>
         <span className="ml-auto font-cost text-[12px] text-text-tertiary">
           {Math.round(pct)}%
         </span>

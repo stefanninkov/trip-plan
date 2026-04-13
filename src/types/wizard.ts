@@ -16,7 +16,7 @@ export interface Destination {
   endDate?: string
   /**
    * How the traveler arrives at this stop from the previous location
-   * (or from the origin for the first stop). Optional \u2014 when omitted the
+   * (or from the origin for the first stop). Optional — when omitted the
    * AI picks the best option.
    */
   arrivalMode?: TravelMode

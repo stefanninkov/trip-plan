@@ -44,9 +44,9 @@ export function buildSkeletonPlan(inputs: TripInputs): TripPlan {
     }
   })
 
-  const destList = inputs.destinations.map((d) => d.city).filter(Boolean).join(' \u2192 ')
+  const destList = inputs.destinations.map((d) => d.city).filter(Boolean).join(' → ')
   const title = destList
-    ? `${destList} \u00B7 ${totalDays} days`
+    ? `${destList} · ${totalDays} days`
     : `Trip starting ${inputs.startDate}`
 
   return {

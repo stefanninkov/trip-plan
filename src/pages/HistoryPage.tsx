@@ -67,7 +67,7 @@ export function HistoryPage() {
         {trips.map((trip) => {
           const title =
             trip.plan?.tripTitle ??
-            (trip.inputs.destinations.map((d) => d.city).filter(Boolean).join(' \u2192 ') ||
+            (trip.inputs.destinations.map((d) => d.city).filter(Boolean).join(' → ') ||
               'Untitled trip')
           return (
             <Card key={trip.id} className="flex flex-col md:flex-row md:items-center gap-3 group">

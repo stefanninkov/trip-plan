@@ -28,7 +28,7 @@ export function GoogleSignInButton() {
       className="flex items-center justify-center gap-2"
     >
       <GoogleIcon />
-      {loading ? 'Signing in\u2026' : 'Continue with Google'}
+      {loading ? 'Signing in…' : 'Continue with Google'}
     </Button>
   )
 }

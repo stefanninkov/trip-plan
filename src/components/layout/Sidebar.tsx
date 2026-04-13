@@ -65,7 +65,7 @@ export function Sidebar() {
           {recentTrips.map((trip) => {
             const title =
               trip.plan?.tripTitle ??
-              (trip.inputs.destinations.map((d) => d.city).filter(Boolean).join(' \u2192 ') ||
+              (trip.inputs.destinations.map((d) => d.city).filter(Boolean).join(' → ') ||
                 'Untitled')
             const active = location.pathname === ROUTES.trip(trip.id)
             return (

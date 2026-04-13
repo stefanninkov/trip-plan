@@ -11,8 +11,17 @@ import { StepDates } from './StepDates'
 import { StepTravelers } from './StepTravelers'
 import { StepAdvanced } from './StepAdvanced'
 import { GenerationProgress } from './GenerationProgress'
+import { AiProgress } from '@/components/shared/AiProgress'
 import { Button } from '@/components/shared/Button'
 import { ROUTES } from '@/constants/routes'
+
+const SEARCH_STAGES = [
+  { at: 0, label: 'Searching hotels for each city' },
+  { at: 25, label: 'Finding top places & restaurants' },
+  { at: 55, label: 'Looking up flights' },
+  { at: 80, label: 'Composing day blocks' },
+  { at: 93, label: 'Finalising' },
+]
 
 export function TripWizard() {
   const currentStep = useWizardStore((s) => s.currentStep)
@@ -20,7 +29,15 @@ export function TripWizard() {
   const addToast = useUiStore((s) => s.addToast)
   const setCurrent = useTripStore((s) => s.setCurrent)
   const navigate = useNavigate()
-  const { isGenerating, generate, createBlank, error, clearError } = useGenerateTrip()
+  const {
+    isGenerating,
+    generate,
+    generateFromSearch,
+    createBlank,
+    error,
+    clearError,
+    searchProgress,
+  } = useGenerateTrip()
 
   const handleGenerate = async (): Promise<void> => {
     clearError()
@@ -33,7 +50,18 @@ export function TripWizard() {
     }
   }
 
-  const handleBuildManually = async (): Promise<void> => {
+  const handleBuildFromSearch = async (): Promise<void> => {
+    clearError()
+    const finalInputs = tripInputsWithDerivedDates(inputs)
+    const result = await generateFromSearch(finalInputs)
+    if (result) {
+      setCurrent(result.tripId, result.plan)
+      addToast('success', 'Trip built from Google search')
+      navigate(ROUTES.trip(result.tripId))
+    }
+  }
+
+  const handleBuildBlank = async (): Promise<void> => {
     clearError()
     const finalInputs = tripInputsWithDerivedDates(inputs)
     const result = await createBlank(finalInputs)
@@ -43,6 +71,8 @@ export function TripWizard() {
       navigate(ROUTES.trip(result.tripId))
     }
   }
+
+  const isSearchBuilding = Boolean(searchProgress)
 
   return (
     <div className="flex flex-col gap-8">
@@ -56,17 +86,34 @@ export function TripWizard() {
         {currentStep === 'advanced' && <StepAdvanced />}
       </div>
 
-      {isGenerating && (
+      {isGenerating && !isSearchBuilding && (
         <div className="flex flex-col gap-3">
           <GenerationProgress />
-          <Button
-            variant="ghost"
-            onClick={handleBuildManually}
-            className="self-start text-[12px]"
-          >
-            Skip AI and build manually
-          </Button>
+          <div className="flex gap-2 self-start">
+            <Button
+              variant="secondary"
+              onClick={handleBuildFromSearch}
+              className="text-[12px]"
+            >
+              Too slow? Build without AI (Google search)
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleBuildBlank}
+              className="text-[12px]"
+            >
+              Start blank instead
+            </Button>
+          </div>
         </div>
+      )}
+
+      {isSearchBuilding && (
+        <AiProgress
+          stages={SEARCH_STAGES}
+          timeConstant={6}
+          hint="Building your trip from real hotel, place and flight search results."
+        />
       )}
 
       {error && !isGenerating && (
@@ -76,14 +123,18 @@ export function TripWizard() {
             <Button variant="secondary" onClick={handleGenerate}>
               Try AI again
             </Button>
-            <Button onClick={handleBuildManually}>Build manually instead</Button>
+            <Button onClick={handleBuildFromSearch}>Build from Google search</Button>
+            <Button variant="ghost" onClick={handleBuildBlank}>
+              Start blank
+            </Button>
           </div>
         </div>
       )}
 
       <WizardNav
         onGenerate={handleGenerate}
-        onBuildManually={handleBuildManually}
+        onBuildFromSearch={handleBuildFromSearch}
+        onBuildManually={handleBuildBlank}
         isGenerating={isGenerating}
       />
     </div>

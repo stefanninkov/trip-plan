@@ -130,7 +130,7 @@ export function BlockMoreInfo({
             ) : (
               <Sparkles size={14} />
             )}
-            {loading ? 'Researching\u2026' : hasExtras ? 'Refresh with AI' : 'Learn more with AI'}
+            {loading ? 'Researching…' : hasExtras ? 'Refresh with AI' : 'Learn more with AI'}
           </button>
         )}
         {canLookup && (
@@ -145,7 +145,7 @@ export function BlockMoreInfo({
             ) : (
               <Search size={14} />
             )}
-            {lookingUp ? 'Searching\u2026' : placeInfo ? 'Refresh place info' : 'Find place info'}
+            {lookingUp ? 'Searching…' : placeInfo ? 'Refresh place info' : 'Find place info'}
           </button>
         )}
         <a

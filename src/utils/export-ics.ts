@@ -36,7 +36,7 @@ function buildEvent(
   block: TimeBlock,
   stamp: string
 ): string[] | null {
-  const match = block.time.match(/^(\d{2}):(\d{2})\s*[-\u2013]\s*(\d{2}):(\d{2})$/)
+  const match = block.time.match(/^(\d{2}):(\d{2})\s*[-–]\s*(\d{2}):(\d{2})$/)
   const uid = `${block.id}@trip-plan`
   const summary = block.title || 'Activity'
   const description = block.description || ''

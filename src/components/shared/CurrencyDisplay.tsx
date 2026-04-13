@@ -74,7 +74,7 @@ function AmountRow({
         {formatAmount(min)}
         {showRange && (
           <>
-            <span className="mx-0.5 text-text-tertiary font-normal">{'\u2013'}</span>
+            <span className="mx-0.5 text-text-tertiary font-normal">{'–'}</span>
             {formatAmount(max!)}
           </>
         )}
@@ -124,7 +124,7 @@ export function CurrencyDisplay({
             symbolClass={SYMBOL_CLASSES[size]}
           />
           <span className="text-[11px] leading-[14px] text-text-tertiary inline-flex items-baseline gap-1">
-            <span className="text-[10px] uppercase tracking-[0.4px]">{'\u2248'}</span>
+            <span className="text-[10px] uppercase tracking-[0.4px]">{'≈'}</span>
             <AmountRow
               min={min}
               max={max}

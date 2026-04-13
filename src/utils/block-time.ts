@@ -6,7 +6,7 @@ interface Range {
 }
 
 function parseTime(time: string): Range | null {
-  const m = time.match(/^(\d{2}):(\d{2})\s*[-\u2013]\s*(\d{2}):(\d{2})$/)
+  const m = time.match(/^(\d{2}):(\d{2})\s*[-–]\s*(\d{2}):(\d{2})$/)
   if (!m) return null
   const [, sh, sm, eh, em] = m
   const startMin = Number(sh) * 60 + Number(sm)

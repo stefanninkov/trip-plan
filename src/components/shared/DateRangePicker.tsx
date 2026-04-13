@@ -217,7 +217,7 @@ export function DateRangePicker({
               <span className="ml-1 text-[10px]">n</span>
             </>
           ) : (
-            '\u2014'
+            '—'
           )}
         </span>
       </button>
