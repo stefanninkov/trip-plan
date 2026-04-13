@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'node:path'
 
 export default defineConfig({
+  base: '/trip-plan/',
   plugins: [
     react(),
     tailwindcss(),
@@ -18,10 +19,11 @@ export default defineConfig({
         theme_color: '#1A1A1E',
         background_color: '#1A1A1E',
         display: 'standalone',
-        start_url: '/',
+        start_url: '/trip-plan/',
+        scope: '/trip-plan/',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/trip-plan/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/trip-plan/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
     }),

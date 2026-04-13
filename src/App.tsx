@@ -14,6 +14,10 @@ import { SignInPage } from '@/pages/SignInPage'
 import { SharedTripPage } from '@/pages/SharedTripPage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 
+// Vite sets BASE_URL from vite.config.ts `base` ('/trip-plan/' in prod, '/' in dev).
+// BrowserRouter basename must not have a trailing slash.
+const ROUTER_BASENAME = import.meta.env.BASE_URL.replace(/\/$/, '')
+
 function AuthedRoute({ element }: { element: ReactElement }) {
   return <AuthGuard>{element}</AuthGuard>
 }
@@ -23,7 +27,7 @@ export function App() {
 
   return (
     <ErrorBoundary>
-      <BrowserRouter>
+      <BrowserRouter basename={ROUTER_BASENAME}>
         <Routes>
           <Route path={ROUTES.signIn} element={<SignInPage />} />
           <Route path={ROUTE_PATTERNS.shared} element={<SharedTripPage />} />
