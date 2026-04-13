@@ -4,6 +4,7 @@ import { useSharedTrip } from '@/hooks/useSharedTrip'
 import { PlanView } from '@/components/plan/PlanView'
 import { Card } from '@/components/shared/Card'
 import { CardSkeleton } from '@/components/shared/Skeleton'
+import { applyShareOptions } from '@/utils/sanitize-plan'
 
 export function SharedTripPage() {
   const { shareToken } = useParams<{ shareToken: string }>()
@@ -38,7 +39,11 @@ export function SharedTripPage() {
         <div className="mb-4 text-[12px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">
           Shared with you \u00B7 read-only
         </div>
-        <PlanView plan={trip.plan} tripId={trip.id} readOnly />
+        <PlanView
+          plan={applyShareOptions(trip.plan, trip.shareOptions)}
+          tripId={trip.id}
+          readOnly
+        />
       </div>
     </div>
   )

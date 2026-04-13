@@ -1,6 +1,13 @@
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 
+export interface SharingOptions {
+  /** If true, strip personal notes, tips, warnings from the shared copy. */
+  excludeNotes?: boolean
+  /** If true, strip all cost data (per-item costs and daily/grand totals). */
+  excludeCosts?: boolean
+}
+
 export function randomToken(length = 20): string {
   const bytes = new Uint8Array(length)
   crypto.getRandomValues(bytes)
@@ -9,11 +16,18 @@ export function randomToken(length = 20): string {
     .slice(0, length)
 }
 
-export async function enableSharing(tripId: string): Promise<string> {
+export async function enableSharing(
+  tripId: string,
+  options: SharingOptions = {}
+): Promise<string> {
   const token = randomToken(24)
   await updateDoc(doc(db, 'trips', tripId), {
     shared: true,
     shareToken: token,
+    shareOptions: {
+      excludeNotes: options.excludeNotes ?? false,
+      excludeCosts: options.excludeCosts ?? false,
+    },
     updatedAt: serverTimestamp(),
   })
   return token

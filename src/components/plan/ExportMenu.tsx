@@ -177,6 +177,8 @@ function ShareContent({
   onClose: () => void
 }) {
   const [working, setWorking] = useState(false)
+  const [excludeNotes, setExcludeNotes] = useState(false)
+  const [excludeCosts, setExcludeCosts] = useState(false)
   // Track locally so the UI updates instantly after enable/disable without
   // waiting for the Firestore snapshot to round-trip.
   const [localShared, setLocalShared] = useState(shared)
@@ -193,7 +195,7 @@ function ShareContent({
   const enable = async () => {
     setWorking(true)
     try {
-      const token = await enableSharing(tripId)
+      const token = await enableSharing(tripId, { excludeNotes, excludeCosts })
       setLocalToken(token)
       setLocalShared(true)
       addToast('success', 'Sharing enabled')
@@ -235,6 +237,28 @@ function ShareContent({
         <p className="text-text-secondary text-[13px]">
           Generate a secret link. Anyone with the link can view the plan in read-only mode.
         </p>
+        <div className="flex flex-col gap-2 text-[13px]">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={excludeNotes}
+              onChange={(e) => setExcludeNotes(e.target.checked)}
+              className="accent-[var(--color-accent)] w-4 h-4"
+            />
+            <span>
+              Hide my personal notes (tips, warnings, why I picked it, historical context)
+            </span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={excludeCosts}
+              onChange={(e) => setExcludeCosts(e.target.checked)}
+              className="accent-[var(--color-accent)] w-4 h-4"
+            />
+            <span>Hide costs and budget</span>
+          </label>
+        </div>
         <div className="flex items-center justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel
