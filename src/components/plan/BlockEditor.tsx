@@ -1,5 +1,22 @@
 import { useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, GripVertical } from 'lucide-react'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { TimeBlock } from '@/types/trip-plan'
 import type { TripEditor } from '@/hooks/useTripEditor'
 import { Button } from '@/components/shared/Button'
@@ -16,49 +33,32 @@ interface Props {
 export function BlockList({ dayId, blocks, editor }: Props) {
   const [adding, setAdding] = useState(false)
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    const oldIndex = blocks.findIndex((b) => b.id === active.id)
+    const newIndex = blocks.findIndex((b) => b.id === over.id)
+    if (oldIndex === -1 || newIndex === -1) return
+    const reordered = arrayMove(blocks, oldIndex, newIndex)
+    editor.updateDay(dayId, { blocks: reordered })
+  }
+
   return (
     <div className="flex flex-col gap-3">
-      {blocks.map((b) => (
-        <div
-          key={b.id}
-          className="bg-bg-secondary border border-border-subtle rounded-lg p-3 flex flex-col gap-1.5 group"
-        >
-          <div className="flex items-baseline justify-between gap-2">
-            <EditableText
-              value={b.time}
-              onCommit={(v) => editor.updateBlock(dayId, b.id, { time: v })}
-              placeholder="HH:MM-HH:MM"
-              className="font-cost text-[12px] text-text-tertiary"
-              as="span"
-            />
-            <button
-              type="button"
-              onClick={() => editor.deleteBlock(dayId, b.id)}
-              aria-label="Delete block"
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-text-tertiary hover:text-error p-1"
-            >
-              <Trash2 size={14} />
-            </button>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={blocks.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+          <div className="flex flex-col gap-3">
+            {blocks.map((b) => (
+              <SortableBlock key={b.id} block={b} dayId={dayId} editor={editor} />
+            ))}
           </div>
-          <EditableText
-            value={b.title}
-            onCommit={(v) => editor.updateBlock(dayId, b.id, { title: v })}
-            placeholder="Block title"
-            className="text-[14px] font-semibold"
-            as="span"
-          />
-          <EditableText
-            value={b.description}
-            onCommit={(v) => editor.updateBlock(dayId, b.id, { description: v })}
-            placeholder="Describe what happens here"
-            multiline
-            className="text-[13px] text-text-secondary leading-[20px]"
-            as="p"
-          />
-          {b.tip && <TipBlock kind="tip" text={b.tip} />}
-          {b.warning && <TipBlock kind="warning" text={b.warning} />}
-        </div>
-      ))}
+        </SortableContext>
+      </DndContext>
 
       {adding ? (
         <AddBlockForm
@@ -79,6 +79,78 @@ export function BlockList({ dayId, blocks, editor }: Props) {
           Add block
         </Button>
       )}
+    </div>
+  )
+}
+
+function SortableBlock({
+  block,
+  dayId,
+  editor,
+}: {
+  block: TimeBlock
+  dayId: string
+  editor: TripEditor
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: block.id,
+  })
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  }
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-bg-secondary border border-border-subtle rounded-lg p-3 flex gap-2 group"
+    >
+      <button
+        type="button"
+        aria-label="Drag to reorder"
+        {...attributes}
+        {...listeners}
+        className="shrink-0 flex items-start pt-1 text-text-tertiary hover:text-text-secondary cursor-grab active:cursor-grabbing"
+      >
+        <GripVertical size={14} />
+      </button>
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <EditableText
+            value={block.time}
+            onCommit={(v) => editor.updateBlock(dayId, block.id, { time: v })}
+            placeholder="HH:MM-HH:MM"
+            className="font-cost text-[12px] text-text-tertiary"
+            as="span"
+          />
+          <button
+            type="button"
+            onClick={() => editor.deleteBlock(dayId, block.id)}
+            aria-label="Delete block"
+            className="opacity-0 group-hover:opacity-100 transition-opacity text-text-tertiary hover:text-error p-1"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+        <EditableText
+          value={block.title}
+          onCommit={(v) => editor.updateBlock(dayId, block.id, { title: v })}
+          placeholder="Block title"
+          className="text-[14px] font-semibold"
+          as="span"
+        />
+        <EditableText
+          value={block.description}
+          onCommit={(v) => editor.updateBlock(dayId, block.id, { description: v })}
+          placeholder="Describe what happens here"
+          multiline
+          className="text-[13px] text-text-secondary leading-[20px]"
+          as="p"
+        />
+        {block.tip && <TipBlock kind="tip" text={block.tip} />}
+        {block.warning && <TipBlock kind="warning" text={block.warning} />}
+      </div>
     </div>
   )
 }
