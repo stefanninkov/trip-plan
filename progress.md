@@ -1,8 +1,8 @@
 # Progress
 
-## Current Phase: Phase A — Project Setup Complete
-## Current Task: Ready to start Phase B (Trip Wizard)
-## Blockers: None — awaiting user to add Firebase env values and run locally
+## Current Phase: Phase B — Trip Wizard Complete
+## Current Task: Ready to start Phase C (AI trip generation via Claude API)
+## Blockers: None
 
 ---
 
@@ -10,6 +10,19 @@
 - [x] Phase 0 — Q&A with user (2026-04-11)
 - [x] Phase 1 — Project management files (2026-04-11)
 - [x] Phase A — Project setup, Tailwind, Firebase config, auth (2026-04-13)
+- [x] Phase B — Trip wizard with progressive disclosure (2026-04-13)
+  - Zustand wizard-store (5-step flow, TripInputs defaults, per-step validation)
+  - WizardProgress (linear bar + clickable step labels)
+  - WizardNav (back / next / generate with validation gating)
+  - StepOrigin — simple text input for origin city
+  - StepDestinations — add/remove cities with NumberStepper for nights
+  - StepDates — native date inputs, days-count + range summary
+  - StepTravelers — NumberStepper (1-20)
+  - StepAdvanced — budget tiers as radio cards, interest chips, progressive disclosure
+    panel for pace / accommodation / home currency / dietary / mobility / notes
+  - Shared: Select, NumberStepper added
+  - Constants: interests (12 tags), pace + accommodation options
+  - Generate button is wired to a placeholder toast (Phase C will stream Claude response)
   - Vite + React 19 + TypeScript strict mode
   - Tailwind CSS v4 with full design-token palette (dark Notion/Arc vibe)
   - JetBrains Mono + IBM Plex Mono via Google Fonts
