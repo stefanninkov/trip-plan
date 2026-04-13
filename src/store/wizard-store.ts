@@ -27,6 +27,34 @@ export const WIZARD_STEP_ORDER: WizardStep[] = [
   'advanced',
 ]
 
+/**
+ * Pure validation so consumers can subscribe to the underlying state
+ * rather than a stable function reference.
+ */
+export function validateStep(step: WizardStep, inputs: TripInputs): boolean {
+  switch (step) {
+    case 'origin':
+      return inputs.origin.trim().length >= 2
+    case 'destinations':
+      return (
+        inputs.destinations.length > 0 &&
+        inputs.destinations.every((d) => d.city.trim().length >= 2 && d.nights > 0)
+      )
+    case 'dates':
+      return (
+        Boolean(inputs.startDate) &&
+        Boolean(inputs.endDate) &&
+        new Date(inputs.endDate).getTime() > new Date(inputs.startDate).getTime()
+      )
+    case 'travelers':
+      return inputs.travelers >= 1
+    case 'advanced':
+      return true
+    default:
+      return false
+  }
+}
+
 interface WizardStoreState {
   currentStep: WizardStep
   inputs: TripInputs
@@ -39,7 +67,6 @@ interface WizardStoreState {
   prevStep: () => void
   goToStep: (step: WizardStep) => void
   reset: () => void
-  isValid: (step: WizardStep) => boolean
 }
 
 export const useWizardStore = create<WizardStoreState>((set, get) => ({
@@ -105,27 +132,4 @@ export const useWizardStore = create<WizardStoreState>((set, get) => ({
   goToStep: (step) => set({ currentStep: step }),
 
   reset: () => set({ currentStep: 'origin', inputs: DEFAULT_INPUTS }),
-
-  isValid: (step) => {
-    const { inputs } = get()
-    switch (step) {
-      case 'origin':
-        return inputs.origin.trim().length >= 2
-      case 'destinations':
-        return inputs.destinations.length > 0 &&
-          inputs.destinations.every((d) => d.city.trim().length >= 2 && d.nights > 0)
-      case 'dates':
-        return (
-          Boolean(inputs.startDate) &&
-          Boolean(inputs.endDate) &&
-          new Date(inputs.endDate).getTime() > new Date(inputs.startDate).getTime()
-        )
-      case 'travelers':
-        return inputs.travelers >= 1
-      case 'advanced':
-        return true
-      default:
-        return false
-    }
-  },
 }))

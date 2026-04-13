@@ -1,6 +1,6 @@
 import { ArrowLeft, ArrowRight, Sparkles } from 'lucide-react'
 import { Button } from '@/components/shared/Button'
-import { useWizardStore, WIZARD_STEP_ORDER } from '@/store/wizard-store'
+import { useWizardStore, WIZARD_STEP_ORDER, validateStep } from '@/store/wizard-store'
 
 export interface WizardNavProps {
   onGenerate: () => void
@@ -9,14 +9,13 @@ export interface WizardNavProps {
 
 export function WizardNav({ onGenerate, isGenerating = false }: WizardNavProps) {
   const currentStep = useWizardStore((s) => s.currentStep)
+  const canAdvance = useWizardStore((s) => validateStep(s.currentStep, s.inputs))
   const nextStep = useWizardStore((s) => s.nextStep)
   const prevStep = useWizardStore((s) => s.prevStep)
-  const isValid = useWizardStore((s) => s.isValid)
 
   const idx = WIZARD_STEP_ORDER.indexOf(currentStep)
   const isFirst = idx === 0
   const isLast = idx === WIZARD_STEP_ORDER.length - 1
-  const canAdvance = isValid(currentStep)
 
   return (
     <div className="flex items-center justify-between gap-3 pt-4">
