@@ -83,6 +83,13 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       days: p.days.map((d) => (d.id === dayId ? { ...d, ...patch } : d)),
     }))
 
+  // Replace a whole day with a regenerated one (keeps ID stable)
+  const replaceDay = (dayId: string, next: DayPlan) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) => (d.id === dayId ? { ...next, id: d.id } : d)),
+    }))
+
   // === Blocks ===
   const addBlock = (dayId: string, block: Omit<TimeBlock, 'id'>) =>
     apply((p) => ({
@@ -207,6 +214,7 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     setWeatherNote,
     setListField,
     updateDay,
+    replaceDay,
     addBlock,
     updateBlock,
     deleteBlock,

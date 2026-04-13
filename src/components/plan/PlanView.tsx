@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Eye, Pencil } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
+import type { TripInputs } from '@/types/wizard'
 import { useTripEditor } from '@/hooks/useTripEditor'
 import { Button } from '@/components/shared/Button'
 import { PlanHeader } from './PlanHeader'
@@ -13,6 +14,7 @@ import { SearchPanel } from '@/components/search/SearchPanel'
 export interface PlanViewProps {
   plan: TripPlan
   tripId: string
+  inputs?: TripInputs
   shared?: boolean
   shareToken?: string | null
   readOnly?: boolean
@@ -21,6 +23,7 @@ export interface PlanViewProps {
 export function PlanView({
   plan,
   tripId,
+  inputs,
   shared = false,
   shareToken = null,
   readOnly = false,
@@ -77,6 +80,7 @@ export function PlanView({
             currency={currency}
             editor={canEdit ? editor : undefined}
             defaultOpen={idx === 0}
+            tripInputs={canEdit ? inputs : undefined}
             allDays={current.days.map((d) => ({
               id: d.id,
               dayNumber: d.dayNumber,

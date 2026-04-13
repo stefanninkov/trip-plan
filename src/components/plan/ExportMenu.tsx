@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Printer, Copy, Share2, Check, LinkIcon } from 'lucide-react'
+import { Printer, Copy, Share2, Check, LinkIcon, Calendar } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
 import { Button } from '@/components/shared/Button'
 import { Modal } from '@/components/shared/Modal'
 import { useUiStore } from '@/store/ui-store'
 import { planToText } from '@/utils/export-text'
+import { downloadIcs } from '@/utils/export-ics'
 import { buildShareUrl, disableSharing, enableSharing } from '@/utils/share-link'
 import { logger } from '@/utils/logger'
 
@@ -59,9 +60,23 @@ export function ExportMenu({ plan, tripId, shared, shareToken }: ExportMenuProps
       </Button>
 
       {open && (
-        <div className="absolute right-0 top-11 w-56 bg-bg-elevated border border-border-default rounded-xl p-1.5 shadow-[0_8px_24px_#00000066] z-20 flex flex-col">
+        <div className="absolute right-0 top-11 w-60 bg-bg-elevated border border-border-default rounded-xl p-1.5 shadow-[0_8px_24px_#00000066] z-20 flex flex-col">
           <MenuButton icon={Printer} label="Print / save PDF" onClick={printPdf} />
           <MenuButton icon={Copy} label="Copy as text" onClick={copyText} />
+          <MenuButton
+            icon={Calendar}
+            label="Download calendar (.ics)"
+            onClick={() => {
+              try {
+                downloadIcs(plan)
+                addToast('success', 'Calendar file downloaded')
+              } catch (err) {
+                logger.error('ICS export failed:', err)
+                addToast('error', 'Could not build calendar file')
+              }
+              setOpen(false)
+            }}
+          />
           <MenuButton
             icon={LinkIcon}
             label="Share link"

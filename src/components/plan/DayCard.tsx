@@ -1,7 +1,11 @@
 import { useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Sparkles, Loader2 } from 'lucide-react'
 import type { DayPlan } from '@/types/trip-plan'
+import type { TripInputs } from '@/types/wizard'
 import type { TripEditor } from '@/hooks/useTripEditor'
+import { useRegenerateDay } from '@/hooks/useRegenerateDay'
+import { useUiStore } from '@/store/ui-store'
+import { Button } from '@/components/shared/Button'
 import { cn } from '@/utils/cn'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
 import { EditableText } from '@/components/shared/EditableText'
@@ -19,11 +23,39 @@ export interface DayCardProps {
   editor?: TripEditor
   defaultOpen?: boolean
   allDays?: { id: string; dayNumber: number; title: string }[]
+  tripInputs?: TripInputs
 }
 
-export function DayCard({ day, currency, editor, defaultOpen = false, allDays }: DayCardProps) {
+export function DayCard({
+  day,
+  currency,
+  editor,
+  defaultOpen = false,
+  allDays,
+  tripInputs,
+}: DayCardProps) {
   const [open, setOpen] = useState(defaultOpen)
   const readOnly = !editor
+  const { loading: regenerating, run: runRegenerate } = useRegenerateDay()
+  const addToast = useUiStore((s) => s.addToast)
+
+  const handleRegenerate = async () => {
+    if (!editor || !tripInputs) return
+    const ok = window.confirm(
+      `Replace Day ${day.dayNumber} with a fresh AI-generated version? This overwrites your current blocks, costs and hotels for this day.`
+    )
+    if (!ok) return
+    const next = await runRegenerate({
+      inputs: tripInputs,
+      day: { id: day.id, dayNumber: day.dayNumber, date: day.date, location: day.location },
+    })
+    if (next) {
+      editor.replaceDay(day.id, next)
+      addToast('success', `Day ${day.dayNumber} regenerated`)
+    } else {
+      addToast('error', 'Could not regenerate that day')
+    }
+  }
   // The print CSS forces everything visible regardless of local open state.
   return (
     <div className="bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card">
@@ -70,31 +102,48 @@ export function DayCard({ day, currency, editor, defaultOpen = false, allDays }:
         )}
       >
           {editor && (
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3">
-              <div>
-                <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
-                  Title
-                </span>
-                <EditableText
-                  as="p"
-                  className="text-[15px] font-semibold"
-                  value={day.title}
-                  onCommit={(v) => editor.updateDay(day.id, { title: v })}
-                  placeholder="Day title"
-                />
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-3">
+                <div>
+                  <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
+                    Title
+                  </span>
+                  <EditableText
+                    as="p"
+                    className="text-[15px] font-semibold"
+                    value={day.title}
+                    onCommit={(v) => editor.updateDay(day.id, { title: v })}
+                    placeholder="Day title"
+                  />
+                </div>
+                <div>
+                  <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
+                    Location
+                  </span>
+                  <EditableText
+                    as="p"
+                    className="text-[14px]"
+                    value={day.location}
+                    onCommit={(v) => editor.updateDay(day.id, { location: v })}
+                    placeholder="City or area"
+                  />
+                </div>
               </div>
-              <div>
-                <span className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
-                  Location
-                </span>
-                <EditableText
-                  as="p"
-                  className="text-[14px]"
-                  value={day.location}
-                  onCommit={(v) => editor.updateDay(day.id, { location: v })}
-                  placeholder="City or area"
-                />
-              </div>
+              {tripInputs && (
+                <Button
+                  variant="secondary"
+                  onClick={handleRegenerate}
+                  disabled={regenerating}
+                  className="self-start flex items-center gap-1.5"
+                >
+                  {regenerating ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Sparkles size={14} />
+                  )}
+                  {regenerating ? 'Regenerating\u2026' : 'Regenerate this day with AI'}
+                </Button>
+              )}
             </div>
           )}
 

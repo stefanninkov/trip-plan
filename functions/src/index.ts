@@ -6,6 +6,7 @@ import { SYSTEM_PROMPT } from './prompts/system-prompt.js'
 import { buildUserMessage } from './prompts/user-prompt.js'
 
 export { searchFlights, searchHotels, searchPlaces, searchWeb } from './search.js'
+export { regenerateDay } from './regenerate-day.js'
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 

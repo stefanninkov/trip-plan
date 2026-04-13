@@ -55,5 +55,13 @@ export function TripPage() {
     )
   }
 
-  return <PlanView plan={trip.plan} tripId={trip.id} />
+  return (
+    <PlanView
+      plan={trip.plan}
+      tripId={trip.id}
+      inputs={trip.inputs}
+      shared={trip.shared}
+      shareToken={trip.shareToken}
+    />
+  )
 }
