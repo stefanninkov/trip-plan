@@ -5,6 +5,7 @@ import { toIsoDate } from '@/utils/date-helpers'
 
 const DEFAULT_INPUTS: TripInputs = {
   origin: '',
+  originCountry: '',
   destinations: [{ city: '', country: '', nights: 3 }],
   startDate: toIsoDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)),
   endDate: toIsoDate(new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)),
@@ -34,11 +35,16 @@ export const WIZARD_STEP_ORDER: WizardStep[] = [
 export function validateStep(step: WizardStep, inputs: TripInputs): boolean {
   switch (step) {
     case 'origin':
-      return inputs.origin.trim().length >= 2
+      return inputs.origin.trim().length >= 2 && inputs.originCountry.trim().length > 0
     case 'destinations':
       return (
         inputs.destinations.length > 0 &&
-        inputs.destinations.every((d) => d.city.trim().length >= 2 && d.nights > 0)
+        inputs.destinations.every(
+          (d) =>
+            d.city.trim().length >= 2 &&
+            d.country.trim().length > 0 &&
+            d.nights > 0
+        )
       )
     case 'dates':
       return (

@@ -19,6 +19,7 @@ export type AccommodationPref = 'hostel' | 'hotel' | 'apartment' | 'any'
 
 export interface TripInputs {
   origin: string
+  originCountry: string
   destinations: Destination[]
   startDate: string
   endDate: string

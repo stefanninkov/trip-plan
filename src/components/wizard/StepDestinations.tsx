@@ -20,47 +20,60 @@ export function StepDestinations() {
           Where do you want to go?
         </h2>
         <p className="text-text-secondary">
-          Add one or more cities in the order you want to visit them. Set how many nights
-          you'll spend in each.
+          Add one or more cities in the order you want to visit them. Pick each one from the
+          suggestions and set how many nights you'll spend.
         </p>
       </div>
 
       <div className="flex flex-col gap-3">
-        {destinations.map((dest, index) => (
-          <Card key={index} className="flex flex-col gap-3 md:flex-row md:items-end">
-            <div className="flex-1 min-w-0">
-              <CityAutocomplete
-                name={`destination-${index}`}
-                label={`Stop ${index + 1}`}
-                value={dest.city}
-                onChange={(v) => updateDestination(index, { city: v })}
-                onSelect={(s) =>
-                  updateDestination(index, { city: s.displayName, country: s.country })
-                }
-                placeholder="e.g. Rome, Italy"
-              />
-            </div>
-            <div className="flex items-end gap-2">
-              <NumberStepper
-                label="Nights"
-                value={dest.nights}
-                min={1}
-                max={30}
-                onChange={(v) => updateDestination(index, { nights: v })}
-              />
-              {destinations.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeDestination(index)}
-                  aria-label={`Remove stop ${index + 1}`}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-text-tertiary hover:bg-bg-elevated hover:text-error transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
+        {destinations.map((dest, index) => {
+          const needsPick = dest.city.length >= 2 && !dest.country
+          return (
+            <Card key={index} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 md:flex-row md:items-end">
+                <div className="flex-1 min-w-0">
+                  <CityAutocomplete
+                    name={`destination-${index}`}
+                    label={`Stop ${index + 1}`}
+                    value={dest.city}
+                    onChange={(v) => {
+                      updateDestination(index, { city: v })
+                      if (dest.country) updateDestination(index, { country: '' })
+                    }}
+                    onSelect={(s) =>
+                      updateDestination(index, { city: s.displayName, country: s.country })
+                    }
+                    placeholder="e.g. Rome, Italy"
+                  />
+                </div>
+                <div className="flex items-end gap-2">
+                  <NumberStepper
+                    label="Nights"
+                    value={dest.nights}
+                    min={1}
+                    max={30}
+                    onChange={(v) => updateDestination(index, { nights: v })}
+                  />
+                  {destinations.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeDestination(index)}
+                      aria-label={`Remove stop ${index + 1}`}
+                      className="w-9 h-9 rounded-lg flex items-center justify-center text-text-tertiary hover:bg-bg-elevated hover:text-error transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              </div>
+              {needsPick && (
+                <p className="text-[12px] text-text-tertiary">
+                  Pick one of the suggestions to confirm this stop.
+                </p>
               )}
-            </div>
-          </Card>
-        ))}
+            </Card>
+          )
+        })}
       </div>
 
       <Button

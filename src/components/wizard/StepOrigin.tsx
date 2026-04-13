@@ -4,6 +4,7 @@ import { CityAutocomplete } from '@/components/shared/CityAutocomplete'
 
 export function StepOrigin() {
   const origin = useWizardStore((s) => s.inputs.origin)
+  const originCountry = useWizardStore((s) => s.inputs.originCountry)
   const setField = useWizardStore((s) => s.setField)
 
   return (
@@ -15,17 +16,29 @@ export function StepOrigin() {
           Where are you starting from?
         </h2>
         <p className="text-text-secondary">
-          Search for your departure city. Pick a result, or type freely and continue.
+          Search for your departure city, then pick it from the suggestions to continue.
         </p>
       </div>
       <CityAutocomplete
         name="origin"
         value={origin}
-        onChange={(v) => setField('origin', v)}
-        onSelect={(s) => setField('origin', s.displayName)}
+        onChange={(v) => {
+          setField('origin', v)
+          // Typing without selecting invalidates the previous selection
+          if (originCountry) setField('originCountry', '')
+        }}
+        onSelect={(s) => {
+          setField('origin', s.displayName)
+          setField('originCountry', s.country)
+        }}
         placeholder="e.g. Belgrade, Serbia"
         autoFocus
       />
+      {!originCountry && origin.length >= 2 && (
+        <p className="text-[12px] text-text-tertiary">
+          Pick one of the suggestions to continue.
+        </p>
+      )}
     </div>
   )
 }
