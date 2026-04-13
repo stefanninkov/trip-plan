@@ -1,20 +1,32 @@
 import { CURRENCY_MAP } from '@/constants/currencies'
 
-export function formatCurrency(amount: number, currencyCode: string): string {
-  const currency = CURRENCY_MAP.get(currencyCode)
-  const symbol = currency?.symbol ?? currencyCode
+export function currencySymbol(currencyCode: string): string {
+  return CURRENCY_MAP.get(currencyCode)?.symbol ?? currencyCode
+}
 
-  const formatted = new Intl.NumberFormat('en-US', {
+/**
+ * Format just the number part with thousands separators (no currency).
+ * Rounds to the nearest integer for readability.
+ */
+export function formatAmount(amount: number): string {
+  return new Intl.NumberFormat('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(Math.round(amount))
+}
 
-  return `${symbol}${formatted}`
+/**
+ * Single amount with a thin non-breaking space between symbol and number so
+ * the currency and the value read as two pieces rather than one jammed token.
+ */
+export function formatCurrency(amount: number, currencyCode: string): string {
+  return `${currencySymbol(currencyCode)}\u202F${formatAmount(amount)}`
 }
 
 export function formatRange(min: number, max: number, currencyCode: string): string {
   if (min === max) {
     return formatCurrency(min, currencyCode)
   }
-  return `${formatCurrency(min, currencyCode)}\u2013${formatCurrency(max, currencyCode)}`
+  const sym = currencySymbol(currencyCode)
+  return `${sym}\u202F${formatAmount(min)}\u2013${formatAmount(max)}`
 }

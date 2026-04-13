@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { geocode } from '@/utils/geocode'
 import { logger } from '@/utils/logger'
 
 export interface DayWeather {
@@ -17,6 +16,39 @@ interface OpenMeteoResponse {
     temperature_2m_min: number[]
     weather_code: number[]
     precipitation_probability_max: number[]
+  }
+}
+
+interface OpenMeteoGeocode {
+  results?: Array<{ latitude: number; longitude: number }>
+}
+
+const geoCache = new Map<string, { lat: number; lng: number } | null>()
+
+async function openMeteoGeocode(name: string): Promise<{ lat: number; lng: number } | null> {
+  const key = name.toLowerCase().trim()
+  if (!key) return null
+  if (geoCache.has(key)) return geoCache.get(key) ?? null
+  try {
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(name)}&count=1&language=en`
+    const res = await fetch(url)
+    if (!res.ok) {
+      geoCache.set(key, null)
+      return null
+    }
+    const data = (await res.json()) as OpenMeteoGeocode
+    const top = data.results?.[0]
+    if (!top) {
+      geoCache.set(key, null)
+      return null
+    }
+    const coord = { lat: top.latitude, lng: top.longitude }
+    geoCache.set(key, coord)
+    return coord
+  } catch (err) {
+    logger.warn('Open-Meteo geocode failed for', name, err)
+    geoCache.set(key, null)
+    return null
   }
 }
 
@@ -48,11 +80,6 @@ const CODE_LABELS: Record<number, string> = {
   99: 'Severe thunderstorm',
 }
 
-/**
- * Fetches a daily forecast for the given location / ISO date. Returns null
- * when the date is outside the forecast window (>16 days) or offline.
- * Session-cached so repeated renders are cheap.
- */
 const cache = new Map<string, DayWeather | null>()
 
 export function useWeather(location: string, dateIso: string): DayWeather | null | 'loading' {
@@ -70,10 +97,11 @@ export function useWeather(location: string, dateIso: string): DayWeather | null
     setState('loading')
     const run = async () => {
       try {
-        const coord = await geocode(location)
+        const coord = await openMeteoGeocode(location)
+        if (cancelled) return
         if (!coord) {
           cache.set(key, null)
-          if (!cancelled) setState(null)
+          setState(null)
           return
         }
         const url =

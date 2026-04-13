@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Map, Briefcase } from 'lucide-react'
+import { Home, Map, Briefcase, Compass } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
 import { useTrips } from '@/hooks/useTrips'
@@ -7,6 +7,7 @@ import { formatDateRange } from '@/utils/date-helpers'
 
 const NAV_ITEMS = [
   { to: ROUTES.home, label: 'Home', icon: Home },
+  { to: ROUTES.explore, label: 'Explore', icon: Compass },
   { to: ROUTES.newTrip, label: 'New trip', icon: Map },
   { to: ROUTES.myTrips, label: 'My Trips', icon: Briefcase },
 ]

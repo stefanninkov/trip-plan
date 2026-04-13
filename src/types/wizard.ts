@@ -1,4 +1,4 @@
-import type { BudgetTier } from './trip-plan'
+import type { BudgetTier, TravelMode } from './trip-plan'
 
 export type WizardStep =
   | 'origin'
@@ -14,6 +14,12 @@ export interface Destination {
   // Optional precise date range per stop (within the overall trip range)
   startDate?: string
   endDate?: string
+  /**
+   * How the traveler arrives at this stop from the previous location
+   * (or from the origin for the first stop). Optional \u2014 when omitted the
+   * AI picks the best option.
+   */
+  arrivalMode?: TravelMode
 }
 
 export type PacePreference = 'relaxed' | 'moderate' | 'packed'

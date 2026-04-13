@@ -1,5 +1,5 @@
 import { cn } from '@/utils/cn'
-import { formatCurrency, formatRange } from '@/utils/format-currency'
+import { currencySymbol, formatAmount } from '@/utils/format-currency'
 import { convertSync } from '@/utils/currency-rates'
 
 export interface CurrencyDisplayProps {
@@ -14,10 +14,67 @@ export interface CurrencyDisplayProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-const SIZE_CLASSES = {
-  sm: 'text-[13px] leading-[18px]',
-  md: 'text-[14px] leading-[22px] font-semibold',
-  lg: 'text-[18px] leading-[26px] font-bold tracking-[-0.2px]',
+const AMOUNT_CLASSES = {
+  sm: 'text-[14px] leading-[18px] font-cost font-semibold tracking-[-0.1px]',
+  md: 'text-[16px] leading-[22px] font-cost font-semibold tracking-[-0.2px]',
+  lg: 'text-[22px] leading-[28px] font-cost font-bold tracking-[-0.3px]',
+}
+
+const SYMBOL_CLASSES = {
+  sm: 'text-[10px] leading-[14px] uppercase tracking-[0.4px] font-semibold',
+  md: 'text-[11px] leading-[14px] uppercase tracking-[0.5px] font-semibold',
+  lg: 'text-[12px] leading-[16px] uppercase tracking-[0.6px] font-semibold',
+}
+
+/**
+ * Renders a single amount + currency in two parts: a muted pill-ish
+ * currency code/symbol and the number itself. Using separate spans (with a
+ * gap) stops the symbol from feeling glued to the digits and lets the number
+ * own the visual weight.
+ */
+function AmountRow({
+  min,
+  max,
+  currency,
+  muted,
+  amountClass,
+  symbolClass,
+}: {
+  min: number
+  max?: number
+  currency: string
+  muted?: boolean
+  amountClass: string
+  symbolClass: string
+}) {
+  const sym = currencySymbol(currency)
+  const showRange = max !== undefined && Math.round(max) !== Math.round(min)
+  return (
+    <span
+      className={cn(
+        'inline-flex items-baseline gap-1.5 whitespace-nowrap',
+        muted && 'text-text-tertiary'
+      )}
+    >
+      <span
+        className={cn(
+          symbolClass,
+          muted ? 'text-text-tertiary' : 'text-text-tertiary'
+        )}
+      >
+        {sym}
+      </span>
+      <span className={amountClass}>
+        {formatAmount(min)}
+        {showRange && (
+          <>
+            <span className="mx-0.5 text-text-tertiary font-normal">{'\u2013'}</span>
+            {formatAmount(max!)}
+          </>
+        )}
+      </span>
+    </span>
+  )
 }
 
 export function CurrencyDisplay({
@@ -29,11 +86,6 @@ export function CurrencyDisplay({
   className,
   size = 'md',
 }: CurrencyDisplayProps) {
-  const localText =
-    max !== undefined && max !== min
-      ? formatRange(min, max, currency)
-      : formatCurrency(min, currency)
-
   // Pick conversion rate: explicit homeRate prop -> session FX cache.
   let effectiveRate: number | null = null
   if (homeCurrency && homeCurrency !== currency) {
@@ -45,27 +97,41 @@ export function CurrencyDisplay({
   }
 
   const homeAvailable = Boolean(homeCurrency && effectiveRate && homeCurrency !== currency)
-  const homeText =
-    homeAvailable && effectiveRate
-      ? max !== undefined && max !== min
-        ? formatRange(min * effectiveRate, max * effectiveRate, homeCurrency!)
-        : formatCurrency(min * effectiveRate, homeCurrency!)
-      : null
 
   // When the user has a home currency that differs from the local one, show
   // the home currency as the primary (big) line and keep the local price as
   // a muted secondary line. This makes budgets readable at a glance.
-  const primaryText = homeText ?? localText
-  const secondaryText = homeText ? localText : null
-
   return (
-    <div className={cn('cost flex flex-col items-end', className)}>
-      <span className={SIZE_CLASSES[size]}>{primaryText}</span>
-      {secondaryText && (
-        <span className="text-[12px] text-text-tertiary leading-[16px]">
-          {'\u2248 '}
-          {secondaryText}
-        </span>
+    <div className={cn('cost flex flex-col items-end gap-0.5', className)}>
+      {homeAvailable && effectiveRate ? (
+        <>
+          <AmountRow
+            min={min * effectiveRate}
+            max={max !== undefined ? max * effectiveRate : undefined}
+            currency={homeCurrency!}
+            amountClass={AMOUNT_CLASSES[size]}
+            symbolClass={SYMBOL_CLASSES[size]}
+          />
+          <span className="text-[11px] leading-[14px] text-text-tertiary inline-flex items-baseline gap-1">
+            <span className="text-[10px] uppercase tracking-[0.4px]">{'\u2248'}</span>
+            <AmountRow
+              min={min}
+              max={max}
+              currency={currency}
+              muted
+              amountClass="text-[11px] leading-[14px] font-cost"
+              symbolClass="text-[9px] uppercase tracking-[0.4px] font-semibold"
+            />
+          </span>
+        </>
+      ) : (
+        <AmountRow
+          min={min}
+          max={max}
+          currency={currency}
+          amountClass={AMOUNT_CLASSES[size]}
+          symbolClass={SYMBOL_CLASSES[size]}
+        />
       )}
     </div>
   )

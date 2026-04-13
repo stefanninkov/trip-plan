@@ -282,9 +282,10 @@ export function DayCard({
               hotels={day.hotels}
               editor={editor}
               defaultCurrency={currency}
+              homeCurrency={homeCurrency}
             />
           ) : (
-            day.hotels && day.hotels.length > 0 && <ReadOnlyHotels day={day} />
+            day.hotels && day.hotels.length > 0 && <ReadOnlyHotels day={day} homeCurrency={homeCurrency} />
           )}
 
           {editor ? (
@@ -293,9 +294,10 @@ export function DayCard({
               costs={day.costs}
               editor={editor}
               defaultCurrency={currency}
+              homeCurrency={homeCurrency}
             />
           ) : (
-            day.costs.length > 0 && <ReadOnlyCosts day={day} />
+            day.costs.length > 0 && <ReadOnlyCosts day={day} homeCurrency={homeCurrency} />
           )}
 
           {readOnly && day.blocks.length === 0 && day.costs.length === 0 && (
@@ -388,7 +390,7 @@ function ReadOnlyBlocks({
   )
 }
 
-function ReadOnlyHotels({ day }: { day: DayPlan }) {
+function ReadOnlyHotels({ day, homeCurrency }: { day: DayPlan; homeCurrency?: string }) {
   if (!day.hotels) return null
   return (
     <div className="flex flex-col gap-2">
@@ -406,7 +408,12 @@ function ReadOnlyHotels({ day }: { day: DayPlan }) {
               {h.stars > 0 ? `${h.stars}-star` : 'Hostel'}
             </div>
             <p className="text-[12px] text-text-secondary leading-[18px]">{h.highlight}</p>
-            <CurrencyDisplay min={h.pricePerNight} currency={h.currency} size="sm" />
+            <CurrencyDisplay
+              min={h.pricePerNight}
+              currency={h.currency}
+              homeCurrency={homeCurrency}
+              size="sm"
+            />
           </div>
         ))}
       </div>
@@ -414,7 +421,7 @@ function ReadOnlyHotels({ day }: { day: DayPlan }) {
   )
 }
 
-function ReadOnlyCosts({ day }: { day: DayPlan }) {
+function ReadOnlyCosts({ day, homeCurrency }: { day: DayPlan; homeCurrency?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
@@ -439,7 +446,13 @@ function ReadOnlyCosts({ day }: { day: DayPlan }) {
                 {CATEGORIES[c.category].label}
               </span>
             </div>
-            <CurrencyDisplay min={c.amount.min} max={c.amount.max} currency={c.currency} size="sm" />
+            <CurrencyDisplay
+              min={c.amount.min}
+              max={c.amount.max}
+              currency={c.currency}
+              homeCurrency={homeCurrency}
+              size="sm"
+            />
           </div>
         ))}
       </div>

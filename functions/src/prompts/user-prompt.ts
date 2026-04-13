@@ -1,3 +1,15 @@
+type TravelModeInput =
+  | 'plane'
+  | 'train'
+  | 'car'
+  | 'bus'
+  | 'ferry'
+  | 'walk'
+  | 'bike'
+  | 'subway'
+  | 'taxi'
+  | 'scooter'
+
 interface TripInputsInput {
   origin: string
   originCountry: string
@@ -7,6 +19,7 @@ interface TripInputsInput {
     nights: number
     startDate?: string
     endDate?: string
+    arrivalMode?: TravelModeInput
   }[]
   startDate: string
   endDate: string
@@ -14,7 +27,7 @@ interface TripInputsInput {
   budgetLevel: 'budget' | 'mid' | 'comfortable' | 'luxury'
   interests: string[]
   pace: 'relaxed' | 'moderate' | 'packed'
-  accommodationType: 'hostel' | 'hotel' | 'apartment' | 'any'
+  accommodationType: string | string[]
   dietaryNeeds: string
   mobilityNotes: string
   homeCurrency: string
@@ -32,6 +45,18 @@ export function buildUserMessage(inputs: TripInputsInput): string {
     })
     .join(' -> ')
 
+  const transportLegs = inputs.destinations
+    .map((d, i) => {
+      if (!d.arrivalMode) return null
+      const from = i === 0 ? inputs.origin : inputs.destinations[i - 1].city
+      return `  - ${from} -> ${d.city}: ${d.arrivalMode}`
+    })
+    .filter((x): x is string => x !== null)
+    .join('\n')
+  const transportSection = transportLegs
+    ? `\n- Required transport modes (MUST use these for the inter-city transport blocks):\n${transportLegs}`
+    : '\n- Transport modes: pick the best options for each leg.'
+
   const interests = inputs.interests.length ? inputs.interests.join(', ') : '(none specified)'
 
   const totalDays =
@@ -43,7 +68,7 @@ export function buildUserMessage(inputs: TripInputsInput): string {
   return `Plan a trip with these details:
 
 - Origin: ${inputs.origin}${inputs.originCountry ? ` (${inputs.originCountry})` : ''}
-- Destinations: ${destList}
+- Destinations: ${destList}${transportSection}
 - Dates: ${inputs.startDate} to ${inputs.endDate} (${totalDays} days)
 - Travelers: ${inputs.travelers}
 - Budget level: ${inputs.budgetLevel}

@@ -8,6 +8,7 @@ import { buildUserMessage } from './prompts/user-prompt.js'
 export { searchFlights, searchHotels, searchPlaces, searchWeb } from './search.js'
 export { regenerateDay } from './regenerate-day.js'
 export { enrichBlock } from './enrich-block.js'
+export { exploreDestination } from './explore.js'
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 

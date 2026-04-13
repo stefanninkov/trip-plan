@@ -10,6 +10,7 @@ import { StepDestinations } from './StepDestinations'
 import { StepDates } from './StepDates'
 import { StepTravelers } from './StepTravelers'
 import { StepAdvanced } from './StepAdvanced'
+import { GenerationProgress } from './GenerationProgress'
 import { Button } from '@/components/shared/Button'
 import { ROUTES } from '@/constants/routes'
 
@@ -56,9 +57,13 @@ export function TripWizard() {
       </div>
 
       {isGenerating && (
-        <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-[13px] text-text-secondary flex flex-col gap-3">
-          <span>Working on your itinerary&hellip; this can take up to 60 seconds.</span>
-          <Button variant="secondary" onClick={handleBuildManually}>
+        <div className="flex flex-col gap-3">
+          <GenerationProgress />
+          <Button
+            variant="ghost"
+            onClick={handleBuildManually}
+            className="self-start text-[12px]"
+          >
             Skip AI and build manually
           </Button>
         </div>

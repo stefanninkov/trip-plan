@@ -3,9 +3,13 @@ import { useWizardStore } from '@/store/wizard-store'
 import { Input } from '@/components/shared/Input'
 import { daysBetween, formatDateRange } from '@/utils/date-helpers'
 import type { Destination } from '@/types/wizard'
+import type { TravelMode } from '@/types/trip-plan'
+import { TRAVEL_MODES, TRAVEL_MODE_LIST } from '@/constants/travel-modes'
+import { cn } from '@/utils/cn'
 
 export function StepDates() {
   const destinations = useWizardStore((s) => s.inputs.destinations)
+  const origin = useWizardStore((s) => s.inputs.origin)
   const updateDestination = useWizardStore((s) => s.updateDestination)
 
   // Trip total is the range from the first stop's start to the last stop's end
@@ -39,6 +43,10 @@ export function StepDates() {
     }
   }
 
+  const setArrivalMode = (index: number, mode: TravelMode | undefined) => {
+    updateDestination(index, { arrivalMode: mode })
+  }
+
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
@@ -61,6 +69,9 @@ export function StepDates() {
             new Date(d.endDate).getTime() <= new Date(d.startDate).getTime()
           const nights =
             d.startDate && d.endDate && !invalid ? daysBetween(d.startDate, d.endDate) : 0
+          const fromLabel =
+            i === 0 ? origin.trim() || 'your origin' : destinations[i - 1].city || `Stop ${i}`
+          const toLabel = d.city || `Stop ${i + 1}`
           return (
             <div
               key={i}
@@ -97,6 +108,51 @@ export function StepDates() {
                     {nights || '\u2014'}
                   </div>
                 </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+                  How you travel from {fromLabel} to {toLabel}
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setArrivalMode(i, undefined)}
+                    className={cn(
+                      'px-3 py-1.5 rounded-full border text-[12px] transition-colors',
+                      !d.arrivalMode
+                        ? 'border-accent bg-accent-muted text-accent'
+                        : 'border-border-default bg-bg-secondary text-text-secondary hover:border-border-default hover:text-text-primary'
+                    )}
+                  >
+                    Let AI pick
+                  </button>
+                  {TRAVEL_MODE_LIST.map((mode) => {
+                    const Icon = mode.icon
+                    const active = d.arrivalMode === mode.id
+                    return (
+                      <button
+                        key={mode.id}
+                        type="button"
+                        onClick={() => setArrivalMode(i, mode.id)}
+                        className={cn(
+                          'flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[12px] transition-colors',
+                          active
+                            ? 'border-accent bg-accent-muted text-accent'
+                            : 'border-border-default bg-bg-secondary text-text-secondary hover:text-text-primary'
+                        )}
+                      >
+                        <Icon size={13} />
+                        {mode.label}
+                      </button>
+                    )
+                  })}
+                </div>
+                {d.arrivalMode && (
+                  <span className="text-[11px] text-text-tertiary">
+                    {TRAVEL_MODES[d.arrivalMode].label} selected — the itinerary will use this to
+                    get you there.
+                  </span>
+                )}
               </div>
             </div>
           )

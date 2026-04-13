@@ -14,6 +14,7 @@ interface Props {
   costs: CostItem[]
   editor: TripEditor
   defaultCurrency: string
+  homeCurrency?: string
 }
 
 const CATEGORY_OPTIONS = Object.values(CATEGORIES).map((c) => ({
@@ -26,7 +27,7 @@ const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({
   label: c.code,
 }))
 
-export function CostList({ dayId, costs, editor, defaultCurrency }: Props) {
+export function CostList({ dayId, costs, editor, defaultCurrency, homeCurrency }: Props) {
   const [adding, setAdding] = useState(false)
 
   return (
@@ -58,6 +59,7 @@ export function CostList({ dayId, costs, editor, defaultCurrency }: Props) {
                 min={c.amount.min}
                 max={c.amount.max}
                 currency={c.currency}
+                homeCurrency={homeCurrency}
                 size="sm"
               />
               <button

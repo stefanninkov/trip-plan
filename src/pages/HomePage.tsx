@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Map, Clock, Sparkles } from 'lucide-react'
+import { Map, Clock, Sparkles, Compass } from 'lucide-react'
 import { useAuthStore } from '@/store/auth-store'
 import { ROUTES } from '@/constants/routes'
 import { Button } from '@/components/shared/Button'
@@ -26,6 +26,14 @@ export function HomePage() {
               <span className="flex items-center gap-2">
                 <Sparkles size={14} />
                 Plan a new trip
+              </span>
+            </Button>
+          </Link>
+          <Link to={ROUTES.explore}>
+            <Button variant="secondary">
+              <span className="flex items-center gap-2">
+                <Compass size={14} />
+                Explore
               </span>
             </Button>
           </Link>

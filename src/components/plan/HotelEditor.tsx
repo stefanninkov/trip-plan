@@ -14,6 +14,7 @@ interface Props {
   hotels: HotelOption[] | null
   editor: TripEditor
   defaultCurrency: string
+  homeCurrency?: string
 }
 
 const TIER_OPTIONS = [
@@ -24,7 +25,7 @@ const TIER_OPTIONS = [
 
 const CURRENCY_OPTIONS = CURRENCIES.map((c) => ({ value: c.code, label: c.code }))
 
-export function HotelList({ dayId, hotels, editor, defaultCurrency }: Props) {
+export function HotelList({ dayId, hotels, editor, defaultCurrency, homeCurrency }: Props) {
   const [adding, setAdding] = useState(false)
 
   if (hotels === null) return null
@@ -57,7 +58,12 @@ export function HotelList({ dayId, hotels, editor, defaultCurrency }: Props) {
             </div>
             <p className="text-[12px] text-text-secondary leading-[18px]">{h.highlight}</p>
             <div className="pt-1 border-t border-border-subtle mt-1">
-              <CurrencyDisplay min={h.pricePerNight} currency={h.currency} size="sm" />
+              <CurrencyDisplay
+                min={h.pricePerNight}
+                currency={h.currency}
+                homeCurrency={homeCurrency}
+                size="sm"
+              />
             </div>
           </div>
         ))}
