@@ -1,17 +1,19 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Home, Map, Briefcase, Compass } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
 
-const NAV_ITEMS = [
-  { to: ROUTES.home, label: 'Home', icon: Home },
-  { to: ROUTES.explore, label: 'Explore', icon: Compass },
-  { to: ROUTES.newTrip, label: 'New', icon: Map },
-  { to: ROUTES.myTrips, label: 'My Trips', icon: Briefcase },
-]
-
 export function MobileNav() {
   const location = useLocation()
+  const { t } = useTranslation()
+
+  const NAV_ITEMS = [
+    { to: ROUTES.home, label: t('nav.home'), icon: Home },
+    { to: ROUTES.explore, label: t('nav.explore'), icon: Compass },
+    { to: ROUTES.newTrip, label: t('app.newTrip'), icon: Map },
+    { to: ROUTES.myTrips, label: t('nav.myTrips'), icon: Briefcase },
+  ]
 
   return (
     <nav

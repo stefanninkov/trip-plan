@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, Map, Briefcase, Compass } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
 import { useTrips } from '@/hooks/useTrips'
@@ -8,19 +9,20 @@ import { formatDateRange } from '@/utils/date-helpers'
 import { getExploreHistory, type ExploreHistoryEntry } from '@/utils/explore-history'
 import { useExplore } from '@/hooks/useExplore'
 
-const NAV_ITEMS = [
-  { to: ROUTES.home, label: 'Home', icon: Home },
-  { to: ROUTES.explore, label: 'Explore', icon: Compass },
-  { to: ROUTES.newTrip, label: 'New trip', icon: Map },
-  { to: ROUTES.myTrips, label: 'My Trips', icon: Briefcase },
-]
-
 export function Sidebar() {
   const location = useLocation()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { trips } = useTrips()
   const recentTrips = trips.slice(0, 10)
   const { run: runExplore, overview: exploreOverview } = useExplore()
+
+  const NAV_ITEMS = [
+    { to: ROUTES.home, label: t('nav.home'), icon: Home },
+    { to: ROUTES.explore, label: t('nav.explore'), icon: Compass },
+    { to: ROUTES.newTrip, label: t('nav.newTrip'), icon: Map },
+    { to: ROUTES.myTrips, label: t('nav.myTrips'), icon: Briefcase },
+  ]
   const [exploreHistory, setExploreHistory] = useState<ExploreHistoryEntry[]>(() =>
     getExploreHistory()
   )
@@ -60,7 +62,7 @@ export function Sidebar() {
       {recentTrips.length > 0 && (
         <div className="px-3 pb-3 flex flex-col gap-1">
           <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">
-            Recent trips
+            {t('nav.recentTrips')}
           </div>
           {recentTrips.map((trip) => {
             const title =
@@ -95,7 +97,7 @@ export function Sidebar() {
       {exploreHistory.length > 0 && (
         <div className="px-3 pb-3 flex flex-col gap-1">
           <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-[1.5px] text-text-tertiary">
-            Recently explored
+            {t('nav.recentlyExplored')}
           </div>
           {exploreHistory.slice(0, 8).map((entry) => (
             <button

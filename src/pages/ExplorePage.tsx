@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Compass, Search, Loader2, History, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Input } from '@/components/shared/Input'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
@@ -22,16 +23,16 @@ const SUGGESTIONS = [
   'Iceland',
 ]
 
-const EXPLORE_STAGES = [
-  { at: 0, label: 'Looking up the place…' },
-  { at: 15, label: 'Gathering history and context' },
-  { at: 35, label: 'Picking top highlights' },
-  { at: 55, label: 'Mapping neighborhoods and stays' },
-  { at: 75, label: 'Rounding up food and activities' },
-  { at: 90, label: 'Finishing up…' },
-]
-
 export function ExplorePage() {
+  const { t } = useTranslation()
+  const EXPLORE_STAGES = [
+    { at: 0, label: t('explore.stages.start') },
+    { at: 15, label: t('explore.stages.history') },
+    { at: 35, label: t('explore.stages.highlights') },
+    { at: 55, label: t('explore.stages.neighborhoods') },
+    { at: 75, label: t('explore.stages.food') },
+    { at: 90, label: t('explore.stages.finish') },
+  ]
   // The overview / loading / currentQuery are pulled from a module-level
   // store (see useExplore) so that generation keeps running when the user
   // switches tabs, and the Explore tab resumes exactly where it left off.
@@ -72,15 +73,12 @@ export function ExplorePage() {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">Explore</p>
+        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">{t('nav.explore')}</p>
         <h1 className="flex items-center gap-2.5">
           <Compass size={28} className="text-accent shrink-0" />
-          Discover a country or city
+          {t('explore.heading')}
         </h1>
-        <p className="text-text-secondary max-w-2xl">
-          Type a place to get a scannable overview: history, neighborhoods, food, where to stay
-          and what to do. Perfect for research before you plan a trip.
-        </p>
+        <p className="text-text-secondary max-w-2xl">{t('explore.subheading')}</p>
 
         <form
           className="flex gap-2 mt-2"
@@ -91,7 +89,7 @@ export function ExplorePage() {
         >
           <div className="flex-1">
             <Input
-              placeholder="e.g. Kyoto, Japan or Portugal"
+              placeholder={t('explore.placeholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -99,14 +97,14 @@ export function ExplorePage() {
           <Button type="submit" disabled={loading || !query.trim()}>
             <span className="flex items-center gap-2">
               {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
-              {loading ? 'Exploring…' : 'Explore'}
+              {loading ? t('explore.exploring') : t('explore.button')}
             </span>
           </Button>
         </form>
 
         {!overview && !loading && (
           <div className="flex flex-wrap gap-1.5 mt-1">
-            <span className="text-[12px] text-text-tertiary mr-1 self-center">Try:</span>
+            <span className="text-[12px] text-text-tertiary mr-1 self-center">{t('explore.try')}</span>
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
@@ -130,11 +128,7 @@ export function ExplorePage() {
       )}
 
       {loading && (
-        <AiProgress
-          stages={EXPLORE_STAGES}
-          timeConstant={8}
-          hint="Pulling together a rich overview — keeps running if you switch tabs."
-        />
+        <AiProgress stages={EXPLORE_STAGES} timeConstant={8} hint={t('explore.hint')} />
       )}
 
       {overview && !loading && <ExploreResult overview={overview} />}
@@ -144,7 +138,7 @@ export function ExplorePage() {
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-[16px] font-semibold">
               <History size={16} className="text-accent" />
-              Recently explored
+              {t('explore.recentlyExplored')}
             </h2>
             <button
               type="button"
@@ -152,7 +146,7 @@ export function ExplorePage() {
               className="flex items-center gap-1 text-[12px] text-text-tertiary hover:text-text-primary transition-colors"
             >
               <X size={12} />
-              Clear
+              {t('common.clear')}
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5">

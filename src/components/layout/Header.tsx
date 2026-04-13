@@ -1,22 +1,26 @@
 import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { ROUTES } from '@/constants/routes'
 import { UserMenu } from '@/components/auth/UserMenu'
 import { Button } from '@/components/shared/Button'
+import { LanguageToggle } from '@/components/shared/LanguageToggle'
 
 export function Header() {
+  const { t } = useTranslation()
   return (
     <header className="sticky top-0 z-30 bg-bg-primary/90 backdrop-blur-md border-b border-border-subtle">
       <div className="max-w-[1200px] mx-auto px-4 md:px-8 lg:px-10 h-14 flex items-center justify-between">
         <Link to={ROUTES.home} className="flex items-center gap-2 no-underline">
           <Logo />
-          <span className="font-heading text-[15px] font-semibold tracking-tight">Trip Plan</span>
+          <span className="font-heading text-[15px] font-semibold tracking-tight">{t('app.name')}</span>
         </Link>
         <div className="flex items-center gap-2">
+          <LanguageToggle className="hidden sm:inline-flex" />
           <Link to={ROUTES.newTrip}>
             <Button variant="primary" className="flex items-center gap-1.5">
               <Plus size={14} />
-              <span className="hidden sm:inline">New trip</span>
+              <span className="hidden sm:inline">{t('app.newTrip')}</span>
             </Button>
           </Link>
           <UserMenu />

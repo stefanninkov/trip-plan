@@ -39,11 +39,16 @@ export const generateTrip = onRequest(
       return
     }
 
-    const { inputs } = req.body ?? {}
+    const { inputs, language } = req.body ?? {}
     if (!inputs || typeof inputs !== 'object') {
       res.status(400).json({ error: 'Missing inputs' })
       return
     }
+    const lang = typeof language === 'string' ? language : 'en'
+    const languageInstruction =
+      lang === 'sr'
+        ? 'Respond in Serbian (Latin script). Write tripTitle, summary, day titles, block titles and descriptions, tips, warnings, hotel highlights, cost labels and all free-text fields in Serbian. Keep real place names in their original form (e.g., "Plaza Mayor", "Louvre"). Keep date format YYYY-MM-DD and currency codes in English.\n\n'
+        : ''
 
     const client = new Anthropic({
       apiKey: ANTHROPIC_API_KEY.value(),
@@ -57,7 +62,12 @@ export const generateTrip = onRequest(
         model: 'claude-sonnet-4-6',
         max_tokens: 32000,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildUserMessage(inputs) }],
+        messages: [
+          {
+            role: 'user',
+            content: languageInstruction + buildUserMessage(inputs),
+          },
+        ],
       })
 
       // If Claude hit max_tokens, the JSON is almost certainly truncated and

@@ -14,6 +14,9 @@ export default defineConfig({
       includeAssets: ['favicon.svg'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
+        // Bump max size so our bigger JS chunks (TripMap etc.) can be
+        // precached; default is 2 MB.
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
@@ -21,6 +24,40 @@ export default defineConfig({
             options: {
               cacheName: 'google-fonts',
               expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          // Mapbox vector / raster tile requests — CacheFirst so viewed
+          // maps stay usable offline for the duration of the trip.
+          {
+            urlPattern: /^https:\/\/(?:api|[abc])\.mapbox\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'mapbox-tiles',
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // OpenStreetMap raster tiles (used as keyless fallback).
+          {
+            urlPattern: /^https:\/\/(?:[abc]\.)?tile\.openstreetmap\.org\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'osm-tiles',
+              expiration: { maxEntries: 500, maxAgeSeconds: 60 * 60 * 24 * 30 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          // Open-Meteo forecast + geocoding — short TTL, network-first so
+          // fresh forecasts win when online but cached data shows offline.
+          {
+            urlPattern:
+              /^https:\/\/(?:api\.open-meteo\.com|archive-api\.open-meteo\.com|geocoding-api\.open-meteo\.com)\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'open-meteo',
+              networkTimeoutSeconds: 5,
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 7 },
+              cacheableResponse: { statuses: [0, 200] },
             },
           },
         ],

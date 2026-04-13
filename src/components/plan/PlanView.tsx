@@ -12,6 +12,8 @@ import { relativeDay, todayIso } from '@/utils/date-helpers'
 import { ROUTES } from '@/constants/routes'
 import { DayNav } from './DayNav'
 import { TripCover } from './TripCover'
+import { PresenceAvatars } from './PresenceAvatars'
+import { RemindersToggle } from './RemindersToggle'
 
 const TripMap = lazy(() => import('./TripMap').then((m) => ({ default: m.TripMap })))
 import { PlanHeader } from './PlanHeader'
@@ -131,6 +133,11 @@ export function PlanView({
       {coverLocation && !readOnly && (
         <TripCover location={coverLocation} className="print:hidden" />
       )}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <PresenceAvatars tripId={tripId} />
+        <RemindersToggle tripId={tripId} plan={current} />
+      </div>
 
       <PlanHeader plan={current} editor={canEdit ? editor : undefined} homeCurrency={homeCurrency} />
 

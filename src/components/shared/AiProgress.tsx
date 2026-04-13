@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Sparkles } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 export interface AiProgressStage {
   at: number
@@ -21,6 +22,7 @@ export interface AiProgressProps {
  * unmounts it. Pass different `stages` + `timeConstant` per caller.
  */
 export function AiProgress({ stages, timeConstant = 22, hint }: AiProgressProps) {
+  const { t } = useTranslation()
   const [pct, setPct] = useState(4)
   const [elapsedSec, setElapsedSec] = useState(0)
 
@@ -49,7 +51,7 @@ export function AiProgress({ stages, timeConstant = 22, hint }: AiProgressProps)
       <div className="flex items-center gap-2 text-[13px] text-text-primary">
         <Sparkles size={14} className="text-accent animate-pulse" />
         <span className="font-medium">
-          {overtime ? 'Still working — heavy requests can take a few minutes' : stage.label}
+          {overtime ? t('generation.overtime') : stage.label}
         </span>
         <span className="ml-auto font-cost text-[12px] text-text-tertiary">
           {Math.round(pct)}%

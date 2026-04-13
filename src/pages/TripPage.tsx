@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
 import { doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { useTranslation } from 'react-i18next'
 import { db } from '@/lib/firebase'
 import { useTrip } from '@/hooks/useTrip'
 import { PlanView } from '@/components/plan/PlanView'
@@ -11,20 +12,20 @@ import { AiProgress } from '@/components/shared/AiProgress'
 import { ROUTES } from '@/constants/routes'
 import { logger } from '@/utils/logger'
 
-const GENERATION_STAGES = [
-  { at: 0, label: 'Warming up Claude…' },
-  { at: 10, label: 'Mapping your route' },
-  { at: 25, label: 'Picking hotels for each stop' },
-  { at: 45, label: 'Filling in day-by-day activities' },
-  { at: 65, label: 'Estimating costs and budget' },
-  { at: 80, label: 'Polishing the final plan' },
-  { at: 92, label: 'Almost there…' },
-]
-
 export function TripPage() {
   const { tripId } = useParams<{ tripId: string }>()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { trip, isLoading, error } = useTrip(tripId)
+  const GENERATION_STAGES = [
+    { at: 0, label: t('generation.stage0') },
+    { at: 10, label: t('generation.stage10') },
+    { at: 25, label: t('generation.stage25') },
+    { at: 45, label: t('generation.stage45') },
+    { at: 65, label: t('generation.stage65') },
+    { at: 80, label: t('generation.stage80') },
+    { at: 92, label: t('generation.stage92') },
+  ]
 
   if (isLoading) {
     return (
@@ -40,8 +41,8 @@ export function TripPage() {
     return (
       <Card className="flex flex-col items-center gap-2 text-center">
         <AlertTriangle size={24} className="text-warning" />
-        <h2>Trip not found</h2>
-        <p className="text-text-secondary">{error ?? 'We could not find that trip.'}</p>
+        <h2>{t('trip.notFound')}</h2>
+        <p className="text-text-secondary">{error ?? ''}</p>
       </Card>
     )
   }
@@ -77,33 +78,28 @@ export function TripPage() {
     return (
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-2">
-          <h1>Generating your plan&hellip;</h1>
-          <p className="text-text-secondary">
-            Claude is putting together your itinerary. This usually takes 20&ndash;60 seconds.
-          </p>
+          <h1>{t('trip.generating')}</h1>
+          <p className="text-text-secondary">{t('trip.claudeIsWorking')}</p>
         </div>
         <AiProgress
           stages={GENERATION_STAGES}
           timeConstant={22}
-          hint="Takes about 30–60 seconds. You can keep this tab open or leave — the plan saves automatically."
+          hint={t('generation.hint')}
         />
         {isStale && (
           <Card className="flex flex-col gap-3">
             <div className="flex items-start gap-2">
               <AlertTriangle size={18} className="text-warning shrink-0 mt-0.5" />
               <div className="flex flex-col gap-1">
-                <p className="font-semibold">This is taking unusually long.</p>
-                <p className="text-[13px] text-text-secondary">
-                  The request may have failed silently. You can mark this as errored and start
-                  over, or delete it entirely.
-                </p>
+                <p className="font-semibold">{t('trip.stuckTitle')}</p>
+                <p className="text-[13px] text-text-secondary">{t('trip.stuckBody')}</p>
               </div>
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={markError}>
-                Mark as failed
+                {t('trip.markFailed')}
               </Button>
-              <Button onClick={deleteAndStartOver}>Delete and start over</Button>
+              <Button onClick={deleteAndStartOver}>{t('trip.deleteAndStartOver')}</Button>
             </div>
           </Card>
         )}
@@ -115,12 +111,10 @@ export function TripPage() {
     return (
       <Card className="flex flex-col items-center gap-2 text-center">
         <AlertTriangle size={24} className="text-error" />
-        <h2>Generation failed</h2>
-        <p className="text-text-secondary">
-          Something went wrong while creating this plan. Try generating a new trip.
-        </p>
+        <h2>{t('trip.generationFailed')}</h2>
+        <p className="text-text-secondary">{t('trip.generationFailedBody')}</p>
         <div className="flex gap-2 mt-2">
-          <Button onClick={() => navigate(ROUTES.newTrip)}>Start over</Button>
+          <Button onClick={() => navigate(ROUTES.newTrip)}>{t('trip.startOver')}</Button>
         </div>
       </Card>
     )

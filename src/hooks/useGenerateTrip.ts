@@ -6,6 +6,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore'
+import i18n from 'i18next'
 import { db, FUNCTIONS_BASE_URL } from '@/lib/firebase'
 import { useAuthStore } from '@/store/auth-store'
 import { logger } from '@/utils/logger'
@@ -75,7 +76,10 @@ export function useGenerateTrip(): UseGenerateTripState {
         const res = await fetch(`${FUNCTIONS_BASE_URL}/generateTrip`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ inputs }),
+          body: JSON.stringify({
+            inputs,
+            language: i18n.resolvedLanguage ?? 'en',
+          }),
           signal: controller.signal,
         })
         if (!res.ok) {

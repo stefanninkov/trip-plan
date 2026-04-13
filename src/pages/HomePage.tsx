@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Map, Clock, Sparkles, Compass } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth-store'
 import { ROUTES } from '@/constants/routes'
 import { Button } from '@/components/shared/Button'
@@ -7,25 +8,23 @@ import { Card } from '@/components/shared/Card'
 
 export function HomePage() {
   const user = useAuthStore((s) => s.user)
+  const { t } = useTranslation()
   const firstName = user?.displayName?.split(' ')[0] ?? 'there'
 
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">
-          Welcome back
+          {t('home.welcome')}
         </p>
-        <h1>Hello, {firstName}</h1>
-        <p className="text-text-secondary max-w-xl">
-          Plan a new trip with AI or revisit your saved itineraries. Each plan includes
-          hour-by-hour schedules, hotel options in all budget tiers, and web-searched prices.
-        </p>
-        <div className="flex gap-3 mt-2">
+        <h1>{t('home.hello', { name: firstName })}</h1>
+        <p className="text-text-secondary max-w-xl">{t('home.lede')}</p>
+        <div className="flex gap-3 mt-2 flex-wrap">
           <Link to={ROUTES.newTrip}>
             <Button>
               <span className="flex items-center gap-2">
                 <Sparkles size={14} />
-                Plan a new trip
+                {t('home.planNew')}
               </span>
             </Button>
           </Link>
@@ -33,12 +32,12 @@ export function HomePage() {
             <Button variant="secondary">
               <span className="flex items-center gap-2">
                 <Compass size={14} />
-                Explore
+                {t('home.explore')}
               </span>
             </Button>
           </Link>
           <Link to={ROUTES.myTrips}>
-            <Button variant="secondary">My trips</Button>
+            <Button variant="secondary">{t('home.myTrips')}</Button>
           </Link>
         </div>
       </section>
@@ -50,11 +49,8 @@ export function HomePage() {
               <Map size={18} className="text-accent" />
             </div>
             <div>
-              <h3 className="mb-1">Multi-city, hour-by-hour</h3>
-              <p className="text-text-secondary text-[13px]">
-                Describe your trip once. Get a full day-by-day plan with real hotels, transport
-                options, and activities.
-              </p>
+              <h3 className="mb-1">{t('home.feature1Title')}</h3>
+              <p className="text-text-secondary text-[13px]">{t('home.feature1Body')}</p>
             </div>
           </div>
         </Card>
@@ -64,11 +60,8 @@ export function HomePage() {
               <Clock size={18} className="text-accent" />
             </div>
             <div>
-              <h3 className="mb-1">Editable timeline</h3>
-              <p className="text-text-secondary text-[13px]">
-                Drag blocks between days, swap hotels, and trigger live web searches for flights,
-                stays, and places.
-              </p>
+              <h3 className="mb-1">{t('home.feature2Title')}</h3>
+              <p className="text-text-secondary text-[13px]">{t('home.feature2Body')}</p>
             </div>
           </div>
         </Card>
