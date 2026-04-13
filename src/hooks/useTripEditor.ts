@@ -1,0 +1,205 @@
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
+import { recalcTotals } from '@/utils/skeleton-plan'
+import { logger } from '@/utils/logger'
+import type {
+  TripPlan,
+  DayPlan,
+  TimeBlock,
+  CostItem,
+  HotelOption,
+  CostCategory,
+  BudgetTier,
+} from '@/types/trip-plan'
+
+/**
+ * Stateful editor for a trip plan. Mutations update local state immediately
+ * and persist to Firestore via a short debounce.
+ */
+export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
+  const [plan, setPlan] = useState<TripPlan>(initial)
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const latestPlan = useRef(plan)
+  const [isSaving, setIsSaving] = useState(false)
+
+  // Keep latestPlan fresh so the debounced save always writes the newest value
+  useEffect(() => {
+    latestPlan.current = plan
+  }, [plan])
+
+  // Sync when the upstream doc changes externally (e.g. AI finishes generating)
+  useEffect(() => {
+    setPlan(initial)
+    latestPlan.current = initial
+  }, [initial])
+
+  const persist = useCallback(
+    (next: TripPlan) => {
+      if (!tripId) return
+      if (saveTimer.current) clearTimeout(saveTimer.current)
+      setIsSaving(true)
+      saveTimer.current = setTimeout(async () => {
+        try {
+          await updateDoc(doc(db, 'trips', tripId), {
+            plan: latestPlan.current,
+            updatedAt: serverTimestamp(),
+          })
+        } catch (err) {
+          logger.error('Trip save failed:', err)
+        } finally {
+          setIsSaving(false)
+        }
+      }, 500)
+      return next
+    },
+    [tripId]
+  )
+
+  const apply = useCallback(
+    (updater: (p: TripPlan) => TripPlan) => {
+      setPlan((prev) => {
+        const next = recalcTotals(updater(prev))
+        persist(next)
+        return next
+      })
+    },
+    [persist]
+  )
+
+  // === Top-level patches ===
+  const setTripTitle = (value: string) => apply((p) => ({ ...p, tripTitle: value }))
+  const setSummary = (value: string) => apply((p) => ({ ...p, summary: value }))
+  const setWeatherNote = (value: string) => apply((p) => ({ ...p, weatherNote: value }))
+  const setListField = (
+    field: 'bookAhead' | 'packingTips' | 'documentsNeeded' | 'appsToDownload',
+    values: string[]
+  ) => apply((p) => ({ ...p, [field]: values }))
+
+  // === Day-level ===
+  const updateDay = (dayId: string, patch: Partial<DayPlan>) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) => (d.id === dayId ? { ...d, ...patch } : d)),
+    }))
+
+  // === Blocks ===
+  const addBlock = (dayId: string, block: Omit<TimeBlock, 'id'>) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? { ...d, blocks: [...d.blocks, { ...block, id: `block-${crypto.randomUUID()}` }] }
+          : d
+      ),
+    }))
+
+  const updateBlock = (dayId: string, blockId: string, patch: Partial<TimeBlock>) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              blocks: d.blocks.map((b) => (b.id === blockId ? { ...b, ...patch } : b)),
+            }
+          : d
+      ),
+    }))
+
+  const deleteBlock = (dayId: string, blockId: string) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId ? { ...d, blocks: d.blocks.filter((b) => b.id !== blockId) } : d
+      ),
+    }))
+
+  // === Costs ===
+  const addCost = (dayId: string, cost: Omit<CostItem, 'id'>) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? { ...d, costs: [...d.costs, { ...cost, id: `cost-${crypto.randomUUID()}` }] }
+          : d
+      ),
+    }))
+
+  const updateCost = (dayId: string, costId: string, patch: Partial<CostItem>) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              costs: d.costs.map((c) => (c.id === costId ? { ...c, ...patch } : c)),
+            }
+          : d
+      ),
+    }))
+
+  const deleteCost = (dayId: string, costId: string) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId ? { ...d, costs: d.costs.filter((c) => c.id !== costId) } : d
+      ),
+    }))
+
+  // === Hotels ===
+  const addHotel = (dayId: string, hotel: HotelOption) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId ? { ...d, hotels: [...(d.hotels ?? []), hotel] } : d
+      ),
+    }))
+
+  const updateHotel = (dayId: string, index: number, patch: Partial<HotelOption>) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              hotels: (d.hotels ?? []).map((h, i) => (i === index ? { ...h, ...patch } : h)),
+            }
+          : d
+      ),
+    }))
+
+  const deleteHotel = (dayId: string, index: number) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? { ...d, hotels: (d.hotels ?? []).filter((_, i) => i !== index) }
+          : d
+      ),
+    }))
+
+  return {
+    plan,
+    isSaving,
+    setTripTitle,
+    setSummary,
+    setWeatherNote,
+    setListField,
+    updateDay,
+    addBlock,
+    updateBlock,
+    deleteBlock,
+    addCost,
+    updateCost,
+    deleteCost,
+    addHotel,
+    updateHotel,
+    deleteHotel,
+  }
+}
+
+export type TripEditor = ReturnType<typeof useTripEditor>
+
+// Re-exports so consumers can import category / tier without a second import
+export type { CostCategory, BudgetTier }

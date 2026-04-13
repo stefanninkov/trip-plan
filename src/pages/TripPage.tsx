@@ -32,9 +32,9 @@ export function TripPage() {
   if (trip.status === 'generating') {
     return (
       <div className="flex flex-col gap-4">
-        <h1>Generating your plan\u2026</h1>
+        <h1>Generating your plan&hellip;</h1>
         <p className="text-text-secondary">
-          Claude is putting together your itinerary. This usually takes 20\u201360 seconds.
+          Claude is putting together your itinerary. This usually takes 20&ndash;60 seconds.
         </p>
         <CardSkeleton />
         <CardSkeleton />
@@ -55,5 +55,5 @@ export function TripPage() {
     )
   }
 
-  return <PlanView plan={trip.plan} />
+  return <PlanView plan={trip.plan} tripId={trip.id} />
 }

@@ -10,6 +10,7 @@ import { StepDestinations } from './StepDestinations'
 import { StepDates } from './StepDates'
 import { StepTravelers } from './StepTravelers'
 import { StepAdvanced } from './StepAdvanced'
+import { Button } from '@/components/shared/Button'
 import { ROUTES } from '@/constants/routes'
 
 export function TripWizard() {
@@ -18,16 +19,25 @@ export function TripWizard() {
   const addToast = useUiStore((s) => s.addToast)
   const setCurrent = useTripStore((s) => s.setCurrent)
   const navigate = useNavigate()
-  const { isGenerating, generate, error } = useGenerateTrip()
+  const { isGenerating, generate, createBlank, error, clearError } = useGenerateTrip()
 
   const handleGenerate = async (): Promise<void> => {
+    clearError()
     const result = await generate(inputs)
     if (result) {
       setCurrent(result.tripId, result.plan)
       addToast('success', 'Trip plan generated')
       navigate(ROUTES.trip(result.tripId))
-    } else if (error) {
-      addToast('error', error)
+    }
+  }
+
+  const handleBuildManually = async (): Promise<void> => {
+    clearError()
+    const result = await createBlank(inputs)
+    if (result) {
+      setCurrent(result.tripId, result.plan)
+      addToast('info', 'Blank trip created. Fill it in as you go.')
+      navigate(ROUTES.trip(result.tripId))
     }
   }
 
@@ -44,19 +54,31 @@ export function TripWizard() {
       </div>
 
       {isGenerating && (
-        <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-[13px] text-text-secondary">
-          Contacting Claude and building your itinerary\u2026 this can take up to 60 seconds for
-          longer trips.
+        <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-[13px] text-text-secondary flex flex-col gap-3">
+          <span>Working on your itinerary&hellip; this can take up to 60 seconds.</span>
+          <Button variant="secondary" onClick={handleBuildManually}>
+            Skip AI and build manually
+          </Button>
         </div>
       )}
 
       {error && !isGenerating && (
-        <div className="rounded-lg border border-error bg-[#D9555510] px-4 py-3 text-[13px] text-error">
-          {error}
+        <div className="rounded-lg border border-error bg-[#D9555510] px-4 py-3 text-[13px] flex flex-col gap-3">
+          <span className="text-error">{error}</span>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={handleGenerate}>
+              Try AI again
+            </Button>
+            <Button onClick={handleBuildManually}>Build manually instead</Button>
+          </div>
         </div>
       )}
 
-      <WizardNav onGenerate={handleGenerate} isGenerating={isGenerating} />
+      <WizardNav
+        onGenerate={handleGenerate}
+        onBuildManually={handleBuildManually}
+        isGenerating={isGenerating}
+      />
     </div>
   )
 }
