@@ -6,8 +6,6 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore'
-import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
-import { logger } from '@/utils/logger'
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -16,7 +14,6 @@ const firebaseConfig = {
   storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 }
 
 export const firebaseApp: FirebaseApp = initializeApp(firebaseConfig)
@@ -32,15 +29,3 @@ export const db: Firestore = initializeFirestore(firebaseApp, {
 
 export const FUNCTIONS_BASE_URL: string =
   import.meta.env.VITE_FUNCTIONS_BASE_URL ?? ''
-
-// Analytics loads only in supported environments (skipped during SSR / dev preview)
-export let analytics: Analytics | null = null
-if (firebaseConfig.measurementId && import.meta.env.PROD) {
-  void isSupported()
-    .then((supported) => {
-      if (supported) analytics = getAnalytics(firebaseApp)
-    })
-    .catch((err) => {
-      logger.warn('Analytics init failed:', err)
-    })
-}

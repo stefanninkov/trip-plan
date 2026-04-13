@@ -142,10 +142,17 @@ export function TripMap({ plan }: TripMapProps) {
         </div>
       )}
       {!loading && placed.length === 0 && (
-        <p className="text-[13px] text-text-tertiary">
-          Could not resolve any locations on the map. Try editing the day locations to be more
-          specific.
-        </p>
+        <div className="flex flex-col gap-1 text-[13px]">
+          <p className="text-text-tertiary">
+            Could not resolve any locations on the map.
+          </p>
+          <p className="text-text-tertiary">
+            This usually means the Mapbox token isn&apos;t reaching the browser, or the day
+            locations are too generic. Check your browser console for Mapbox errors, and verify
+            the <code>MAPBOX_TOKEN</code> GitHub secret is set and the workflow re-ran after you
+            added it.
+          </p>
+        </div>
       )}
       {!loading && placed.length > 0 && (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
