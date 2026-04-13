@@ -1,4 +1,4 @@
-name: Deploy Firebase Functions
+name: Deploy Firebase (Functions + Firestore rules)
 
 on:
   push:
@@ -7,6 +7,8 @@ on:
       - claude/setup-trip-planner-project-EvGks
     paths:
       - 'functions/**'
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
       - 'firebase.json'
       - '.firebaserc'
       - '.github/workflows/deploy-functions.yml'
@@ -40,7 +42,7 @@ jobs:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRIP_PLAN_MAIN }}
 
       - name: Deploy functions
-        run: npx firebase-tools@latest deploy --only functions --project trip-plan-main --force --non-interactive
+        run: npx firebase-tools@latest deploy --only functions,firestore:rules,firestore:indexes --project trip-plan-main --force --non-interactive
 
       - name: Cleanup
         if: always()
