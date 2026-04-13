@@ -115,6 +115,26 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       ),
     }))
 
+  // Move a block from one day to another (appends to target day)
+  const moveBlock = (blockId: string, fromDayId: string, toDayId: string) =>
+    apply((p) => {
+      const source = p.days.find((d) => d.id === fromDayId)
+      const block = source?.blocks.find((b) => b.id === blockId)
+      if (!block) return p
+      return {
+        ...p,
+        days: p.days.map((d) => {
+          if (d.id === fromDayId) {
+            return { ...d, blocks: d.blocks.filter((b) => b.id !== blockId) }
+          }
+          if (d.id === toDayId) {
+            return { ...d, blocks: [...d.blocks, block] }
+          }
+          return d
+        }),
+      }
+    })
+
   // === Costs ===
   const addCost = (dayId: string, cost: Omit<CostItem, 'id'>) =>
     apply((p) => ({
@@ -190,6 +210,7 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     addBlock,
     updateBlock,
     deleteBlock,
+    moveBlock,
     addCost,
     updateCost,
     deleteCost,

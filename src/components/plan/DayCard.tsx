@@ -6,19 +6,22 @@ import { cn } from '@/utils/cn'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
 import { EditableText } from '@/components/shared/EditableText'
 import { CATEGORIES } from '@/constants/categories'
+import { TRAVEL_MODES } from '@/constants/travel-modes'
 import { formatDate } from '@/utils/date-helpers'
 import { BlockList } from './BlockEditor'
 import { CostList } from './CostEditor'
 import { HotelList } from './HotelEditor'
+import { TipBlock } from './TipBlock'
 
 export interface DayCardProps {
   day: DayPlan
   currency: string
   editor?: TripEditor
   defaultOpen?: boolean
+  allDays?: { id: string; dayNumber: number; title: string }[]
 }
 
-export function DayCard({ day, currency, editor, defaultOpen = false }: DayCardProps) {
+export function DayCard({ day, currency, editor, defaultOpen = false, allDays }: DayCardProps) {
   const [open, setOpen] = useState(defaultOpen)
   const readOnly = !editor
   // The print CSS forces everything visible regardless of local open state.
@@ -96,7 +99,12 @@ export function DayCard({ day, currency, editor, defaultOpen = false }: DayCardP
           )}
 
           {editor ? (
-            <BlockList dayId={day.id} blocks={day.blocks} editor={editor} />
+            <BlockList
+              dayId={day.id}
+              blocks={day.blocks}
+              editor={editor}
+              allDays={allDays}
+            />
           ) : (
             <ReadOnlyBlocks blocks={day.blocks} />
           )}
@@ -135,16 +143,31 @@ function ReadOnlyBlocks({ blocks }: { blocks: DayPlan['blocks'] }) {
   if (blocks.length === 0) return null
   return (
     <div className="flex flex-col gap-3">
-      {blocks.map((b) => (
-        <div
-          key={b.id}
-          className="bg-bg-secondary border border-border-subtle rounded-lg p-3 flex flex-col gap-1.5"
-        >
-          <span className="font-cost text-[12px] text-text-tertiary">{b.time}</span>
-          <div className="text-[14px] font-semibold">{b.title}</div>
-          <p className="text-[13px] text-text-secondary leading-[20px]">{b.description}</p>
-        </div>
-      ))}
+      {blocks.map((b) => {
+        const ModeIcon = b.travelMode ? TRAVEL_MODES[b.travelMode].icon : null
+        return (
+          <div
+            key={b.id}
+            className="bg-bg-secondary border border-border-subtle rounded-lg p-3 flex flex-col gap-1.5"
+          >
+            <div className="flex items-center gap-2">
+              <span className="font-cost text-[12px] text-text-tertiary">{b.time}</span>
+              {ModeIcon && (
+                <span className="flex items-center gap-1 text-[11px] text-accent">
+                  <ModeIcon size={12} />
+                  {b.travelMode && TRAVEL_MODES[b.travelMode].label}
+                </span>
+              )}
+            </div>
+            <div className="text-[14px] font-semibold">{b.title}</div>
+            <p className="text-[13px] text-text-secondary leading-[20px]">{b.description}</p>
+            {b.whyPicked && <TipBlock kind="why" text={b.whyPicked} />}
+            {b.historicalContext && <TipBlock kind="history" text={b.historicalContext} />}
+            {b.tip && <TipBlock kind="tip" text={b.tip} />}
+            {b.warning && <TipBlock kind="warning" text={b.warning} />}
+          </div>
+        )
+      })}
     </div>
   )
 }

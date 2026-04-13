@@ -77,6 +77,11 @@ export function PlanView({
             currency={currency}
             editor={canEdit ? editor : undefined}
             defaultOpen={idx === 0}
+            allDays={current.days.map((d) => ({
+              id: d.id,
+              dayNumber: d.dayNumber,
+              title: d.title,
+            }))}
           />
         ))}
       </section>

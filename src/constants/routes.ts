@@ -3,7 +3,7 @@ export const ROUTES = {
   signIn: '/sign-in',
   newTrip: '/new',
   trip: (id: string) => `/trip/${id}`,
-  history: '/history',
+  myTrips: '/trips',
   shared: (token: string) => `/shared/${token}`,
 } as const
 

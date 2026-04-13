@@ -31,7 +31,7 @@ export function HistoryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">History</p>
+        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">My trips</p>
         <h1>Your trips</h1>
       </div>
 

@@ -65,7 +65,12 @@ export function App() {
               element={<AuthedRoute element={<AppShell><TripPage /></AppShell>} />}
             />
             <Route
-              path={ROUTES.history}
+              path={ROUTES.myTrips}
+              element={<AuthedRoute element={<AppShell><HistoryPage /></AppShell>} />}
+            />
+            {/* Legacy redirect: old /history links still land on /trips */}
+            <Route
+              path="/history"
               element={<AuthedRoute element={<AppShell><HistoryPage /></AppShell>} />}
             />
             <Route path="*" element={<NotFoundPage />} />

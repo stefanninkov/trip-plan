@@ -2,6 +2,18 @@ export type CostCategory = 'transport' | 'hotel' | 'food' | 'activity'
 
 export type BudgetTier = 'budget' | 'mid' | 'comfortable'
 
+export type TravelMode =
+  | 'plane'
+  | 'train'
+  | 'car'
+  | 'bus'
+  | 'ferry'
+  | 'walk'
+  | 'bike'
+  | 'subway'
+  | 'taxi'
+  | 'scooter'
+
 export interface CostRange {
   min: number
   max: number
@@ -14,6 +26,10 @@ export interface TimeBlock {
   description: string
   tip: string | null
   warning: string | null
+  // Richer activity info (optional for backward compatibility with older docs)
+  whyPicked?: string | null
+  historicalContext?: string | null
+  travelMode?: TravelMode | null
 }
 
 export interface CostItem {

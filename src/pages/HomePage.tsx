@@ -29,8 +29,8 @@ export function HomePage() {
               </span>
             </Button>
           </Link>
-          <Link to={ROUTES.history}>
-            <Button variant="secondary">View history</Button>
+          <Link to={ROUTES.myTrips}>
+            <Button variant="secondary">My trips</Button>
           </Link>
         </div>
       </section>

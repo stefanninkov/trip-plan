@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Map, Clock } from 'lucide-react'
+import { Home, Map, Briefcase } from 'lucide-react'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
 
 const NAV_ITEMS = [
   { to: ROUTES.home, label: 'Home', icon: Home },
   { to: ROUTES.newTrip, label: 'New', icon: Map },
-  { to: ROUTES.history, label: 'History', icon: Clock },
+  { to: ROUTES.myTrips, label: 'My Trips', icon: Briefcase },
 ]
 
 export function MobileNav() {
