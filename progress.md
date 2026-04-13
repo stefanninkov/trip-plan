@@ -1,20 +1,34 @@
 # Progress
 
-## Current Phase: Phase 1 — Project Management Files
-## Current Task: Creating claude.md, plan.md, progress.md, design.md
-## Blockers: None
+## Current Phase: Phase A — Project Setup Complete
+## Current Task: Ready to start Phase B (Trip Wizard)
+## Blockers: None — awaiting user to add Firebase env values and run locally
 
 ---
 
 ## Completed
 - [x] Phase 0 — Q&A with user (2026-04-11)
 - [x] Phase 1 — Project management files (2026-04-11)
+- [x] Phase A — Project setup, Tailwind, Firebase config, auth (2026-04-13)
+  - Vite + React 19 + TypeScript strict mode
+  - Tailwind CSS v4 with full design-token palette (dark Notion/Arc vibe)
+  - JetBrains Mono + IBM Plex Mono via Google Fonts
+  - Firebase app init (Auth + Firestore), rules, indexes, hosting config
+  - firestore.rules enforcing per-user ownership + public shared reads
+  - PWA via vite-plugin-pwa (manifest, service worker)
+  - Zustand auth-store and ui-store
+  - Google sign-in flow with AuthGuard
+  - React Router 7 with 7 routes (home, new, trip, history, shared, sign-in, 404)
+  - AppShell (Header + Sidebar + MobileNav) responsive layout
+  - Shared components: Button, Input, Card, Badge, Modal, Toast, Skeleton, ErrorBoundary, CurrencyDisplay
+  - All types (TripPlan, DayPlan, TimeBlock, CostItem, TripInputs, UserProfile, search results)
+  - Utilities: cn, logger, format-currency, date-helpers
+  - Clean `tsc -b` and `eslint .` runs, production build succeeds
 
 ## In Progress
 (nothing currently)
 
 ## Upcoming
-- [ ] Phase A — Project setup, tooling, Firebase config, auth
 - [ ] Phase B — Trip wizard with progressive disclosure
 - [ ] Phase C — AI trip generation (Claude API streaming)
 - [ ] Phase D — Plan display with drag-and-drop timeline editor

@@ -1,0 +1,217 @@
+@import 'tailwindcss';
+
+@theme {
+  /* === Background Layers === */
+  --color-bg-primary: #1a1a1e;
+  --color-bg-secondary: #222226;
+  --color-bg-surface: #2a2a2f;
+  --color-bg-elevated: #323238;
+
+  /* === Text Layers === */
+  --color-text-primary: #ededef;
+  --color-text-secondary: #a0a0a8;
+  --color-text-tertiary: #6b6b74;
+
+  /* === Accent === */
+  --color-accent: #e49b5a;
+  --color-accent-hover: #d88a47;
+
+  /* === Category Colors === */
+  --color-cat-transport: #5b9bd5;
+  --color-cat-hotel: #9b7fd4;
+  --color-cat-food: #e08d54;
+  --color-cat-activity: #5bbd8a;
+
+  /* === Semantic === */
+  --color-success: #5bbd8a;
+  --color-warning: #e4c65a;
+  --color-error: #d95555;
+  --color-info: #5b9bd5;
+
+  /* === Borders === */
+  --color-border-subtle: #2e2e34;
+  --color-border-default: #3a3a42;
+  --color-border-strong: #4a4a54;
+
+  /* === Tip / Warning === */
+  --color-tip-teal: #4db8a4;
+  --color-warn-coral: #d97b6b;
+
+  /* === Fonts === */
+  --font-heading: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-body: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-cost: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* === Breakpoints === */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+}
+
+/* === Global base === */
+@layer base {
+  :root {
+    /* Tinted backgrounds (referenced in components) */
+    --accent-muted: #e49b5a1a;
+    --cat-transport-muted: #5b9bd51f;
+    --cat-hotel-muted: #9b7fd41f;
+    --cat-food-muted: #e08d541f;
+    --cat-activity-muted: #5bbd8a1f;
+    --tip-teal-bg: #4db8a40f;
+    --warn-coral-bg: #d97b6b0f;
+    --overlay: #000000b3;
+
+    color-scheme: dark;
+  }
+
+  html,
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: 14px;
+    line-height: 22px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    min-height: 100dvh;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    color: var(--color-text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  h1 {
+    font-size: 28px;
+    line-height: 36px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  h2 {
+    font-size: 22px;
+    line-height: 30px;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 17px;
+    line-height: 24px;
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  @media (min-width: 1024px) {
+    h1 {
+      font-size: 36px;
+      line-height: 44px;
+      letter-spacing: -0.8px;
+    }
+    h2 {
+      font-size: 26px;
+      line-height: 34px;
+      letter-spacing: -0.4px;
+    }
+    h3 {
+      font-size: 18px;
+      line-height: 26px;
+    }
+  }
+
+  button {
+    font-family: var(--font-body);
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    font-family: var(--font-body);
+  }
+
+  ::selection {
+    background: var(--color-accent);
+    color: var(--color-bg-primary);
+  }
+}
+
+/* === Utilities === */
+@layer utilities {
+  .font-heading {
+    font-family: var(--font-heading);
+  }
+  .font-body {
+    font-family: var(--font-body);
+  }
+  .font-cost {
+    font-family: var(--font-cost);
+    font-variant-numeric: tabular-nums;
+  }
+  .cost {
+    font-family: var(--font-cost);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .bg-accent-muted {
+    background-color: var(--accent-muted);
+  }
+  .bg-cat-transport-muted {
+    background-color: var(--cat-transport-muted);
+  }
+  .bg-cat-hotel-muted {
+    background-color: var(--cat-hotel-muted);
+  }
+  .bg-cat-food-muted {
+    background-color: var(--cat-food-muted);
+  }
+  .bg-cat-activity-muted {
+    background-color: var(--cat-activity-muted);
+  }
+  .bg-tip {
+    background-color: var(--tip-teal-bg);
+  }
+  .bg-warn {
+    background-color: var(--warn-coral-bg);
+  }
+  .bg-overlay {
+    background-color: var(--overlay);
+  }
+}
+
+/* === Shimmer animation for skeletons === */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1500ms linear infinite;
+}
+
+/* === Reduced motion === */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
