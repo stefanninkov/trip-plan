@@ -6,7 +6,7 @@ export interface CurrencyDisplayProps {
   min: number
   max?: number
   currency: string
-  /** If set and different from `currency`, a converted amount is shown as a secondary line. */
+  /** If set and different from `currency`, the home currency is shown as the PRIMARY line and the local currency as the small secondary line. */
   homeCurrency?: string
   /** Optional override (legacy). If omitted, conversion uses the session-cached FX rates. */
   homeRate?: number
@@ -29,37 +29,42 @@ export function CurrencyDisplay({
   className,
   size = 'md',
 }: CurrencyDisplayProps) {
-  const primary =
+  const localText =
     max !== undefined && max !== min
       ? formatRange(min, max, currency)
       : formatCurrency(min, currency)
 
-  // Pick conversion rate in this order: explicit homeRate prop -> session FX cache.
+  // Pick conversion rate: explicit homeRate prop -> session FX cache.
   let effectiveRate: number | null = null
   if (homeCurrency && homeCurrency !== currency) {
     if (typeof homeRate === 'number') {
       effectiveRate = homeRate
     } else {
-      const convertedMin = convertSync(1, currency, homeCurrency)
-      effectiveRate = convertedMin
+      effectiveRate = convertSync(1, currency, homeCurrency)
     }
   }
 
-  const showHome = Boolean(homeCurrency && effectiveRate && homeCurrency !== currency)
-  const homePrimary =
-    showHome && effectiveRate
+  const homeAvailable = Boolean(homeCurrency && effectiveRate && homeCurrency !== currency)
+  const homeText =
+    homeAvailable && effectiveRate
       ? max !== undefined && max !== min
         ? formatRange(min * effectiveRate, max * effectiveRate, homeCurrency!)
         : formatCurrency(min * effectiveRate, homeCurrency!)
       : null
 
+  // When the user has a home currency that differs from the local one, show
+  // the home currency as the primary (big) line and keep the local price as
+  // a muted secondary line. This makes budgets readable at a glance.
+  const primaryText = homeText ?? localText
+  const secondaryText = homeText ? localText : null
+
   return (
     <div className={cn('cost flex flex-col items-end', className)}>
-      <span className={SIZE_CLASSES[size]}>{primary}</span>
-      {homePrimary && (
+      <span className={SIZE_CLASSES[size]}>{primaryText}</span>
+      {secondaryText && (
         <span className="text-[12px] text-text-tertiary leading-[16px]">
           {'\u2248 '}
-          {homePrimary}
+          {secondaryText}
         </span>
       )}
     </div>
