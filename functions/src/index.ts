@@ -40,7 +40,10 @@ export const generateTrip = onRequest(
       return
     }
 
-    const client = new Anthropic({ apiKey: ANTHROPIC_API_KEY.value() })
+    const client = new Anthropic({
+      apiKey: ANTHROPIC_API_KEY.value(),
+      maxRetries: 4,
+    })
 
     try {
       const message = await client.messages.create({
@@ -72,6 +75,16 @@ export const generateTrip = onRequest(
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
       console.error('generateTrip failed:', msg)
+
+      // Surface the overloaded case to the client with a hint it's transient
+      if (err instanceof Anthropic.APIError && err.status === 529) {
+        res.status(503).json({
+          error: 'Claude is temporarily overloaded. Please try again in a minute.',
+          transient: true,
+        })
+        return
+      }
+
       res.status(500).json({ error: msg })
     }
   }
