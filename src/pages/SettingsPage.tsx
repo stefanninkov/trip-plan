@@ -1,4 +1,4 @@
-import { Settings, RefreshCw, Trash2, Download, Thermometer, Bell } from 'lucide-react'
+import { Settings, RefreshCw, Trash2, Download, Thermometer, Bell, Sun, Moon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/shared/Card'
 import { Button } from '@/components/shared/Button'
@@ -15,6 +15,8 @@ export function SettingsPage() {
   const { t } = useTranslation()
   const tempUnit = usePrefsStore((s) => s.tempUnit)
   const setTempUnit = usePrefsStore((s) => s.setTempUnit)
+  const theme = usePrefsStore((s) => s.theme)
+  const setTheme = usePrefsStore((s) => s.setTheme)
   const addToast = useUiStore((s) => s.addToast)
   const { canInstall, installed, promptInstall } = useInstallPrompt()
 
@@ -47,6 +49,35 @@ export function SettingsPage() {
         </h1>
         <p className="text-text-secondary">{t('settings.description')}</p>
       </header>
+
+      <Card className="flex flex-col gap-3">
+        <div className="flex items-center gap-2 text-[14px] font-semibold">
+          <Sun size={16} className="text-accent" />
+          {t('settings.theme')}
+        </div>
+        <p className="text-[12px] text-text-tertiary">{t('settings.themeDescription')}</p>
+        <div className="inline-flex items-center rounded-full border border-border-subtle bg-bg-secondary p-0.5 self-start">
+          {(['dark', 'light'] as const).map((m) => {
+            const Icon = m === 'dark' ? Moon : Sun
+            return (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setTheme(m)}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold transition-colors',
+                  theme === m
+                    ? 'bg-accent text-bg-primary'
+                    : 'text-text-tertiary hover:text-text-primary'
+                )}
+              >
+                <Icon size={12} />
+                {t(m === 'dark' ? 'settings.themeDark' : 'settings.themeLight')}
+              </button>
+            )
+          })}
+        </div>
+      </Card>
 
       <Card className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-[14px] font-semibold">

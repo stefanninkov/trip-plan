@@ -2,17 +2,22 @@ import { Link } from 'react-router-dom'
 import { Map, Clock, Sparkles, Compass, BookOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth-store'
+import { useTrips } from '@/hooks/useTrips'
 import { ROUTES } from '@/constants/routes'
 import { Button } from '@/components/shared/Button'
 import { Card } from '@/components/shared/Card'
+import { TodayCard } from '@/components/home/TodayCard'
+import { TripStats } from '@/components/home/TripStats'
 
 export function HomePage() {
   const user = useAuthStore((s) => s.user)
+  const { trips } = useTrips()
   const { t } = useTranslation()
   const firstName = user?.displayName?.split(' ')[0] ?? 'there'
 
   return (
     <div className="flex flex-col gap-8">
+      <TodayCard trips={trips} />
       <section className="flex flex-col gap-3">
         <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">
           {t('home.welcome')}
@@ -49,6 +54,8 @@ export function HomePage() {
           </Link>
         </div>
       </section>
+
+      <TripStats trips={trips} />
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>

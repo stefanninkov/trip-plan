@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
 import {
+  addDoc,
   collection,
   deleteDoc,
   doc,
+  getDoc,
   onSnapshot,
   orderBy,
   query,
+  serverTimestamp,
   where,
   type Timestamp,
 } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuthStore } from '@/store/auth-store'
 import { logger } from '@/utils/logger'
+import { sanitizeForFirestore } from '@/utils/sanitize'
 import type { TripDocument } from '@/types/api'
 
 interface TripListItem extends Omit<TripDocument, 'createdAt' | 'updatedAt'> {
@@ -79,5 +83,33 @@ export function useTrips() {
     await deleteDoc(doc(db, 'trips', tripId))
   }
 
-  return { trips, isLoading, error, deleteTrip }
+  /**
+   * Create a copy of a trip under the current user. The plan / inputs /
+   * shareOptions are preserved; the share token is cleared so the copy
+   * is private, and createdAt/updatedAt are reset.
+   */
+  const duplicateTrip = async (tripId: string): Promise<string | null> => {
+    if (!user) return null
+    try {
+      const snap = await getDoc(doc(db, 'trips', tripId))
+      if (!snap.exists()) return null
+      const data = snap.data() as Partial<TripDocument>
+      const ref = await addDoc(collection(db, 'trips'), {
+        userId: user.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        inputs: sanitizeForFirestore(data.inputs ?? {}),
+        plan: data.plan ? sanitizeForFirestore(data.plan) : null,
+        status: data.plan ? 'complete' : 'generating',
+        shared: false,
+        shareToken: null,
+      })
+      return ref.id
+    } catch (err) {
+      logger.error('duplicateTrip failed:', err)
+      return null
+    }
+  }
+
+  return { trips, isLoading, error, deleteTrip, duplicateTrip }
 }

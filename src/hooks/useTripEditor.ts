@@ -23,6 +23,10 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const latestPlan = useRef(plan)
   const [isSaving, setIsSaving] = useState(false)
+  // Bounded undo / redo history for destructive edits.
+  const undoStack = useRef<TripPlan[]>([])
+  const redoStack = useRef<TripPlan[]>([])
+  const MAX_HISTORY = 50
 
   // Keep latestPlan fresh so the debounced save always writes the newest value
   useEffect(() => {
@@ -60,6 +64,11 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
   const apply = useCallback(
     (updater: (p: TripPlan) => TripPlan) => {
       setPlan((prev) => {
+        // Push the pre-edit snapshot onto the undo stack (cap at MAX_HISTORY).
+        undoStack.current.push(prev)
+        if (undoStack.current.length > MAX_HISTORY) undoStack.current.shift()
+        // Any new edit invalidates the redo stack.
+        redoStack.current = []
         const next = recalcTotals(updater(prev))
         persist(next)
         return next
@@ -67,6 +76,29 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     },
     [persist]
   )
+
+  const undo = useCallback(() => {
+    setPlan((prev) => {
+      const last = undoStack.current.pop()
+      if (!last) return prev
+      redoStack.current.push(prev)
+      persist(last)
+      return last
+    })
+  }, [persist])
+
+  const redo = useCallback(() => {
+    setPlan((prev) => {
+      const last = redoStack.current.pop()
+      if (!last) return prev
+      undoStack.current.push(prev)
+      persist(last)
+      return last
+    })
+  }, [persist])
+
+  const canUndo = () => undoStack.current.length > 0
+  const canRedo = () => redoStack.current.length > 0
 
   // === Top-level patches ===
   const setTripTitle = (value: string) => apply((p) => ({ ...p, tripTitle: value }))
@@ -292,6 +324,10 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     updateDay,
     replaceDay,
     replacePlan,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
     addDay,
     deleteDay,
     shiftTripDates,

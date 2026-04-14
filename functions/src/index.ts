@@ -10,6 +10,8 @@ export { regenerateDay } from './regenerate-day.js'
 export { enrichBlock } from './enrich-block.js'
 export { exploreDestination } from './explore.js'
 export { chatWithTrip } from './chat-trip.js'
+export { parseWizardVoice } from './parse-wizard-voice.js'
+export { importTrip } from './import-trip.js'
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 

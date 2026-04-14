@@ -47,6 +47,24 @@
   --breakpoint-lg: 1024px;
 }
 
+/* === Light theme override ===
+   Activated when <html data-theme="light"> is set (see prefs-store).
+   Keeps the accent unchanged so the brand feels consistent. */
+html[data-theme='light'] {
+  --color-bg-primary: #fafaf8;
+  --color-bg-secondary: #f2f2ef;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #eaeae7;
+
+  --color-text-primary: #1b1b1f;
+  --color-text-secondary: #4d4d56;
+  --color-text-tertiary: #8a8a94;
+
+  --color-border-subtle: #e4e4e0;
+  --color-border-default: #d0d0cb;
+  --color-border-strong: #b5b5af;
+}
+
 /* === Global base === */
 @layer base {
   :root {

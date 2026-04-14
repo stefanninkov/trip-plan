@@ -19,6 +19,7 @@ import type { DestinationOverview } from '@/types/explore'
 import { googleMapsSearchUrl } from '@/utils/maps-link'
 import { geocodeDetailed, type Coord } from '@/utils/geocode'
 import { logger } from '@/utils/logger'
+import { PlacePhoto } from '@/components/shared/PlacePhoto'
 
 export function ExploreResult({ overview }: { overview: DestinationOverview }) {
   const subtitle = [overview.kind === 'country' ? null : overview.country, kindLabel(overview.kind)]
@@ -67,8 +68,15 @@ export function ExploreResult({ overview }: { overview: DestinationOverview }) {
           {overview.highlights.map((h, i) => (
             <div
               key={i}
-              className="rounded-lg border border-border-subtle bg-bg-secondary p-4 flex flex-col gap-2"
+              className="rounded-lg border border-border-subtle bg-bg-secondary overflow-hidden flex flex-col"
             >
+              <PlacePhoto
+                query={`${h.name}, ${centerQuery}`}
+                sig={`h-${i}`}
+                aspectRatio="16 / 9"
+                className="rounded-none border-0 border-b border-border-subtle"
+              />
+              <div className="p-4 flex flex-col gap-2">
               <div className="flex items-start justify-between gap-2">
                 <span className="text-[15px] font-semibold leading-tight">{h.name}</span>
                 <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded bg-bg-elevated text-text-tertiary">
@@ -82,6 +90,7 @@ export function ExploreResult({ overview }: { overview: DestinationOverview }) {
                 duration={h.duration}
               />
               <MapLink query={h.mapsQuery || `${h.name}, ${centerQuery}`} />
+              </div>
             </div>
           ))}
         </div>
@@ -125,14 +134,22 @@ export function ExploreResult({ overview }: { overview: DestinationOverview }) {
           {overview.food.map((f, i) => (
             <div
               key={i}
-              className="rounded-lg border border-border-subtle bg-bg-secondary p-4 flex flex-col gap-2"
+              className="rounded-lg border border-border-subtle bg-bg-secondary overflow-hidden flex flex-col"
             >
-              <span className="text-[15px] font-semibold">{f.name}</span>
-              <p className="text-[13px] text-text-secondary leading-[20px]">{f.note}</p>
-              <MetaRow address={f.address} priceHint={f.priceHint} />
-              {(f.address || f.mapsQuery) && (
-                <MapLink query={f.mapsQuery || `${f.name}, ${centerQuery}`} />
-              )}
+              <PlacePhoto
+                query={`${f.name} food dish`}
+                sig={`f-${i}`}
+                aspectRatio="16 / 9"
+                className="rounded-none border-0 border-b border-border-subtle"
+              />
+              <div className="p-4 flex flex-col gap-2">
+                <span className="text-[15px] font-semibold">{f.name}</span>
+                <p className="text-[13px] text-text-secondary leading-[20px]">{f.note}</p>
+                <MetaRow address={f.address} priceHint={f.priceHint} />
+                {(f.address || f.mapsQuery) && (
+                  <MapLink query={f.mapsQuery || `${f.name}, ${centerQuery}`} />
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -174,14 +191,22 @@ export function ExploreResult({ overview }: { overview: DestinationOverview }) {
           {overview.activities.map((a, i) => (
             <div
               key={i}
-              className="rounded-lg border border-border-subtle bg-bg-secondary p-4 flex flex-col gap-2"
+              className="rounded-lg border border-border-subtle bg-bg-secondary overflow-hidden flex flex-col"
             >
-              <span className="text-[15px] font-semibold">{a.name}</span>
-              <p className="text-[13px] text-text-secondary leading-[20px]">{a.note}</p>
-              <MetaRow address={a.address} priceHint={a.priceHint} duration={a.duration} />
-              {(a.address || a.mapsQuery) && (
-                <MapLink query={a.mapsQuery || `${a.name}, ${centerQuery}`} />
-              )}
+              <PlacePhoto
+                query={`${a.name}, ${centerQuery}`}
+                sig={`a-${i}`}
+                aspectRatio="16 / 9"
+                className="rounded-none border-0 border-b border-border-subtle"
+              />
+              <div className="p-4 flex flex-col gap-2">
+                <span className="text-[15px] font-semibold">{a.name}</span>
+                <p className="text-[13px] text-text-secondary leading-[20px]">{a.note}</p>
+                <MetaRow address={a.address} priceHint={a.priceHint} duration={a.duration} />
+                {(a.address || a.mapsQuery) && (
+                  <MapLink query={a.mapsQuery || `${a.name}, ${centerQuery}`} />
+                )}
+              </div>
             </div>
           ))}
         </div>

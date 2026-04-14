@@ -7,6 +7,7 @@ import { useUiStore } from '@/store/ui-store'
 import { logger } from '@/utils/logger'
 import type { TripInputs } from '@/types/wizard'
 import { TripWizard } from '@/components/wizard/TripWizard'
+import { ImportFromUrl } from '@/components/wizard/ImportFromUrl'
 
 export function NewTripPage() {
   const [params, setParams] = useSearchParams()
@@ -51,6 +52,7 @@ export function NewTripPage() {
         <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">New trip</p>
         <h1>Plan your trip</h1>
       </div>
+      <ImportFromUrl />
       <TripWizard />
     </div>
   )

@@ -288,7 +288,48 @@
     "deleteBody": "Ovo trajno uklanja plan i sve izmene. Ne može se poništiti.",
     "deleted": "Putovanje obrisano",
     "cleanStuck": "Očisti zaglavljeno ({{count}})",
-    "cleanedStuck": "Uklonjeno {{count}} zaglavljenih putovanja"
+    "cleanedStuck": "Uklonjeno {{count}} zaglavljenih putovanja",
+    "duplicate": "Dupliraj",
+    "duplicated": "Putovanje duplirano",
+    "duplicateFailed": "Nije uspelo dupliranje putovanja"
+  },
+  "today": {
+    "kicker": "Danas na putovanju",
+    "upcomingKicker": "Sledeće",
+    "dayN": "Dan {{n}}",
+    "next": "Sledeće",
+    "startsToday": "počinje danas",
+    "startsTomorrow": "počinje sutra",
+    "startsInDays": "počinje za {{count}} dana"
+  },
+  "stats": {
+    "trips": "Putovanja",
+    "countries": "Zemalja",
+    "daysPlanned": "Dana planirano",
+    "totalPlanned": "Ukupno planirano"
+  },
+  "import": {
+    "heading": "Uvezi putovanje iz URL-a",
+    "description": "Nalepi blog post, Wanderlog stranicu ili podeljeni itinerer. Claude će pročitati i pretvoriti u puno izmenjivo putovanje.",
+    "button": "Uvezi",
+    "importing": "Uvoz u toku…",
+    "invalidUrl": "Unesi pun URL koji počinje sa http:// ili https://",
+    "done": "Putovanje uvezeno",
+    "failed": "Nije uspelo uvoz tog URL-a"
+  },
+  "voice": {
+    "buttonLabel": "Diktiraj putovanje",
+    "title": "Diktiraj putovanje",
+    "hint": "Ispričaj celo putovanje odjednom — polazište, destinacije, datumi, putnici, budžet, interesovanja. Claude će popuniti čarobnjak za tebe.",
+    "tapToStart": "Klikni Počni i opiši putovanje.",
+    "listening": "Slušam…",
+    "start": "Počni",
+    "stop": "Zaustavi",
+    "recordAgain": "Snimi ponovo",
+    "apply": "Popuni čarobnjak",
+    "parsing": "Obrađujem…",
+    "filled": "Čarobnjak popunjen — proveri korake i klikni Generiši",
+    "parseFailed": "Nije moglo da se razume — probaj ponovo"
   },
   "chat": {
     "openLabel": "Razgovaraj sa putovanjem",
@@ -379,6 +420,10 @@
   "settings": {
     "heading": "Podešavanja",
     "description": "Tvoje lične postavke i alati naloga.",
+    "theme": "Tema",
+    "themeDescription": "Tamna ili svetla tema za ceo interfejs.",
+    "themeDark": "Tamna",
+    "themeLight": "Svetla",
     "units": "Jedinice",
     "unitsDescription": "Izaberi kako se prikazuju temperature i udaljenosti.",
     "temperature": "Temperatura",

@@ -15,6 +15,7 @@ import { GenerationProgress } from './GenerationProgress'
 import { AiProgress } from '@/components/shared/AiProgress'
 import { Button } from '@/components/shared/Button'
 import { ROUTES } from '@/constants/routes'
+import { VoiceWizardButton } from './VoiceWizardButton'
 
 export function TripWizard() {
   const { t } = useTranslation()
@@ -79,6 +80,10 @@ export function TripWizard() {
   return (
     <div className="flex flex-col gap-8">
       <WizardProgress />
+
+      {currentStep === 'origin' && !isGenerating && (
+        <VoiceWizardButton />
+      )}
 
       <div className="min-h-[280px]">
         {currentStep === 'origin' && <StepOrigin />}

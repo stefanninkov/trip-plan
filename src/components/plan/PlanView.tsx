@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react'
+import { useCallback, useEffect, useState, lazy, Suspense } from 'react'
 import { Eye, Pencil, Wand2, List, Map as MapIcon, Plus, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { TripPlan } from '@/types/trip-plan'
@@ -44,6 +44,35 @@ export function PlanView({
   readOnly = false,
 }: PlanViewProps) {
   const editor = useTripEditor(tripId, plan)
+
+  // Cmd/Ctrl+Z undo, Cmd+Shift+Z redo. Only when an input isn't focused.
+  const onShortcut = useCallback(
+    (e: KeyboardEvent) => {
+      if (readOnly) return
+      const target = e.target as HTMLElement | null
+      const tag = target?.tagName
+      if (
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        tag === 'SELECT' ||
+        (target && (target as HTMLElement).isContentEditable)
+      )
+        return
+      if (!(e.metaKey || e.ctrlKey)) return
+      if (e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        editor.undo()
+      } else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') {
+        e.preventDefault()
+        editor.redo()
+      }
+    },
+    [editor, readOnly]
+  )
+  useEffect(() => {
+    window.addEventListener('keydown', onShortcut)
+    return () => window.removeEventListener('keydown', onShortcut)
+  }, [onShortcut])
   const [editing, setEditing] = useState(false)
   const [tab, setTab] = useState<Tab>('plan')
   const current = editor.plan

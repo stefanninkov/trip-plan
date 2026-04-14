@@ -1,6 +1,7 @@
 import { lazy, Suspense, type ReactElement } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthListener } from '@/hooks/useAuth'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { AuthGuard } from '@/components/auth/AuthGuard'
 import { AppShell } from '@/components/layout/AppShell'
 import { ToastContainer } from '@/components/shared/Toast'
@@ -51,12 +52,18 @@ function LazyFallback() {
   )
 }
 
+function ShortcutsMounter() {
+  useKeyboardShortcuts()
+  return null
+}
+
 export function App() {
   useAuthListener()
 
   return (
     <ErrorBoundary>
       <BrowserRouter basename={ROUTER_BASENAME}>
+        <ShortcutsMounter />
         <Suspense fallback={<LazyFallback />}>
           <Routes>
             <Route path={ROUTES.signIn} element={<SignInPage />} />

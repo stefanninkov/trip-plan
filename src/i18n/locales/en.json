@@ -288,7 +288,48 @@
     "deleteBody": "This removes the plan and all edits permanently. This cannot be undone.",
     "deleted": "Trip deleted",
     "cleanStuck": "Clean up stuck ({{count}})",
-    "cleanedStuck": "Removed {{count}} stuck trip(s)"
+    "cleanedStuck": "Removed {{count}} stuck trip(s)",
+    "duplicate": "Duplicate",
+    "duplicated": "Trip duplicated",
+    "duplicateFailed": "Could not duplicate that trip"
+  },
+  "today": {
+    "kicker": "Today on your trip",
+    "upcomingKicker": "Next up",
+    "dayN": "Day {{n}}",
+    "next": "Next",
+    "startsToday": "starts today",
+    "startsTomorrow": "starts tomorrow",
+    "startsInDays": "starts in {{count}} days"
+  },
+  "stats": {
+    "trips": "Trips",
+    "countries": "Countries",
+    "daysPlanned": "Days planned",
+    "totalPlanned": "Total planned"
+  },
+  "import": {
+    "heading": "Import a trip from a URL",
+    "description": "Paste a blog post, Wanderlog page or shared itinerary. Claude will read it and turn it into a full editable trip.",
+    "button": "Import",
+    "importing": "Importing…",
+    "invalidUrl": "Enter a full URL starting with http:// or https://",
+    "done": "Trip imported",
+    "failed": "Could not import that URL"
+  },
+  "voice": {
+    "buttonLabel": "Dictate your trip",
+    "title": "Dictate your trip",
+    "hint": "Say the whole trip in one go — origin, destinations, dates, travelers, budget, interests. Claude will fill the wizard for you.",
+    "tapToStart": "Tap Start and describe your trip.",
+    "listening": "Listening…",
+    "start": "Start",
+    "stop": "Stop",
+    "recordAgain": "Record again",
+    "apply": "Fill the wizard",
+    "parsing": "Parsing…",
+    "filled": "Wizard filled — review the steps and hit Generate",
+    "parseFailed": "Could not understand that — try rephrasing"
   },
   "chat": {
     "openLabel": "Chat with your trip",
@@ -379,6 +420,10 @@
   "settings": {
     "heading": "Settings",
     "description": "Your personal preferences and account tools.",
+    "theme": "Theme",
+    "themeDescription": "Dark or light mode for the whole interface.",
+    "themeDark": "Dark",
+    "themeLight": "Light",
     "units": "Units",
     "unitsDescription": "Choose how temperatures and distances are displayed.",
     "temperature": "Temperature",

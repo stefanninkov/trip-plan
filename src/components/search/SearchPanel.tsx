@@ -31,6 +31,7 @@ import { useUiStore } from '@/store/ui-store'
 import { cn } from '@/utils/cn'
 import { formatCurrency } from '@/utils/format-currency'
 import { formatDate } from '@/utils/date-helpers'
+import { withAffiliate } from '@/utils/affiliate'
 
 type Tab = 'flights' | 'hotels' | 'places' | 'activities'
 
@@ -514,7 +515,7 @@ function HotelsTab({ editor, days }: AddToPlanCtx) {
                   <div className="flex items-center gap-2">
                     {r.bookingUrl && (
                       <a
-                        href={r.bookingUrl}
+                        href={withAffiliate(r.bookingUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="text-accent text-[12px] flex items-center gap-1"

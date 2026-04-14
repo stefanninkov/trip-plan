@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Trash2, Plane, AlertTriangle, Calendar, Users, Wrench } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Trash2, Plane, AlertTriangle, Calendar, Users, Wrench, Copy } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useTrips } from '@/hooks/useTrips'
 import { useUiStore } from '@/store/ui-store'
@@ -21,9 +21,20 @@ const STUCK_THRESHOLD_MS = 10 * 60 * 1000
 
 export function HistoryPage() {
   const { t } = useTranslation()
-  const { trips, isLoading, error, deleteTrip } = useTrips()
+  const navigate = useNavigate()
+  const { trips, isLoading, error, deleteTrip, duplicateTrip } = useTrips()
   const addToast = useUiStore((s) => s.addToast)
   const [toDelete, setToDelete] = useState<string | null>(null)
+
+  const handleDuplicate = async (tripId: string): Promise<void> => {
+    const newId = await duplicateTrip(tripId)
+    if (newId) {
+      addToast('success', t('history.duplicated'))
+      navigate(ROUTES.trip(newId))
+    } else {
+      addToast('error', t('history.duplicateFailed'))
+    }
+  }
 
   const stuckTrips = useMemo(
     () =>
@@ -152,6 +163,15 @@ export function HistoryPage() {
                     size="md"
                   />
                 )}
+                <button
+                  type="button"
+                  onClick={() => void handleDuplicate(trip.id)}
+                  aria-label={t('history.duplicate')}
+                  title={t('history.duplicate')}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-text-tertiary hover:bg-bg-elevated hover:text-text-primary transition-colors"
+                >
+                  <Copy size={16} />
+                </button>
                 <button
                   type="button"
                   onClick={() => setToDelete(trip.id)}
