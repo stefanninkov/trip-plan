@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Map, Briefcase, Compass } from 'lucide-react'
+import { Home, Map, Briefcase, Compass, BookOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { ROUTES } from '@/constants/routes'
 import { cn } from '@/utils/cn'
@@ -22,6 +22,7 @@ export function Sidebar() {
     { to: ROUTES.explore, label: t('nav.explore'), icon: Compass },
     { to: ROUTES.newTrip, label: t('nav.newTrip'), icon: Map },
     { to: ROUTES.myTrips, label: t('nav.myTrips'), icon: Briefcase },
+    { to: ROUTES.guide, label: t('nav.guide'), icon: BookOpen },
   ]
   const [exploreHistory, setExploreHistory] = useState<ExploreHistoryEntry[]>(() =>
     getExploreHistory()

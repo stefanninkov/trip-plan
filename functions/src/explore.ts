@@ -101,11 +101,16 @@ export const exploreDestination = onRequest(
       return
     }
 
-    const { query } = req.body ?? {}
+    const { query, language } = req.body ?? {}
     if (typeof query !== 'string' || !query.trim()) {
       res.status(400).json({ error: 'Missing query' })
       return
     }
+    const lang = typeof language === 'string' ? language : 'en'
+    const languageInstruction =
+      lang === 'sr'
+        ? 'Respond in Serbian (Latin script). Write summary, history, bestTimeToVisit, howManyDays, gettingAround, every "why" / "note" / "vibe" / "goodFor" field, tips, watchouts and all free-text in Serbian. Keep real place names (restaurants, neighborhoods, landmarks, hotels) in their original form. Keep mapsQuery in English so Google Maps can find the location.\n\n'
+        : ''
 
     const client = new Anthropic({
       apiKey: ANTHROPIC_API_KEY.value(),
@@ -114,10 +119,15 @@ export const exploreDestination = onRequest(
 
     try {
       const message = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 16000,
         system: EXPLORE_SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: buildExplorePrompt(query.trim()) }],
+        messages: [
+          {
+            role: 'user',
+            content: languageInstruction + buildExplorePrompt(query.trim()),
+          },
+        ],
       })
 
       if (message.stop_reason === 'max_tokens') {

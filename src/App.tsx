@@ -20,6 +20,9 @@ const ExplorePage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
 )
+const GuidePage = lazy(() =>
+  import('@/pages/GuidePage').then((m) => ({ default: m.GuidePage }))
+)
 const TripPage = lazy(() => import('@/pages/TripPage').then((m) => ({ default: m.TripPage })))
 const HistoryPage = lazy(() =>
   import('@/pages/HistoryPage').then((m) => ({ default: m.HistoryPage }))
@@ -73,6 +76,10 @@ export function App() {
             <Route
               path={ROUTES.settings}
               element={<AuthedRoute element={<AppShell><SettingsPage /></AppShell>} />}
+            />
+            <Route
+              path={ROUTES.guide}
+              element={<AuthedRoute element={<AppShell><GuidePage /></AppShell>} />}
             />
             <Route
               path={ROUTE_PATTERNS.trip}

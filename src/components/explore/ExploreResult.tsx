@@ -357,6 +357,10 @@ interface PlacePin {
 function ExploreMap({ overview }: { overview: DestinationOverview }) {
   const [pins, setPins] = useState<PlacePin[]>([])
   const [center, setCenter] = useState<Coord | null>(null)
+  // Track whether the Mapbox static image failed to load (token might not
+  // have URL access to api.mapbox.com/styles/v1/... even if other endpoints
+  // work). Fall back to the pill list when it errors.
+  const [imageFailed, setImageFailed] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -405,18 +409,26 @@ function ExploreMap({ overview }: { overview: DestinationOverview }) {
   if (!center && pins.length === 0) return null
 
   const token = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
-  if (token && center) {
-    // Static Mapbox image with markers — no extra JS bundle, cheap and fast.
-    const allPoints = [{ coord: center, color: 'e49b5a', label: '' }, ...pins.map((p) => ({
-      coord: p.coord,
-      color: colorFor(p.kind),
-      label: '',
-    }))]
+  if (token && center && !imageFailed) {
+    // Static Mapbox image with markers — cap to 14 pins to stay under
+    // Mapbox's ~8k URL length limit.
+    const allPoints = [
+      { coord: center, color: 'e49b5a', label: '' },
+      ...pins.slice(0, 14).map((p) => ({
+        coord: p.coord,
+        color: colorFor(p.kind),
+        label: '',
+      })),
+    ]
     const markerStr = allPoints
       .map((p) => `pin-s+${p.color}(${p.coord.lng.toFixed(5)},${p.coord.lat.toFixed(5)})`)
       .join(',')
-    // "auto" lets Mapbox pick the tightest bbox that fits all pins.
-    const url = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/${markerStr}/auto/900x380@2x?padding=60&access_token=${token}`
+    // "auto" needs 2+ markers — fall back to explicit center when only 1.
+    const viewport =
+      allPoints.length >= 2
+        ? 'auto'
+        : `${center.lng.toFixed(5)},${center.lat.toFixed(5)},11,0`
+    const url = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/${markerStr}/${viewport}/900x380@2x?padding=60&access_token=${token}`
     return (
       <div className="flex flex-col gap-2">
         <img
@@ -424,6 +436,7 @@ function ExploreMap({ overview }: { overview: DestinationOverview }) {
           alt={`${overview.name} map`}
           className="w-full rounded-xl border border-border-subtle"
           loading="lazy"
+          onError={() => setImageFailed(true)}
         />
         <MapLegend pinCount={pins.length} />
       </div>

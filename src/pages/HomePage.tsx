@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Map, Clock, Sparkles, Compass } from 'lucide-react'
+import { Map, Clock, Sparkles, Compass, BookOpen } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth-store'
 import { ROUTES } from '@/constants/routes'
@@ -18,7 +18,7 @@ export function HomePage() {
           {t('home.welcome')}
         </p>
         <h1>{t('home.hello', { name: firstName })}</h1>
-        <p className="text-text-secondary max-w-xl">{t('home.lede')}</p>
+        <p className="text-text-secondary max-w-2xl leading-[22px]">{t('home.lede')}</p>
         <div className="flex gap-3 mt-2 flex-wrap">
           <Link to={ROUTES.newTrip}>
             <Button>
@@ -38,6 +38,14 @@ export function HomePage() {
           </Link>
           <Link to={ROUTES.myTrips}>
             <Button variant="secondary">{t('home.myTrips')}</Button>
+          </Link>
+          <Link to={ROUTES.guide}>
+            <Button variant="secondary">
+              <span className="flex items-center gap-2">
+                <BookOpen size={14} />
+                {t('home.howItWorks')}
+              </span>
+            </Button>
           </Link>
         </div>
       </section>

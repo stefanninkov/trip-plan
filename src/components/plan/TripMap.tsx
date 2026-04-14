@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import { Loader2, MapPinOff } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
 import { geocodeDetailed, hasMapboxToken, type Coord } from '@/utils/geocode'
+import { logger } from '@/utils/logger'
 
 interface DayCoord {
   day: TripPlan['days'][number]
@@ -81,6 +82,29 @@ export function TripMap({ plan }: TripMapProps) {
       zoom: 4,
     })
     mapRef.current = map
+
+    // If the Mapbox vector-tile style fails to load (most common cause:
+    // token URL restrictions block styles.mapbox.com even though the static
+    // image API or other endpoints work), swap to the keyless OSM raster
+    // fallback so the user still sees a map.
+    let swapped = false
+    const onStyleError = (e: unknown): void => {
+      if (swapped) return
+      const err = e as { error?: { status?: number; message?: string } }
+      const status = err?.error?.status ?? 0
+      // 401/403 = auth, 404 = style path wrong. Anything else we also
+      // treat as broken since the canvas stays blank.
+      if (status === 401 || status === 403 || status === 404 || !status) {
+        swapped = true
+        try {
+          map.setStyle(OSM_STYLE)
+          logger.warn('Mapbox style failed, swapped to OSM fallback', err?.error?.message ?? status)
+        } catch (swapErr) {
+          logger.warn('failed to swap map style', swapErr)
+        }
+      }
+    }
+    map.on('error', onStyleError)
 
     map.on('load', () => {
       // Fit all points

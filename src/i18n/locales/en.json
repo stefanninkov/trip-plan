@@ -8,6 +8,7 @@
     "explore": "Explore",
     "newTrip": "New trip",
     "myTrips": "My Trips",
+    "guide": "Guide & tips",
     "recentTrips": "Recent trips",
     "recentlyExplored": "Recently explored"
   },
@@ -35,8 +36,9 @@
   "home": {
     "welcome": "Welcome back",
     "hello": "Hello, {{name}}",
-    "lede": "Plan a new trip with AI or revisit your saved itineraries. Each plan includes hour-by-hour schedules, hotel options in all budget tiers, and web-searched prices.",
+    "lede": "Trip Plan is your AI travel companion. Describe where you want to go and get a full day-by-day itinerary with real hotel picks, hour-by-hour activities, transport between cities, realistic costs in Euro, and a weather read for every day. Prefer to skip the AI? Build from live Google search results or start blank. Use Explore to research a country or city before you plan, then share the finished trip or sync it to your calendar.",
     "planNew": "Plan a new trip",
+    "howItWorks": "How it works",
     "explore": "Explore",
     "myTrips": "My trips",
     "feature1Title": "Multi-city, hour-by-hour",
@@ -287,6 +289,79 @@
     "deleted": "Trip deleted",
     "cleanStuck": "Clean up stuck ({{count}})",
     "cleanedStuck": "Removed {{count}} stuck trip(s)"
+  },
+  "guide": {
+    "kicker": "Guide & tips",
+    "heading": "How Trip Plan works",
+    "lede": "Everything you can do, in order of how most people use it. If you're ever stuck, come back to this page.",
+    "tips": "Tips",
+    "stuckTitle": "Something not working?",
+    "stuckBody": "Check Settings for cache clearing and rate refresh. Generation usually takes 30–60 seconds; if the progress bar is stuck past 4 minutes, you'll get an option to mark it failed and start over. Your plans always save automatically.",
+    "planAi": {
+      "title": "Plan with AI",
+      "body": "Walk through 5 quick steps (origin, destinations, dates, travelers, fine-tuning). Claude writes a day-by-day plan with real hotels, specific restaurants, time blocks, and full cost breakdown. Takes about 30–60 seconds.",
+      "tips": "Pick specific cities (\"Rome, Italy\") rather than regions for best results.\nLuxury budget tier gets you Michelin-starred restaurants, 5-star hotels and business-class flights.\nYou can preset a travel mode per destination (plane/train/etc.) and the AI will honour it.",
+      "cta": "Start a new trip"
+    },
+    "explore": {
+      "title": "Explore a country or city",
+      "body": "Before planning a trip, use Explore to get a rich overview: history, must-see highlights, neighborhoods, food, where to stay, things to do, insider tips and what to watch out for. Keeps running in the background if you switch tabs.",
+      "tips": "Your Explore history is saved across sessions — click a chip from the sidebar or the Recently Explored list to reopen instantly, no re-fetching.\nEvery place has an \"Open in Maps\" link.\nIf a Mapbox token is set, you get a map with colored pins for highlights, neighborhoods and food.",
+      "cta": "Open Explore"
+    },
+    "noAi": {
+      "title": "Build without AI (Google search)",
+      "body": "Don't want to wait for AI? The search-based builder composes your plan from live SerpAPI results — real hotel listings for each stay, top-rated places and restaurants for each day, and flight prices origin↔first city. Usually completes in 10–15 seconds.",
+      "tips": "Use this when the AI is slow or when you want results anchored in live prices only.\nEvery activity card carries the SerpAPI place info (address, rating, hours, phone, website) so you can book immediately."
+    },
+    "edit": {
+      "title": "Edit your plan",
+      "body": "Click Edit on any trip to drag blocks between days, rename them, change times, add/remove costs, swap hotels, delete days, shift the trip dates, or regenerate a single day with custom feedback to Claude. Every edit saves automatically.",
+      "tips": "The day progress checklist lets you tick off blocks as you do them during the trip — useful in Today mode.\n\"Regenerate day\" accepts feedback like \"more relaxed, less museums, add a sunset viewpoint\".\nFor any block, the More Info button can enrich it with AI or pull live place details (hours, phone, website) from Google."
+    },
+    "map": {
+      "title": "Map view",
+      "body": "Every trip has a Map tab showing your route: one pin per day, numbered, connected by a dashed line in route order. The Mapbox dark style is used when a token is present; otherwise OpenStreetMap tiles are used so the map still works.",
+      "tips": "Click a pin to see the day title and location.\nIf some days can't be placed (generic locations), they appear in an \"unresolved\" list below the map."
+    },
+    "weather": {
+      "title": "Weather per day",
+      "body": "Each day shows a compact temperature / condition in the header, plus a detailed weather note at the bottom with a practical advisory (what to wear, whether to pack an umbrella, UV warnings).",
+      "tips": "For trips more than 16 days out the forecast falls back to archive data from last year, clearly labeled \"typical\".\nSwitch between °C and °F from Settings."
+    },
+    "reminders": {
+      "title": "Day-of reminders",
+      "body": "Turn on reminders from the top of any trip. You'll get a browser notification the morning of each travel day with that day's title and first activity. Works without any server — uses your browser's notification permission.",
+      "tips": "Only fires once per day per trip.\nClicking the notification jumps straight to the trip."
+    },
+    "share": {
+      "title": "Share a trip",
+      "body": "Any trip can be shared via a unique read-only link. Toggle privacy options (hide notes, hide costs) per trip. Recipients don't need to sign in.",
+      "tips": "The share link stays stable — share once, the recipient always sees the latest version.\nUse \"Hide costs\" when sharing with travel companions who are splitting things themselves."
+    },
+    "export": {
+      "title": "Export & calendar sync",
+      "body": "Export a trip as a PDF, plain text, or .ics calendar file — or sync it directly to Google Calendar with one OAuth click. Every day becomes an all-day event and every time block gets its own entry.",
+      "tips": "PDF export forces all days open so nothing is cut off.\n.ics imports into Apple Calendar, Outlook, Fastmail, anything that reads the format."
+    },
+    "presence": {
+      "title": "Live presence",
+      "body": "If someone else is looking at the same trip in their browser (future: shared planning), their avatar appears in the header. Updates every 20 seconds, shows \"N viewing\"."
+    },
+    "language": {
+      "title": "English / Serbian",
+      "body": "Toggle between EN and SR in the header or in Settings. AI-generated trips themselves come back in the selected language — day titles, activity descriptions, tips — while keeping real place names in their original form.",
+      "cta": "Open Settings"
+    },
+    "install": {
+      "title": "Install as an app",
+      "body": "Trip Plan is a PWA. Install it from Settings for a dedicated app icon and offline support. Previously-viewed maps, weather, and saved trips keep working even without network.",
+      "cta": "Open Settings"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "body": "Trips are saved in Firestore under your Google account. Only you can read or edit them. Shared trips are readable by anyone with the link but never editable. Explore history and recent destinations are stored only in your browser's localStorage."
+    }
   },
   "settings": {
     "heading": "Settings",

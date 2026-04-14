@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { create } from 'zustand'
+import i18n from 'i18next'
 import { FUNCTIONS_BASE_URL } from '@/lib/firebase'
 import { logger } from '@/utils/logger'
 import {
@@ -42,7 +43,9 @@ const useExploreStore = create<ExploreStoreState>((set, get) => ({
   run: async (query: string): Promise<DestinationOverview | null> => {
     const trimmed = query.trim()
     if (!trimmed) return null
-    const key = trimmed.toLowerCase()
+    const lang = (i18n.resolvedLanguage ?? 'en').startsWith('sr') ? 'sr' : 'en'
+    // Language-scoped cache key so EN / SR results don't stomp each other.
+    const key = `${lang}|${trimmed.toLowerCase()}`
 
     // Instant return from cache, and set it as the visible overview.
     const cached = get().cache[key]
@@ -62,7 +65,7 @@ const useExploreStore = create<ExploreStoreState>((set, get) => ({
       const res = await fetch(`${FUNCTIONS_BASE_URL}/exploreDestination`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: trimmed }),
+        body: JSON.stringify({ query: trimmed, language: lang }),
       })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
@@ -81,7 +84,8 @@ const useExploreStore = create<ExploreStoreState>((set, get) => ({
         kind: data.overview.kind,
       })
       // Persist the result so future clicks (even after a reload) are instant.
-      saveExploreResult(trimmed, data.overview)
+      // Same language-scoped key as the in-memory cache.
+      saveExploreResult(`${lang}|${trimmed}`, data.overview)
       set((s) => ({
         overview: data.overview,
         loading: false,

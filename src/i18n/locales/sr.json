@@ -8,6 +8,7 @@
     "explore": "Istraži",
     "newTrip": "Novo putovanje",
     "myTrips": "Moja putovanja",
+    "guide": "Vodič i saveti",
     "recentTrips": "Nedavna putovanja",
     "recentlyExplored": "Nedavno istraženo"
   },
@@ -35,8 +36,9 @@
   "home": {
     "welcome": "Dobrodošao nazad",
     "hello": "Zdravo, {{name}}",
-    "lede": "Isplaniraj novo putovanje uz AI ili pogledaj sačuvane itinerare. Svaki plan uključuje raspored po satima, hotele u svim cenovnim kategorijama i cene pronađene na vebu.",
+    "lede": "Trip Plan je tvoj AI saputnik. Opišeš gde želiš da ideš, a dobijaš kompletan plan po danima — stvarne hotele, aktivnosti sat po sat, prevoz između gradova, realne troškove u evrima i vremensku prognozu za svaki dan. Ne želiš AI? Izgradi plan iz Google pretrage uživo ili počni prazno. Istraži ti omogućava da pročitaš o zemlji ili gradu pre planiranja, a gotovo putovanje možeš da podeliš ili doda u kalendar.",
     "planNew": "Isplaniraj novo putovanje",
+    "howItWorks": "Kako radi",
     "explore": "Istraži",
     "myTrips": "Moja putovanja",
     "feature1Title": "Više gradova, sat po sat",
@@ -287,6 +289,79 @@
     "deleted": "Putovanje obrisano",
     "cleanStuck": "Očisti zaglavljeno ({{count}})",
     "cleanedStuck": "Uklonjeno {{count}} zaglavljenih putovanja"
+  },
+  "guide": {
+    "kicker": "Vodič i saveti",
+    "heading": "Kako Trip Plan radi",
+    "lede": "Sve što možeš da uradiš, po redosledu kako većina ljudi koristi aplikaciju. Ako se negde zaglaviš, vrati se na ovu stranicu.",
+    "tips": "Saveti",
+    "stuckTitle": "Nešto ne radi?",
+    "stuckBody": "Proveri Podešavanja za brisanje keša i osvežavanje kurseva. Generisanje obično traje 30–60 sekundi; ako se traka zaglavi duže od 4 minuta, dobijaš opciju da označiš kao neuspelo i počneš ispočetka. Tvoji planovi se uvek automatski čuvaju.",
+    "planAi": {
+      "title": "Planiraj uz AI",
+      "body": "Prođeš kroz 5 brzih koraka (polazište, destinacije, datumi, putnici, finese). Claude piše plan po danima sa stvarnim hotelima, konkretnim restoranima, vremenskim blokovima i pregledom troškova. Traje oko 30–60 sekundi.",
+      "tips": "Biraj konkretne gradove (\"Rim, Italija\") umesto regija za najbolje rezultate.\nLuksuzni budžet ti donosi Michelin restorane, hotele sa 5 zvezdica i biznis klasu letove.\nMožeš unapred izabrati prevoz po destinaciji (avion/voz/...) i AI će ga poštovati.",
+      "cta": "Pokreni novo putovanje"
+    },
+    "explore": {
+      "title": "Istraži zemlju ili grad",
+      "body": "Pre planiranja putovanja koristi Istraži da dobiješ bogat pregled: istoriju, obavezne atrakcije, kvartove, hranu, gde odsesti, šta raditi, savete iznutra i na šta paziti. Nastavlja da radi u pozadini čak i ako promeniš tab.",
+      "tips": "Tvoja Istraži istorija se čuva između sesija — klikni čip iz sidebar-a ili liste Nedavno istraženo da je odmah otvoriš.\nSvako mesto ima \"Otvori u Mapama\" link.\nAko je Mapbox token postavljen, dobijaš mapu sa obojenim pinovima za atrakcije, kvartove i hranu.",
+      "cta": "Otvori Istraži"
+    },
+    "noAi": {
+      "title": "Bez AI (Google pretraga)",
+      "body": "Ne želiš da čekaš AI? Graditelj na osnovu pretrage sastavlja plan iz SerpAPI rezultata uživo — stvarni hoteli za svaki boravak, najbolje ocenjena mesta i restorani za svaki dan, cene letova. Obično gotovo za 10–15 sekundi.",
+      "tips": "Koristi ovo kada je AI spor ili kad želiš samo žive cene.\nSvaka kartica aktivnosti nosi SerpAPI podatke o mestu (adresa, ocena, radno vreme, telefon, sajt) tako da možeš odmah da rezervišeš."
+    },
+    "edit": {
+      "title": "Menjaj plan",
+      "body": "Klikni Izmeni na bilo kom putovanju da prevlačiš blokove između dana, preimenuješ ih, menjaš vremena, dodaš/ukloniš troškove, menjaš hotele, brišeš dane, pomeraš datume putovanja ili ponovo generišeš dan sa svojim povratnim informacijama za Claude-a. Svaka izmena se automatski čuva.",
+      "tips": "Dnevna lista završenog ti omogućava da obeležiš blokove kako ih radiš — korisno u Danas modu.\n\"Ponovo generiši dan\" prima povratne informacije kao \"opuštenije, manje muzeja, dodaj mesto za zalazak sunca\".\nZa svaki blok, dugme Više info može da obogati podatke uz AI ili da povuče žive detalje o mestu (radno vreme, telefon, sajt) sa Google-a."
+    },
+    "map": {
+      "title": "Prikaz mape",
+      "body": "Svako putovanje ima karticu Mapa koja prikazuje tvoju rutu: po jedan pin po danu, numerisan, povezan isprekidanom linijom po redu. Mapbox tamni stil se koristi ako je token postavljen; inače se koriste OpenStreetMap pločice da mapa i dalje radi.",
+      "tips": "Klikni na pin da vidiš naslov dana i lokaciju.\nAko neki dani ne mogu da se postave (generične lokacije), pojavljuju se u listi \"nerešeno\" ispod mape."
+    },
+    "weather": {
+      "title": "Vreme po danu",
+      "body": "Svaki dan prikazuje kompaktnu temperaturu i uslov u zaglavlju, plus detaljnu napomenu o vremenu na dnu sa praktičnim savetom (šta obući, treba li kišobran, UV upozorenja).",
+      "tips": "Za putovanja za više od 16 dana unapred prognoza se oslanja na prošlogodišnje podatke, jasno označene kao \"tipično\".\nPrebaci između °C i °F u Podešavanjima."
+    },
+    "reminders": {
+      "title": "Podsetnici na dan putovanja",
+      "body": "Uključi podsetnike sa vrha svakog putovanja. Dobićeš obaveštenje pregledača ujutru svakog dana putovanja sa naslovom tog dana i prvom aktivnošću. Radi bez servera — koristi dozvolu za obaveštenja tvog pregledača.",
+      "tips": "Aktivira se samo jednom po danu po putovanju.\nKlik na obaveštenje vodi direktno na putovanje."
+    },
+    "share": {
+      "title": "Podeli putovanje",
+      "body": "Svako putovanje može da se podeli preko jedinstvenog linka samo za čitanje. Uključi privatnosne opcije (sakrij beleške, sakrij troškove) po putovanju. Primaoci ne moraju da se prijave.",
+      "tips": "Link za deljenje ostaje stabilan — podeli jednom, primalac uvek vidi najnoviju verziju.\nKoristi \"Sakrij troškove\" kada deliš sa saputnicima koji sami dele troškove."
+    },
+    "export": {
+      "title": "Izvoz i sinhronizacija kalendara",
+      "body": "Izvezi putovanje kao PDF, običan tekst ili .ics kalendarski fajl — ili ga direktno sinhronizuj sa Google Calendar-om jednim OAuth klikom. Svaki dan postaje celodnevni događaj, a svaki vremenski blok dobija svoj unos.",
+      "tips": "PDF izvoz prisiljava sve dane da budu otvoreni da se ništa ne odseče.\n.ics se uvozi u Apple Calendar, Outlook, Fastmail — sve što čita format."
+    },
+    "presence": {
+      "title": "Prisustvo uživo",
+      "body": "Ako neko drugi gleda isto putovanje u svom pregledaču (budućnost: zajedničko planiranje), njegov avatar se pojavljuje u zaglavlju. Osvežava se svakih 20 sekundi, pokazuje \"N gleda\"."
+    },
+    "language": {
+      "title": "Engleski / Srpski",
+      "body": "Prebaci između EN i SR u zaglavlju ili u Podešavanjima. AI-generisana putovanja se vraćaju na izabranom jeziku — naslovi dana, opisi aktivnosti, saveti — a stvarna imena mesta ostaju u originalnoj formi.",
+      "cta": "Otvori Podešavanja"
+    },
+    "install": {
+      "title": "Instaliraj kao aplikaciju",
+      "body": "Trip Plan je PWA. Instaliraj ga iz Podešavanja za poseban ikonu aplikacije i podršku bez interneta. Prethodno viđene mape, vremenske prognoze i sačuvana putovanja nastavljaju da rade i bez mreže.",
+      "cta": "Otvori Podešavanja"
+    },
+    "privacy": {
+      "title": "Privatnost",
+      "body": "Putovanja se čuvaju u Firestore-u pod tvojim Google nalogom. Samo ti možeš da ih čitaš ili menjaš. Podeljena putovanja su čitljiva svakom ko ima link ali nikad izmenjiva. Istorija Istraži i nedavne destinacije se čuvaju samo u localStorage tvog pregledača."
+    }
   },
   "settings": {
     "heading": "Podešavanja",
