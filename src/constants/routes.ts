@@ -5,6 +5,7 @@ export const ROUTES = {
   explore: '/explore',
   trip: (id: string) => `/trip/${id}`,
   myTrips: '/trips',
+  settings: '/settings',
   shared: (token: string) => `/shared/${token}`,
 } as const
 

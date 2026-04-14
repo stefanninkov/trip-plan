@@ -17,6 +17,9 @@ const NewTripPage = lazy(() =>
 const ExplorePage = lazy(() =>
   import('@/pages/ExplorePage').then((m) => ({ default: m.ExplorePage }))
 )
+const SettingsPage = lazy(() =>
+  import('@/pages/SettingsPage').then((m) => ({ default: m.SettingsPage }))
+)
 const TripPage = lazy(() => import('@/pages/TripPage').then((m) => ({ default: m.TripPage })))
 const HistoryPage = lazy(() =>
   import('@/pages/HistoryPage').then((m) => ({ default: m.HistoryPage }))
@@ -66,6 +69,10 @@ export function App() {
             <Route
               path={ROUTES.explore}
               element={<AuthedRoute element={<AppShell><ExplorePage /></AppShell>} />}
+            />
+            <Route
+              path={ROUTES.settings}
+              element={<AuthedRoute element={<AppShell><SettingsPage /></AppShell>} />}
             />
             <Route
               path={ROUTE_PATTERNS.trip}

@@ -1,4 +1,5 @@
 import { ArrowLeft, ArrowRight, Sparkles, Globe, PencilLine } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/shared/Button'
 import { useWizardStore, WIZARD_STEP_ORDER, validateStep } from '@/store/wizard-store'
 
@@ -15,6 +16,7 @@ export function WizardNav({
   onBuildManually,
   isGenerating = false,
 }: WizardNavProps) {
+  const { t } = useTranslation()
   const currentStep = useWizardStore((s) => s.currentStep)
   const canAdvance = useWizardStore((s) => validateStep(s.currentStep, s.inputs))
   const nextStep = useWizardStore((s) => s.nextStep)
@@ -35,7 +37,7 @@ export function WizardNav({
           className="flex items-center gap-1.5"
         >
           <ArrowLeft size={14} />
-          Back
+          {t('common.back')}
         </Button>
 
         {isLast ? (
@@ -46,7 +48,7 @@ export function WizardNav({
             className="flex items-center gap-1.5"
           >
             <Sparkles size={14} />
-            {isGenerating ? 'Generating…' : 'Generate with AI'}
+            {isGenerating ? t('wizard.generating') : t('wizard.generateWithAi')}
           </Button>
         ) : (
           <Button
@@ -55,7 +57,7 @@ export function WizardNav({
             disabled={!canAdvance}
             className="flex items-center gap-1.5"
           >
-            Next
+            {t('common.next')}
             <ArrowRight size={14} />
           </Button>
         )}
@@ -69,7 +71,7 @@ export function WizardNav({
             className="flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
             <Globe size={14} />
-            Build without AI (Google search)
+            {t('wizard.buildFromSearch')}
           </button>
           <button
             type="button"
@@ -78,7 +80,7 @@ export function WizardNav({
             className="flex items-center gap-1.5 text-[13px] text-text-tertiary hover:text-text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
           >
             <PencilLine size={14} />
-            Start blank
+            {t('wizard.startBlank')}
           </button>
         </div>
       )}

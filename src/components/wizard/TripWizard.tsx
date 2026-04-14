@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useWizardStore, tripInputsWithDerivedDates } from '@/store/wizard-store'
 import { useTripStore } from '@/store/trip-store'
 import { useUiStore } from '@/store/ui-store'
@@ -15,15 +16,8 @@ import { AiProgress } from '@/components/shared/AiProgress'
 import { Button } from '@/components/shared/Button'
 import { ROUTES } from '@/constants/routes'
 
-const SEARCH_STAGES = [
-  { at: 0, label: 'Searching hotels for each city' },
-  { at: 25, label: 'Finding top places & restaurants' },
-  { at: 55, label: 'Looking up flights' },
-  { at: 80, label: 'Composing day blocks' },
-  { at: 93, label: 'Finalising' },
-]
-
 export function TripWizard() {
+  const { t } = useTranslation()
   const currentStep = useWizardStore((s) => s.currentStep)
   const inputs = useWizardStore((s) => s.inputs)
   const addToast = useUiStore((s) => s.addToast)
@@ -38,6 +32,14 @@ export function TripWizard() {
     clearError,
     searchProgress,
   } = useGenerateTrip()
+
+  const SEARCH_STAGES = [
+    { at: 0, label: t('search.stage0') },
+    { at: 25, label: t('search.stage25') },
+    { at: 55, label: t('search.stage55') },
+    { at: 80, label: t('search.stage80') },
+    { at: 93, label: t('search.stage93') },
+  ]
 
   const handleGenerate = async (): Promise<void> => {
     clearError()
@@ -95,25 +97,21 @@ export function TripWizard() {
               onClick={handleBuildFromSearch}
               className="text-[12px]"
             >
-              Too slow? Build without AI (Google search)
+              {t('wizard.tooSlowBuildSearch')}
             </Button>
             <Button
               variant="ghost"
               onClick={handleBuildBlank}
               className="text-[12px]"
             >
-              Start blank instead
+              {t('wizard.startBlankInstead')}
             </Button>
           </div>
         </div>
       )}
 
       {isSearchBuilding && (
-        <AiProgress
-          stages={SEARCH_STAGES}
-          timeConstant={6}
-          hint="Building your trip from real hotel, place and flight search results."
-        />
+        <AiProgress stages={SEARCH_STAGES} timeConstant={6} hint={t('search.hint')} />
       )}
 
       {error && !isGenerating && (
@@ -121,11 +119,11 @@ export function TripWizard() {
           <span className="text-error">{error}</span>
           <div className="flex items-center gap-2">
             <Button variant="secondary" onClick={handleGenerate}>
-              Try AI again
+              {t('wizard.tryAiAgain')}
             </Button>
-            <Button onClick={handleBuildFromSearch}>Build from Google search</Button>
+            <Button onClick={handleBuildFromSearch}>{t('wizard.buildFromSearch')}</Button>
             <Button variant="ghost" onClick={handleBuildBlank}>
-              Start blank
+              {t('wizard.startBlank')}
             </Button>
           </div>
         </div>

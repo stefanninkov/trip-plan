@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
 import { addDays, daysBetween, todayIso, toIsoDate } from '@/utils/date-helpers'
 
@@ -76,6 +77,7 @@ export function DateRangePicker({
   error,
 }: DateRangePickerProps) {
   const [open, setOpen] = useState(false)
+  const { t } = useTranslation()
   const [anchor, setAnchor] = useState<Date>(() => startOfMonth(startDate || minDate || ''))
   // Tracks which end we'll assign on the next click: 'start' or 'end'.
   const [pickingEnd, setPickingEnd] = useState<boolean>(Boolean(startDate && !endDate))
@@ -158,8 +160,8 @@ export function DateRangePicker({
     setPickingEnd(false)
   }
 
-  const displayStart = startDate ? formatPretty(startDate) : 'Arrive'
-  const displayEnd = endDate ? formatPretty(endDate) : 'Leave'
+  const displayStart = startDate ? formatPretty(startDate) : t('wizard.arrive')
+  const displayEnd = endDate ? formatPretty(endDate) : t('wizard.leave')
 
   const goPrev = () =>
     setAnchor((a) => new Date(a.getFullYear(), a.getMonth() - 1, 1))
@@ -194,7 +196,7 @@ export function DateRangePicker({
             )}
           >
             <span className="block text-[10px] uppercase tracking-[0.8px] text-text-tertiary">
-              Arrive
+              {t('wizard.arrive')}
             </span>
             <span>{displayStart}</span>
           </span>
@@ -205,7 +207,7 @@ export function DateRangePicker({
             )}
           >
             <span className="block text-[10px] uppercase tracking-[0.8px] text-text-tertiary">
-              Leave
+              {t('wizard.leave')}
             </span>
             <span>{displayEnd}</span>
           </span>
@@ -237,13 +239,15 @@ export function DateRangePicker({
               </span>
             ) : (
               <span className="text-[12px] text-text-tertiary">
-                {pickingEnd && startDate ? 'Pick leave date' : 'Pick arrive date'}
+                {pickingEnd && startDate
+                  ? t('dateRange.pickLeave')
+                  : t('dateRange.pickArrive')}
               </span>
             )}
             <button
               type="button"
               onClick={() => setOpen(false)}
-              aria-label="Close"
+              aria-label={t('common.close')}
               className="text-text-tertiary hover:text-text-primary p-1"
             >
               <X size={14} />
@@ -254,18 +258,19 @@ export function DateRangePicker({
             <button
               type="button"
               onClick={goPrev}
-              aria-label="Previous month"
+              aria-label={t('dateRange.previousMonth')}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-text-secondary hover:bg-bg-elevated hover:text-text-primary transition-colors"
             >
               <ChevronLeft size={16} />
             </button>
             <span className="text-[13px] font-semibold">
-              {MONTH_NAMES[anchor.getMonth()]} {anchor.getFullYear()}
+              {t(`months.${anchor.getMonth()}`, { defaultValue: MONTH_NAMES[anchor.getMonth()] })}{' '}
+              {anchor.getFullYear()}
             </span>
             <button
               type="button"
               onClick={goNext}
-              aria-label="Next month"
+              aria-label={t('dateRange.nextMonth')}
               className="w-8 h-8 flex items-center justify-center rounded-lg text-text-secondary hover:bg-bg-elevated hover:text-text-primary transition-colors"
             >
               <ChevronRight size={16} />
@@ -317,7 +322,7 @@ export function DateRangePicker({
           {showPresets && (
             <div className="flex flex-col gap-2 pt-1 border-t border-border-subtle">
               <span className="text-[10px] uppercase tracking-[0.8px] text-text-tertiary">
-                Quick length
+                {t('dateRange.quickLength')}
               </span>
               <div className="flex flex-wrap gap-1">
                 {[2, 3, 5, 7, 10, 14].map((n) => (
@@ -327,7 +332,7 @@ export function DateRangePicker({
                     onClick={() => applyPreset(n)}
                     className="text-[11px] px-2 py-1 rounded-full border border-border-default bg-bg-secondary text-text-secondary hover:text-text-primary hover:border-border-strong transition-colors"
                   >
-                    {n} nights
+                    {t('wizard.nNights', { count: n })}
                   </button>
                 ))}
                 {(startDate || endDate) && (
@@ -336,7 +341,7 @@ export function DateRangePicker({
                     onClick={clear}
                     className="ml-auto text-[11px] px-2 py-1 rounded-full text-text-tertiary hover:text-error transition-colors"
                   >
-                    Clear
+                    {t('common.clear')}
                   </button>
                 )}
               </div>

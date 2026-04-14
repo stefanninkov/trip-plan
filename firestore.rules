@@ -19,6 +19,20 @@ service cloud.firestore {
       // Authenticated users can create trips, but userId must match their uid
       allow create: if request.auth != null
                     && request.resource.data.userId == request.auth.uid;
+
+      // Presence subcollection: any authenticated user who can read the
+      // parent trip may read the presence list; each user may only write
+      // their own presence doc (doc id == their uid). Used for the
+      // "N viewing" avatar stack on the trip page.
+      match /presence/{uid} {
+        allow read: if request.auth != null
+                    && (
+                      get(/databases/$(database)/documents/trips/$(tripId)).data.userId == request.auth.uid
+                      || get(/databases/$(database)/documents/trips/$(tripId)).data.shared == true
+                    );
+        allow create, update, delete: if request.auth != null
+                                      && request.auth.uid == uid;
+      }
     }
   }
 }

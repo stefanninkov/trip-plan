@@ -1,11 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
-import { LogOut, User } from 'lucide-react'
+import { LogOut, Settings, User } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '@/store/auth-store'
 import { signOut } from '@/hooks/useAuth'
 import { useUiStore } from '@/store/ui-store'
+import { ROUTES } from '@/constants/routes'
 import { logger } from '@/utils/logger'
 
 export function UserMenu() {
+  const { t } = useTranslation()
   const user = useAuthStore((s) => s.user)
   const addToast = useUiStore((s) => s.addToast)
   const [open, setOpen] = useState(false)
@@ -59,13 +63,21 @@ export function UserMenu() {
             )}
           </div>
           <div className="h-px bg-border-subtle my-1" />
+          <Link
+            to={ROUTES.settings}
+            onClick={() => setOpen(false)}
+            className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-surface hover:text-text-primary rounded-md transition-colors"
+          >
+            <Settings size={14} />
+            {t('settings.heading')}
+          </Link>
           <button
             type="button"
             onClick={handleSignOut}
             className="w-full flex items-center gap-2 px-3 py-2 text-[13px] text-text-secondary hover:bg-bg-surface hover:text-text-primary rounded-md transition-colors"
           >
             <LogOut size={14} />
-            Sign out
+            {t('common.signOut')}
           </button>
         </div>
       )}

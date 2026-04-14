@@ -12,6 +12,16 @@ import {
 } from 'lucide-react'
 import { useWeather } from '@/hooks/useWeather'
 import { Skeleton } from '@/components/shared/Skeleton'
+import { usePrefsStore } from '@/store/prefs-store'
+
+function cToF(c: number): number {
+  return c * 9 / 5 + 32
+}
+
+function formatTemp(c: number, unit: 'C' | 'F'): string {
+  const v = unit === 'F' ? cToF(c) : c
+  return `${Math.round(v)}°`
+}
 
 export interface DayWeatherProps {
   location: string
@@ -66,6 +76,7 @@ function advisory(highC: number, lowC: number, code: number, precip: number): st
 
 export function DayWeatherNote({ location, date }: { location: string; date: string }) {
   const weather = useWeather(location, date)
+  const tempUnit = usePrefsStore((s) => s.tempUnit)
   if (weather === 'loading') {
     return (
       <div className="rounded-lg border border-border-subtle bg-bg-secondary p-3 flex flex-col gap-2">
@@ -93,7 +104,8 @@ export function DayWeatherNote({ location, date }: { location: string; date: str
             {weather.label}
             <span className="text-text-tertiary font-normal">
               {' · '}
-              {Math.round(weather.highC)}° / {Math.round(weather.lowC)}°C
+              {formatTemp(weather.highC, tempUnit)} / {formatTemp(weather.lowC, tempUnit)}
+              {tempUnit}
             </span>
           </span>
           {weather.precipProbability > 20 && (
@@ -116,6 +128,7 @@ export function DayWeatherNote({ location, date }: { location: string; date: str
 
 export function DayWeather({ location, date, compact = false }: DayWeatherProps) {
   const weather = useWeather(location, date)
+  const tempUnit = usePrefsStore((s) => s.tempUnit)
   if (weather === 'loading') {
     return <Skeleton width={compact ? '64px' : '140px'} height="16px" />
   }
@@ -137,8 +150,8 @@ export function DayWeather({ location, date, compact = false }: DayWeatherProps)
           className={weather.source === 'historical' ? 'text-text-tertiary' : 'text-accent'}
         />
         <span className="font-cost">
-          {Math.round(weather.highC)}&deg;
-          <span className="text-text-tertiary">/{Math.round(weather.lowC)}&deg;</span>
+          {formatTemp(weather.highC, tempUnit)}
+          <span className="text-text-tertiary">/{formatTemp(weather.lowC, tempUnit)}</span>
         </span>
       </div>
     )
@@ -151,7 +164,8 @@ export function DayWeather({ location, date, compact = false }: DayWeatherProps)
     >
       <Icon size={14} className="text-accent" />
       <span className="font-cost">
-        {Math.round(weather.highC)}&deg; / {Math.round(weather.lowC)}&deg;C
+        {formatTemp(weather.highC, tempUnit)} / {formatTemp(weather.lowC, tempUnit)}
+        {tempUnit}
       </span>
       <span className="text-text-tertiary">&middot; {weather.label}</span>
       {weather.precipProbability > 30 && (

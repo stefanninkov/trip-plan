@@ -88,7 +88,87 @@
     "startBlank": "Počni prazno",
     "tryAiAgain": "Pokušaj AI ponovo",
     "addMoreDetails": "Dodaj više detalja",
-    "hideAdvanced": "Sakrij napredne opcije"
+    "hideAdvanced": "Sakrij napredne opcije",
+    "originPlaceholder": "npr. Beograd, Srbija",
+    "destinationPlaceholder": "npr. Rim, Italija",
+    "pickSuggestion": "Izaberi jedan od predloga da nastaviš.",
+    "pickSuggestionStop": "Izaberi jedan od predloga da potvrdiš ovu stanicu.",
+    "stop": "Stanica {{n}}",
+    "removeStop": "Ukloni stanicu {{n}}",
+    "yourOrigin": "tvoja polazna tačka",
+    "leaveAfterArrive": "Odlazak mora biti posle dolaska",
+    "person": "osoba",
+    "people": "osobe",
+    "searchPlaceholder": "Počni da kucaš grad…",
+    "tooSlowBuildSearch": "Presporo? Izgradi bez AI (Google pretraga)",
+    "startBlankInstead": "Počni prazno umesto toga",
+    "dietaryNeedsPlaceholder": "npr. vegetarijanska, bez glutena",
+    "mobilityNotesPlaceholder": "npr. ograničeno hodanje, kolica",
+    "anythingElsePlaceholder": "npr. izbegavaj previše turističke tačke, dodaj jednodnevni izlet, voleo bih da vidim severnu svetlost",
+    "anyAccommodationSelected": "Bilo koji (izabrano)",
+    "skipAi": "Presporo? Izgradi bez AI",
+    "startBlankAction": "Počni prazno"
+  },
+  "travelMode": {
+    "plane": "Avion",
+    "train": "Voz",
+    "car": "Auto",
+    "bus": "Autobus",
+    "ferry": "Trajekt",
+    "walk": "Pešice",
+    "bike": "Bicikl",
+    "subway": "Metro",
+    "taxi": "Taksi",
+    "scooter": "Trotinet"
+  },
+  "pace": {
+    "relaxed": "Opušteno",
+    "relaxedDescription": "Par glavnih aktivnosti, duži obroci, vreme za lutanje",
+    "moderate": "Umereno",
+    "moderateDescription": "Glavne atrakcije plus kvartovi, normalan tempo",
+    "packed": "Pretrpano",
+    "packedDescription": "Vidi što više, rano ustajanje, kasno u noć"
+  },
+  "accommodation": {
+    "any": "Bilo koji",
+    "hotel": "Hotel",
+    "hostel": "Hostel",
+    "apartment": "Apartman",
+    "villa": "Vila",
+    "house": "Kuća",
+    "bnb": "B&B",
+    "resort": "Resort"
+  },
+  "budget": {
+    "budget": "Ekonomično",
+    "budgetDescription": "Hosteli, ulična hrana, besplatne atrakcije",
+    "mid": "Srednja klasa",
+    "midDescription": "Hoteli sa 3 zvezdice, restorani, plaćene atrakcije",
+    "comfortable": "Komforno",
+    "comfortableDescription": "Hoteli sa 4 zvezdice, vino uz večeru, taksi kad je zgodno",
+    "luxury": "Luksuzno",
+    "luxuryDescription": "Hoteli sa 5 zvezdica, vrhunski restorani, privatne ture, biznis klasa"
+  },
+  "dateRange": {
+    "pickArrive": "Izaberi datum dolaska",
+    "pickLeave": "Izaberi datum odlaska",
+    "quickLength": "Brzo trajanje",
+    "previousMonth": "Prethodni mesec",
+    "nextMonth": "Sledeći mesec"
+  },
+  "months": {
+    "0": "Januar",
+    "1": "Februar",
+    "2": "Mart",
+    "3": "April",
+    "4": "Maj",
+    "5": "Jun",
+    "6": "Jul",
+    "7": "Avgust",
+    "8": "Septembar",
+    "9": "Oktobar",
+    "10": "Novembar",
+    "11": "Decembar"
   },
   "generation": {
     "stage0": "Pokrećemo Claude-a…",
@@ -165,6 +245,14 @@
     "forecast": "Prognoza",
     "precipitation": "{{p}}% padavina"
   },
+  "search": {
+    "stage0": "Tražimo hotele za svaki grad",
+    "stage25": "Pronalazimo najbolja mesta i restorane",
+    "stage55": "Tražimo letove",
+    "stage80": "Sastavljamo dnevne blokove",
+    "stage93": "Završavamo",
+    "hint": "Pravimo tvoje putovanje od stvarnih hotela, mesta i letova iz pretrage."
+  },
   "map": {
     "geocodingLocations": "Pronalaženje lokacija…",
     "fallbackHint": "Koristimo OpenStreetMap zamenske pločice jer VITE_MAPBOX_TOKEN nije postavljen.",
@@ -186,5 +274,43 @@
     "enabled": "Podsetnici uključeni — dobićeš jutarnji kratak pregled svakog dana putovanja",
     "denied": "Obaveštenja su blokirana — uključi ih u podešavanjima pregledača za podsetnike",
     "todayBriefing": "Dan {{day}} tvog putovanja — {{title}}"
+  },
+  "history": {
+    "heading": "Tvoja putovanja",
+    "emptyTitle": "Još nema putovanja",
+    "emptyBody": "Isplaniraj svoje prvo putovanje uz AI ili ga napravi ručno.",
+    "untitled": "Neimenovano putovanje",
+    "statusGenerating": "Generisanje",
+    "statusFailed": "Neuspelo",
+    "deleteTitle": "Obrisati ovo putovanje?",
+    "deleteBody": "Ovo trajno uklanja plan i sve izmene. Ne može se poništiti.",
+    "deleted": "Putovanje obrisano",
+    "cleanStuck": "Očisti zaglavljeno ({{count}})",
+    "cleanedStuck": "Uklonjeno {{count}} zaglavljenih putovanja"
+  },
+  "settings": {
+    "heading": "Podešavanja",
+    "description": "Tvoje lične postavke i alati naloga.",
+    "units": "Jedinice",
+    "unitsDescription": "Izaberi kako se prikazuju temperature i udaljenosti.",
+    "temperature": "Temperatura",
+    "celsius": "Celzijus (°C)",
+    "fahrenheit": "Farenhajt (°F)",
+    "notifications": "Obaveštenja",
+    "currency": "Valuta",
+    "currencyDescription": "Svi iznosi se prikazuju u evrima po podrazumevanoj vrednosti. Osveži kurseve ako konverzije deluju zastarelo.",
+    "refreshRates": "Osveži kurseve valuta",
+    "ratesRefreshed": "Kursevi valuta osveženi",
+    "ratesFailed": "Nije uspelo osvežavanje kurseva",
+    "caches": "Keš memorije",
+    "cachesDescription": "Obriši lokalni keš ako stvari izgledaju zastarelo ili pokvareno.",
+    "clearExplore": "Obriši keš Istraži",
+    "exploreCleared": "Keš Istraži obrisan",
+    "clearRecents": "Obriši nedavne destinacije",
+    "recentsCleared": "Nedavne destinacije obrisane",
+    "installApp": "Instaliraj aplikaciju",
+    "installDescription": "Instaliraj Trip Plan na svoj uređaj za brz pristup i rad bez interneta.",
+    "installed": "Aplikacija instalirana",
+    "alreadyInstalled": "Već instalirano"
   }
 }

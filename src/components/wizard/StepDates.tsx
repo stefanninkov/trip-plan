@@ -1,4 +1,5 @@
 import { CalendarDays } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWizardStore } from '@/store/wizard-store'
 import { DateRangePicker } from '@/components/shared/DateRangePicker'
 import { daysBetween, formatDateRange } from '@/utils/date-helpers'
@@ -8,6 +9,7 @@ import { TRAVEL_MODES, TRAVEL_MODE_LIST } from '@/constants/travel-modes'
 import { cn } from '@/utils/cn'
 
 export function StepDates() {
+  const { t } = useTranslation()
   const destinations = useWizardStore((s) => s.inputs.destinations)
   const origin = useWizardStore((s) => s.inputs.origin)
   const updateDestination = useWizardStore((s) => s.updateDestination)
@@ -47,15 +49,12 @@ export function StepDates() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">Step 3</p>
+        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">{t('wizard.stepDates')}</p>
         <h2 className="flex items-center gap-2.5">
           <CalendarDays size={22} className="text-accent shrink-0" />
-          When are you in each city?
+          {t('wizard.datesHeading')}
         </h2>
-        <p className="text-text-secondary">
-          Set the arrive and leave date for every stop. Nights are auto-calculated. The trip&apos;s
-          overall range is derived from these.
-        </p>
+        <p className="text-text-secondary">{t('wizard.datesDescription')}</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -65,8 +64,10 @@ export function StepDates() {
             d.endDate &&
             new Date(d.endDate).getTime() <= new Date(d.startDate).getTime()
           const fromLabel =
-            i === 0 ? origin.trim() || 'your origin' : destinations[i - 1].city || `Stop ${i}`
-          const toLabel = d.city || `Stop ${i + 1}`
+            i === 0
+              ? origin.trim() || t('wizard.yourOrigin')
+              : destinations[i - 1].city || t('wizard.stop', { n: i })
+          const toLabel = d.city || t('wizard.stop', { n: i + 1 })
           return (
             <div
               key={i}
@@ -77,7 +78,7 @@ export function StepDates() {
                   {i + 1}
                 </span>
                 <span className="text-[14px] font-semibold text-text-primary truncate">
-                  {d.city || `Stop ${i + 1}`}
+                  {d.city || t('wizard.stop', { n: i + 1 })}
                 </span>
               </div>
               <DateRangePicker
@@ -85,12 +86,12 @@ export function StepDates() {
                 endDate={d.endDate ?? ''}
                 onChange={(s, e) => setRange(i, s, e)}
                 minDate={i === 0 ? undefined : destinations[i - 1].startDate}
-                title={`Stop ${i + 1}: ${toLabel}`}
-                error={invalid ? 'Leave must be after arrive' : undefined}
+                title={`${t('wizard.stop', { n: i + 1 })}: ${toLabel}`}
+                error={invalid ? t('wizard.leaveAfterArrive') : undefined}
               />
               <div className="flex flex-col gap-1.5">
                 <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
-                  How you travel from {fromLabel} to {toLabel}
+                  {t('wizard.howYouTravel', { from: fromLabel, to: toLabel })}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   <button
@@ -103,7 +104,7 @@ export function StepDates() {
                         : 'border-border-default bg-bg-secondary text-text-secondary hover:border-border-default hover:text-text-primary'
                     )}
                   >
-                    Let AI pick
+                    {t('wizard.letAiPick')}
                   </button>
                   {TRAVEL_MODE_LIST.map((mode) => {
                     const Icon = mode.icon
@@ -121,15 +122,18 @@ export function StepDates() {
                         )}
                       >
                         <Icon size={13} />
-                        {mode.label}
+                        {t(`travelMode.${mode.id}`, { defaultValue: mode.label })}
                       </button>
                     )
                   })}
                 </div>
                 {d.arrivalMode && (
                   <span className="text-[11px] text-text-tertiary">
-                    {TRAVEL_MODES[d.arrivalMode].label} selected — the itinerary will use this to
-                    get you there.
+                    {t('wizard.modeSelected', {
+                      mode: t(`travelMode.${d.arrivalMode}`, {
+                        defaultValue: TRAVEL_MODES[d.arrivalMode].label,
+                      }),
+                    })}
                   </span>
                 )}
               </div>
@@ -140,7 +144,10 @@ export function StepDates() {
 
       {totalDays > 0 && (
         <div className="rounded-lg border border-border-subtle bg-bg-secondary px-4 py-3 text-[13px] text-text-secondary">
-          Trip total: <span className="text-text-primary font-semibold">{totalDays} days</span>
+          {t('wizard.tripTotal')}:{' '}
+          <span className="text-text-primary font-semibold">
+            {totalDays} {t('common.days')}
+          </span>
           {' · '}
           {formatDateRange(firstStart, lastEnd)}
         </div>

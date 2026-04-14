@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Settings2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWizardStore } from '@/store/wizard-store'
 import { Input } from '@/components/shared/Input'
 import { Select, type SelectOption } from '@/components/shared/Select'
@@ -20,6 +21,7 @@ const CURRENCY_OPTIONS: SelectOption[] = CURRENCIES.map((c) => ({
 }))
 
 export function StepAdvanced() {
+  const { t } = useTranslation()
   const inputs = useWizardStore((s) => s.inputs)
   const setField = useWizardStore((s) => s.setField)
   const toggleInterest = useWizardStore((s) => s.toggleInterest)
@@ -28,20 +30,18 @@ export function StepAdvanced() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">Step 5</p>
+        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">{t('wizard.stepAdvanced')}</p>
         <h2 className="flex items-center gap-2.5">
           <Settings2 size={22} className="text-accent shrink-0" />
-          Fine-tune your plan
+          {t('wizard.advancedHeading')}
         </h2>
-        <p className="text-text-secondary">
-          Pick a budget tier and what you care about. Everything else is optional.
-        </p>
+        <p className="text-text-secondary">{t('wizard.advancedDescription')}</p>
       </div>
 
       {/* === Essentials in the advanced step === */}
       <div className="flex flex-col gap-3">
         <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
-          Budget tier
+          {t('wizard.budgetTier')}
         </span>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {BUDGET_LEVELS.map((level) => {
@@ -64,10 +64,10 @@ export function StepAdvanced() {
                     active ? 'text-accent' : 'text-text-primary'
                   )}
                 >
-                  {level.label}
+                  {t(`budget.${level.id}`, { defaultValue: level.label })}
                 </div>
                 <div className="text-[12px] text-text-tertiary leading-snug">
-                  {level.description}
+                  {t(`budget.${level.id}Description`, { defaultValue: level.description })}
                 </div>
               </button>
             )
@@ -77,7 +77,7 @@ export function StepAdvanced() {
 
       <div className="flex flex-col gap-3">
         <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
-          Interests (optional)
+          {t('wizard.interests')}
         </span>
         <div className="flex flex-wrap gap-2">
           {INTEREST_TAGS.map((tag) => {
@@ -108,18 +108,21 @@ export function StepAdvanced() {
         className="self-start flex items-center gap-1.5 text-[13px] text-text-secondary hover:text-text-primary transition-colors"
       >
         {showMore ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        {showMore ? 'Hide advanced options' : 'Add more details'}
+        {showMore ? t('wizard.hideAdvanced') : t('wizard.addMoreDetails')}
       </button>
 
       {showMore && (
         <Card className="flex flex-col gap-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
-              label="Pace"
+              label={t('wizard.pace')}
               name="pace"
               value={inputs.pace}
               onChange={(e) => setField('pace', e.target.value as PacePreference)}
-              options={PACE_OPTIONS}
+              options={PACE_OPTIONS.map((o) => ({
+                ...o,
+                label: t(`pace.${o.value}`, { defaultValue: o.label }),
+              }))}
             />
             <AccommodationPicker
               value={inputs.accommodationType}
@@ -128,7 +131,7 @@ export function StepAdvanced() {
           </div>
 
           <Select
-            label="Your home currency"
+            label={t('wizard.homeCurrency')}
             name="homeCurrency"
             value={inputs.homeCurrency}
             onChange={(e) => setField('homeCurrency', e.target.value)}
@@ -137,16 +140,16 @@ export function StepAdvanced() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label="Dietary needs"
+              label={t('wizard.dietaryNeeds')}
               name="dietaryNeeds"
-              placeholder="e.g. vegetarian, gluten-free"
+              placeholder={t('wizard.dietaryNeedsPlaceholder')}
               value={inputs.dietaryNeeds}
               onChange={(e) => setField('dietaryNeeds', e.target.value)}
             />
             <Input
-              label="Mobility notes"
+              label={t('wizard.mobilityNotes')}
               name="mobilityNotes"
-              placeholder="e.g. limited walking, stroller"
+              placeholder={t('wizard.mobilityNotesPlaceholder')}
               value={inputs.mobilityNotes}
               onChange={(e) => setField('mobilityNotes', e.target.value)}
             />
@@ -157,13 +160,13 @@ export function StepAdvanced() {
               htmlFor="notes"
               className="text-[13px] font-medium text-text-secondary tracking-[0.2px]"
             >
-              Anything else?
+              {t('wizard.anythingElse')}
             </label>
             <textarea
               id="notes"
               name="notes"
               rows={3}
-              placeholder="e.g. avoid very touristy spots, include a day trip, want to see the northern lights"
+              placeholder={t('wizard.anythingElsePlaceholder')}
               value={inputs.notes}
               onChange={(e) => setField('notes', e.target.value)}
               className="bg-bg-secondary text-text-primary placeholder:text-text-tertiary border border-border-default rounded-lg px-3 py-2.5 text-[14px] leading-[22px] focus:outline-none focus:border-accent focus:ring-[3px] focus:ring-[var(--accent-muted)] transition-colors duration-150 resize-y"
@@ -182,6 +185,7 @@ function AccommodationPicker({
   value: AccommodationPref | AccommodationPref[]
   onChange: (v: AccommodationPref | AccommodationPref[]) => void
 }) {
+  const { t } = useTranslation()
   const selected: AccommodationPref[] = Array.isArray(value)
     ? value
     : value === 'any' || !value
@@ -203,7 +207,7 @@ function AccommodationPicker({
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
-          Accommodation preference
+          {t('wizard.accommodation')}
         </span>
         <button
           type="button"
@@ -213,7 +217,7 @@ function AccommodationPicker({
             noneSelected ? 'text-accent' : 'text-text-tertiary hover:text-text-secondary'
           )}
         >
-          {noneSelected ? 'Any (selected)' : 'Any'}
+          {noneSelected ? t('wizard.anyAccommodationSelected') : t('accommodation.any')}
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -231,7 +235,7 @@ function AccommodationPicker({
                   : 'border-border-default text-text-secondary hover:border-border-strong hover:text-text-primary'
               )}
             >
-              {o.label}
+              {t(`accommodation.${o.value}`, { defaultValue: o.label })}
             </button>
           )
         })}

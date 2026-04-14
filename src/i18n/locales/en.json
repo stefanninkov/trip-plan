@@ -88,7 +88,87 @@
     "startBlank": "Start blank",
     "tryAiAgain": "Try AI again",
     "addMoreDetails": "Add more details",
-    "hideAdvanced": "Hide advanced options"
+    "hideAdvanced": "Hide advanced options",
+    "originPlaceholder": "e.g. Belgrade, Serbia",
+    "destinationPlaceholder": "e.g. Rome, Italy",
+    "pickSuggestion": "Pick one of the suggestions to continue.",
+    "pickSuggestionStop": "Pick one of the suggestions to confirm this stop.",
+    "stop": "Stop {{n}}",
+    "removeStop": "Remove stop {{n}}",
+    "yourOrigin": "your origin",
+    "leaveAfterArrive": "Leave must be after arrive",
+    "person": "person",
+    "people": "people",
+    "searchPlaceholder": "Start typing a city…",
+    "tooSlowBuildSearch": "Too slow? Build without AI (Google search)",
+    "startBlankInstead": "Start blank instead",
+    "dietaryNeedsPlaceholder": "e.g. vegetarian, gluten-free",
+    "mobilityNotesPlaceholder": "e.g. limited walking, stroller",
+    "anythingElsePlaceholder": "e.g. avoid very touristy spots, include a day trip, want to see the northern lights",
+    "anyAccommodationSelected": "Any (selected)",
+    "skipAi": "Too slow? Build without AI",
+    "startBlankAction": "Start blank"
+  },
+  "travelMode": {
+    "plane": "Plane",
+    "train": "Train",
+    "car": "Car",
+    "bus": "Bus",
+    "ferry": "Ferry",
+    "walk": "Walk",
+    "bike": "Bike",
+    "subway": "Subway",
+    "taxi": "Taxi",
+    "scooter": "Scooter"
+  },
+  "pace": {
+    "relaxed": "Relaxed",
+    "relaxedDescription": "A few anchor activities, long meals, time to wander",
+    "moderate": "Moderate",
+    "moderateDescription": "Main sights plus neighborhoods, normal pace",
+    "packed": "Packed",
+    "packedDescription": "See as much as possible, early starts, late nights"
+  },
+  "accommodation": {
+    "any": "Any",
+    "hotel": "Hotel",
+    "hostel": "Hostel",
+    "apartment": "Apartment",
+    "villa": "Villa",
+    "house": "House",
+    "bnb": "B&B",
+    "resort": "Resort"
+  },
+  "budget": {
+    "budget": "Budget",
+    "budgetDescription": "Hostels, street food, free attractions",
+    "mid": "Mid-range",
+    "midDescription": "3-star hotels, sit-down meals, paid attractions",
+    "comfortable": "Comfortable",
+    "comfortableDescription": "4-star hotels, wine with dinner, taxis when convenient",
+    "luxury": "Luxury",
+    "luxuryDescription": "5-star hotels, fine dining, private tours, business class"
+  },
+  "dateRange": {
+    "pickArrive": "Pick arrive date",
+    "pickLeave": "Pick leave date",
+    "quickLength": "Quick length",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month"
+  },
+  "months": {
+    "0": "January",
+    "1": "February",
+    "2": "March",
+    "3": "April",
+    "4": "May",
+    "5": "June",
+    "6": "July",
+    "7": "August",
+    "8": "September",
+    "9": "October",
+    "10": "November",
+    "11": "December"
   },
   "generation": {
     "stage0": "Warming up Claude…",
@@ -165,6 +245,14 @@
     "forecast": "Forecast",
     "precipitation": "{{p}}% precipitation"
   },
+  "search": {
+    "stage0": "Searching hotels for each city",
+    "stage25": "Finding top places & restaurants",
+    "stage55": "Looking up flights",
+    "stage80": "Composing day blocks",
+    "stage93": "Finalising",
+    "hint": "Building your trip from real hotel, place and flight search results."
+  },
   "map": {
     "geocodingLocations": "Geocoding locations…",
     "fallbackHint": "Using OpenStreetMap fallback tiles because VITE_MAPBOX_TOKEN is not set.",
@@ -186,5 +274,43 @@
     "enabled": "Reminders enabled — you'll get a morning briefing on each trip day",
     "denied": "Notifications blocked — enable them in your browser settings to get trip reminders",
     "todayBriefing": "Day {{day}} of your trip — {{title}}"
+  },
+  "history": {
+    "heading": "Your trips",
+    "emptyTitle": "No trips yet",
+    "emptyBody": "Plan your first trip with AI, or build one manually from scratch.",
+    "untitled": "Untitled trip",
+    "statusGenerating": "Generating",
+    "statusFailed": "Failed",
+    "deleteTitle": "Delete this trip?",
+    "deleteBody": "This removes the plan and all edits permanently. This cannot be undone.",
+    "deleted": "Trip deleted",
+    "cleanStuck": "Clean up stuck ({{count}})",
+    "cleanedStuck": "Removed {{count}} stuck trip(s)"
+  },
+  "settings": {
+    "heading": "Settings",
+    "description": "Your personal preferences and account tools.",
+    "units": "Units",
+    "unitsDescription": "Choose how temperatures and distances are displayed.",
+    "temperature": "Temperature",
+    "celsius": "Celsius (°C)",
+    "fahrenheit": "Fahrenheit (°F)",
+    "notifications": "Notifications",
+    "currency": "Currency",
+    "currencyDescription": "All amounts are displayed in Euro by default. Refresh rates if conversions look stale.",
+    "refreshRates": "Refresh currency rates",
+    "ratesRefreshed": "Currency rates refreshed",
+    "ratesFailed": "Could not refresh rates",
+    "caches": "Caches",
+    "cachesDescription": "Clear local caches if things look stale or broken.",
+    "clearExplore": "Clear Explore cache",
+    "exploreCleared": "Explore cache cleared",
+    "clearRecents": "Clear recent destinations",
+    "recentsCleared": "Recent destinations cleared",
+    "installApp": "Install app",
+    "installDescription": "Install Trip Plan to your device for quick access and offline use.",
+    "installed": "App installed",
+    "alreadyInstalled": "Already installed"
   }
 }

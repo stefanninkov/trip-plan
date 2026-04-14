@@ -1,4 +1,5 @@
 import { Map, Plus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useWizardStore } from '@/store/wizard-store'
 import { CityAutocomplete } from '@/components/shared/CityAutocomplete'
 import { Button } from '@/components/shared/Button'
@@ -7,6 +8,7 @@ import { RecentDestinationChips } from '@/components/shared/RecentDestinationChi
 import { rememberDestination } from '@/utils/recent-destinations'
 
 export function StepDestinations() {
+  const { t } = useTranslation()
   const destinations = useWizardStore((s) => s.inputs.destinations)
   const addDestination = useWizardStore((s) => s.addDestination)
   const updateDestination = useWizardStore((s) => s.updateDestination)
@@ -15,15 +17,12 @@ export function StepDestinations() {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">Step 2</p>
+        <p className="text-text-secondary text-[13px] uppercase tracking-[1.5px]">{t('wizard.stepDestinations')}</p>
         <h2 className="flex items-center gap-2.5">
           <Map size={22} className="text-accent shrink-0" />
-          Where do you want to go?
+          {t('wizard.destinationsHeading')}
         </h2>
-        <p className="text-text-secondary">
-          Add cities in the order you want to visit. You&rsquo;ll pick the exact dates for each
-          stop in the next step.
-        </p>
+        <p className="text-text-secondary">{t('wizard.destinationsDescription')}</p>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -35,7 +34,7 @@ export function StepDestinations() {
                 <div className="flex-1 min-w-0 flex flex-col gap-2">
                   <CityAutocomplete
                     name={`destination-${index}`}
-                    label={`Stop ${index + 1}`}
+                    label={t('wizard.stop', { n: index + 1 })}
                     value={dest.city}
                     onChange={(v) => {
                       updateDestination(index, { city: v })
@@ -49,7 +48,7 @@ export function StepDestinations() {
                         displayName: s.displayName,
                       })
                     }}
-                    placeholder="e.g. Rome, Italy"
+                    placeholder={t('wizard.destinationPlaceholder')}
                   />
                   <RecentDestinationChips
                     exclude={destinations
@@ -72,7 +71,7 @@ export function StepDestinations() {
                   <button
                     type="button"
                     onClick={() => removeDestination(index)}
-                    aria-label={`Remove stop ${index + 1}`}
+                    aria-label={t('wizard.removeStop', { n: index + 1 })}
                     className="w-9 h-9 rounded-lg flex items-center justify-center text-text-tertiary hover:bg-bg-elevated hover:text-error transition-colors self-start md:self-end"
                   >
                     <Trash2 size={16} />
@@ -80,9 +79,7 @@ export function StepDestinations() {
                 )}
               </div>
               {needsPick && (
-                <p className="text-[12px] text-text-tertiary">
-                  Pick one of the suggestions to confirm this stop.
-                </p>
+                <p className="text-[12px] text-text-tertiary">{t('wizard.pickSuggestionStop')}</p>
               )}
             </Card>
           )
@@ -96,7 +93,7 @@ export function StepDestinations() {
         className="flex items-center gap-1.5 self-start"
       >
         <Plus size={14} />
-        Add another city
+        {t('wizard.addDestination')}
       </Button>
     </div>
   )
