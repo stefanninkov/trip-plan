@@ -16,6 +16,7 @@ import { AiProgress } from '@/components/shared/AiProgress'
 import { Button } from '@/components/shared/Button'
 import { ROUTES } from '@/constants/routes'
 import { VoiceWizardButton } from './VoiceWizardButton'
+import { ImportFromUrl } from './ImportFromUrl'
 
 export function TripWizard() {
   const { t } = useTranslation()
@@ -140,6 +141,12 @@ export function TripWizard() {
         onBuildManually={handleBuildBlank}
         isGenerating={isGenerating}
       />
+
+      {currentStep === 'origin' && !isGenerating && (
+        <div className="pt-4 border-t border-border-subtle">
+          <ImportFromUrl />
+        </div>
+      )}
     </div>
   )
 }

@@ -113,22 +113,15 @@ export function StepAdvanced() {
 
       {showMore && (
         <Card className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select
-              label={t('wizard.pace')}
-              name="pace"
-              value={inputs.pace}
-              onChange={(e) => setField('pace', e.target.value as PacePreference)}
-              options={PACE_OPTIONS.map((o) => ({
-                ...o,
-                label: t(`pace.${o.value}`, { defaultValue: o.label }),
-              }))}
-            />
-            <AccommodationPicker
-              value={inputs.accommodationType}
-              onChange={(v) => setField('accommodationType', v)}
-            />
-          </div>
+          <PacePicker
+            value={inputs.pace}
+            onChange={(v) => setField('pace', v)}
+          />
+
+          <AccommodationPicker
+            value={inputs.accommodationType}
+            onChange={(v) => setField('accommodationType', v)}
+          />
 
           <Select
             label={t('wizard.homeCurrency')}
@@ -174,6 +167,53 @@ export function StepAdvanced() {
           </div>
         </Card>
       )}
+    </div>
+  )
+}
+
+function PacePicker({
+  value,
+  onChange,
+}: {
+  value: PacePreference
+  onChange: (v: PacePreference) => void
+}) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[13px] font-medium text-text-secondary tracking-[0.2px]">
+        {t('wizard.pace')}
+      </span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        {PACE_OPTIONS.map((opt) => {
+          const active = value === opt.value
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChange(opt.value as PacePreference)}
+              className={cn(
+                'text-left p-3 rounded-xl border transition-colors duration-150',
+                active
+                  ? 'border-accent bg-accent-muted'
+                  : 'border-border-subtle bg-bg-surface hover:bg-bg-elevated hover:border-border-default'
+              )}
+            >
+              <div
+                className={cn(
+                  'text-[14px] font-semibold mb-1',
+                  active ? 'text-accent' : 'text-text-primary'
+                )}
+              >
+                {t(`pace.${opt.value}`, { defaultValue: opt.label })}
+              </div>
+              <div className="text-[12px] text-text-tertiary leading-snug">
+                {t(`pace.${opt.value}Description`, { defaultValue: opt.description ?? '' })}
+              </div>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
