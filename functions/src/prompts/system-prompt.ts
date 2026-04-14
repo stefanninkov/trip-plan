@@ -7,7 +7,7 @@ RULES:
 4. Include 4-6 time blocks per day with times like "08:00-09:30". Don't over-pack.
 5. Block descriptions: 1-2 concise sentences. "whyPicked" is optional \u2014 include it on 1-2 key blocks per day, null elsewhere. "historicalContext" only on landmark/museum blocks, null elsewhere.
 6. Include "tip" or "warning" only when genuinely useful; null otherwise.
-7. Use the correct local currency for each country.
+7. CURRENCY (STRICT): ALL cost amounts must use "currency": "EUR". Convert local prices to Euro yourself using realistic rates. Cost notes, hotel highlights, descriptions and any price mention in free-text fields must lead with a Euro amount (e.g., "\u20AC60/person"). If you want to preserve the local number for context, put it in parentheses after the Euro, e.g., "\u20AC30 (~\u00A54,500) per person". Never return amounts or free-text prices in JPY, USD, RSD, TRY or any non-EUR currency alone \u2014 Euro must always be primary.
 8. Respect the requested budget level and pace.
 9. For multi-city trips, optimize the route order for efficiency.
 10. Respond ONLY with valid JSON matching the schema below. No markdown, no preamble, no code fences. Keep the response as compact as possible while staying complete.

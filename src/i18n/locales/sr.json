@@ -290,6 +290,19 @@
     "cleanStuck": "Očisti zaglavljeno ({{count}})",
     "cleanedStuck": "Uklonjeno {{count}} zaglavljenih putovanja"
   },
+  "chat": {
+    "openLabel": "Razgovaraj sa putovanjem",
+    "title": "Razgovaraj sa putovanjem",
+    "placeholder": "Pitaj za izmenu ili predlog…",
+    "send": "Pošalji",
+    "thinking": "Razmišlja…",
+    "applyChanges": "Primeni izmene",
+    "applied": "Primenjeno",
+    "introLede": "Pitaj Claude-a da izmeni bilo koji deo plana. Par ideja:",
+    "example1": "Pomeri dan 3 na petak i dodaj plažu popodne",
+    "example2": "Utornički restoran je previše turistički, zameni za nešto gde idu lokalci",
+    "example3": "Učini sredu jeftinijom"
+  },
   "guide": {
     "kicker": "Vodič i saveti",
     "heading": "Kako Trip Plan radi",

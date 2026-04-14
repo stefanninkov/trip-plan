@@ -290,6 +290,19 @@
     "cleanStuck": "Clean up stuck ({{count}})",
     "cleanedStuck": "Removed {{count}} stuck trip(s)"
   },
+  "chat": {
+    "openLabel": "Chat with your trip",
+    "title": "Chat with your trip",
+    "placeholder": "Ask for a change or a suggestion…",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "applyChanges": "Apply changes",
+    "applied": "Applied",
+    "introLede": "Ask Claude to edit any part of your plan. A few ideas:",
+    "example1": "Move day 3 to Friday and add a beach afternoon",
+    "example2": "The Tuesday restaurant is too touristy, swap it for something locals go to",
+    "example3": "Make Wednesday cheaper"
+  },
   "guide": {
     "kicker": "Guide & tips",
     "heading": "How Trip Plan works",

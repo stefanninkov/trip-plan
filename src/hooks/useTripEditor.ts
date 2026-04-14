@@ -91,6 +91,9 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       days: p.days.map((d) => (d.id === dayId ? { ...next, id: d.id } : d)),
     }))
 
+  // Replace the entire plan (used by the chat-patch applicator).
+  const replacePlan = (next: TripPlan) => apply(() => next)
+
   // Add a blank day after the given index (or at the end if -1)
   const addDay = (afterIndex = -1) =>
     apply((p) => {
@@ -288,6 +291,7 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     setListField,
     updateDay,
     replaceDay,
+    replacePlan,
     addDay,
     deleteDay,
     shiftTripDates,

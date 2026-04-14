@@ -14,6 +14,7 @@ import { DayNav } from './DayNav'
 import { TripCover } from './TripCover'
 import { PresenceAvatars } from './PresenceAvatars'
 import { RemindersToggle } from './RemindersToggle'
+import { TripChat } from './TripChat'
 
 const TripMap = lazy(() => import('./TripMap').then((m) => ({ default: m.TripMap })))
 import { PlanHeader } from './PlanHeader'
@@ -244,6 +245,7 @@ export function PlanView({
       )}
         </>
       )}
+      {!readOnly && <TripChat plan={current} editor={editor} />}
     </div>
   )
 }

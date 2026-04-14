@@ -9,6 +9,7 @@ export { searchFlights, searchHotels, searchPlaces, searchWeb } from './search.j
 export { regenerateDay } from './regenerate-day.js'
 export { enrichBlock } from './enrich-block.js'
 export { exploreDestination } from './explore.js'
+export { chatWithTrip } from './chat-trip.js'
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 

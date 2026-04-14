@@ -58,6 +58,9 @@ COSTS: every day must include realistic costs for all four categories when appli
 - hotel (hotel price \u00D7 1 night for the chosen tier matching the user's budget level)
 - food (3 meals/day \u00D7 travelers at local prices appropriate for the budget tier)
 - activity (admission / tours / tickets \u00D7 travelers)
+
+CURRENCY (STRICT): ALL cost.currency values must be "EUR" \u2014 convert from local to Euro yourself. All free-text money mentions (notes, descriptions, tips, hotel highlights) MUST lead with a Euro amount (e.g. "\u20AC60/person"). If you want local context, put it in parentheses after the Euro ("\u20AC30 (~\u00A54,500) per person"). Never output a note like "\u00A51,500 per person" without the Euro preamble.
+
 All amounts are TOTAL for the group; put per-person math in the note (e.g. "~\u20AC60/person").
 dailyTotal MUST equal the sum of that day's costs (min and max separately).`
 

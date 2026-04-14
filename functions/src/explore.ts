@@ -18,6 +18,7 @@ RULES:
 2. Every "why" / "note" / "vibe" field should be 2-3 sentences with concrete detail.
 3. For specific locations (highlights, restaurants, activities, neighborhoods, stay areas) include a "mapsQuery" and "address" when applicable. Set both to null for abstract items (e.g., "street food").
 4. Respond ONLY with a valid JSON object matching the schema. No markdown, no preamble, no code fences. Keep the response as compact as possible while staying complete.
+5. CURRENCY (STRICT): Every priceHint MUST lead with a Euro amount (e.g., "\u20AC12\u201318", "\u20AC40\u201390 entry", "\u20AC15", "Free"). If the place is normally priced in a local currency, you MAY append the local amount in parentheses after the Euro, e.g., "\u20AC12\u201318 (~\u00A51,500\u20132,000)". NEVER write a priceHint that is only in Yen, Dollars, Pesos, Yuan or any non-EUR currency. Same rule for any price numbers in free-text fields (summary, why, note, history, tips, watchouts): lead with Euro, optional local in parentheses. A line that says "\u00A52,500\u20133,500 per person" without the Euro preamble is a bug.
 
 OUTPUT SCHEMA:
 {
