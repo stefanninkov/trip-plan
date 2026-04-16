@@ -12,6 +12,7 @@ export { exploreDestination } from './explore.js'
 export { chatWithTrip } from './chat-trip.js'
 export { parseWizardVoice } from './parse-wizard-voice.js'
 export { importTrip } from './import-trip.js'
+export { translateTrip } from './translate-trip.js'
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 

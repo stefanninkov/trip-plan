@@ -15,6 +15,7 @@ import { TripCover } from './TripCover'
 import { PresenceAvatars } from './PresenceAvatars'
 import { RemindersToggle } from './RemindersToggle'
 import { TripChat } from './TripChat'
+import { TranslateTripButton } from './TranslateTripButton'
 
 const TripMap = lazy(() => import('./TripMap').then((m) => ({ default: m.TripMap })))
 import { PlanHeader } from './PlanHeader'
@@ -166,7 +167,10 @@ export function PlanView({
 
       <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
         <PresenceAvatars tripId={tripId} />
-        <RemindersToggle tripId={tripId} plan={current} />
+        <div className="flex items-center gap-2 flex-wrap">
+          {!readOnly && <TranslateTripButton plan={current} editor={editor} />}
+          <RemindersToggle tripId={tripId} plan={current} />
+        </div>
       </div>
 
       <PlanHeader plan={current} editor={canEdit ? editor : undefined} homeCurrency={homeCurrency} />

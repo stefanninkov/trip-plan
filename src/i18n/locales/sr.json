@@ -317,6 +317,13 @@
     "done": "Putovanje uvezeno",
     "failed": "Nije uspelo uvoz tog URL-a"
   },
+  "translate": {
+    "button": "Prevedi na {{lang}}",
+    "title": "Prevedi ceo plan na {{lang}}",
+    "translating": "Prevođenje…",
+    "done": "Putovanje prevedeno",
+    "failed": "Nije uspelo prevođenje putovanja"
+  },
   "voice": {
     "buttonLabel": "Diktiraj putovanje",
     "title": "Diktiraj putovanje",

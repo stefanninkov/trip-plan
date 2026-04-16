@@ -78,7 +78,7 @@ export function useGenerateTrip(): UseGenerateTripState {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             inputs,
-            language: i18n.resolvedLanguage ?? 'en',
+            language: (i18n.resolvedLanguage ?? 'en').startsWith('sr') ? 'sr' : 'en',
           }),
           signal: controller.signal,
         })
