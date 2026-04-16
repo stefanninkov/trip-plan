@@ -1,10 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import mapboxgl from 'mapbox-gl'
-import 'mapbox-gl/dist/mapbox-gl.css'
+import { useEffect, useState } from 'react'
 import { Loader2, MapPinOff } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
-import { geocodeDetailed, hasMapboxToken, type Coord } from '@/utils/geocode'
-import { logger } from '@/utils/logger'
+import { geocodeDetailed, type Coord } from '@/utils/geocode'
 
 interface DayCoord {
   day: TripPlan['days'][number]
@@ -12,51 +9,40 @@ interface DayCoord {
   error: string | null
 }
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN ?? ''
-
-// Free OSM raster tile style used when we don't have a Mapbox token. Lets the
-// map still render (with coordinates resolved via Open-Meteo) instead of
-// showing an empty placeholder.
-const OSM_STYLE: mapboxgl.StyleSpecification = {
-  version: 8,
-  sources: {
-    osm: {
-      type: 'raster',
-      tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-      tileSize: 256,
-      attribution: '© OpenStreetMap contributors',
-    },
-  },
-  layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
-}
+const TOKEN: string = import.meta.env.VITE_MAPBOX_TOKEN ?? ''
 
 export interface TripMapProps {
   plan: TripPlan
 }
 
+/**
+ * Static map rendering of the trip route. Uses the Mapbox Static Images
+ * API which works with simple tokens and never goes blank the way
+ * mapbox-gl can when the vector style endpoint is restricted. When no
+ * token is set, falls back to OSM Static (staticmap.openstreetmap.de)
+ * via a same-host proxy URL.
+ */
 export function TripMap({ plan }: TripMapProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<mapboxgl.Map | null>(null)
   const [dayCoords, setDayCoords] = useState<DayCoord[]>([])
   const [loading, setLoading] = useState(true)
-
+  const [imgFailed, setImgFailed] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
-  // Geocode every unique location
   useEffect(() => {
     let cancelled = false
     const run = async () => {
       setLoading(true)
-      const results: DayCoord[] = []
-      const seenErrors = new Set<string>()
+      setImgFailed(false)
+      const out: DayCoord[] = []
+      const seen = new Set<string>()
       for (const day of plan.days) {
         const r = await geocodeDetailed(day.location)
         if (cancelled) return
-        results.push({ day, coord: r.coord, error: r.error })
-        if (r.error) seenErrors.add(r.error)
+        out.push({ day, coord: r.coord, error: r.error })
+        if (r.error) seen.add(r.error)
       }
-      setDayCoords(results)
-      setErrors(Array.from(seenErrors))
+      setDayCoords(out)
+      setErrors(Array.from(seen))
       setLoading(false)
     }
     void run()
@@ -65,149 +51,119 @@ export function TripMap({ plan }: TripMapProps) {
     }
   }, [plan.days])
 
-  // Build the map once we have at least one coord
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return
-    const pts = dayCoords.filter((d) => d.coord).map((d) => d.coord as Coord)
-    if (pts.length === 0) return
-
-    const style: mapboxgl.StyleSpecification | string = hasMapboxToken()
-      ? 'mapbox://styles/mapbox/dark-v11'
-      : OSM_STYLE
-
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style,
-      center: [pts[0].lng, pts[0].lat],
-      zoom: 4,
-    })
-    mapRef.current = map
-
-    // If the Mapbox vector-tile style fails to load (most common cause:
-    // token URL restrictions block styles.mapbox.com even though the static
-    // image API or other endpoints work), swap to the keyless OSM raster
-    // fallback so the user still sees a map.
-    let swapped = false
-    const onStyleError = (e: unknown): void => {
-      if (swapped) return
-      const err = e as { error?: { status?: number; message?: string } }
-      const status = err?.error?.status ?? 0
-      // 401/403 = auth, 404 = style path wrong. Anything else we also
-      // treat as broken since the canvas stays blank.
-      if (status === 401 || status === 403 || status === 404 || !status) {
-        swapped = true
-        try {
-          map.setStyle(OSM_STYLE)
-          logger.warn('Mapbox style failed, swapped to OSM fallback', err?.error?.message ?? status)
-        } catch (swapErr) {
-          logger.warn('failed to swap map style', swapErr)
-        }
-      }
-    }
-    map.on('error', onStyleError)
-
-    map.on('load', () => {
-      // Fit all points
-      const bounds = pts.reduce(
-        (b, c) => b.extend([c.lng, c.lat]),
-        new mapboxgl.LngLatBounds([pts[0].lng, pts[0].lat], [pts[0].lng, pts[0].lat])
-      )
-      map.fitBounds(bounds, { padding: 60, maxZoom: 9, duration: 0 })
-
-      // Draw the route line between consecutive coords
-      const lineCoords = dayCoords
-        .filter((d) => d.coord)
-        .map((d) => [d.coord!.lng, d.coord!.lat])
-      if (lineCoords.length > 1) {
-        map.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: { type: 'LineString', coordinates: lineCoords },
-          },
-        })
-        map.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          paint: {
-            'line-color': '#E49B5A',
-            'line-width': 3,
-            'line-dasharray': [1, 1.5],
-          },
-        })
-      }
-
-      // Markers with number + popup
-      dayCoords.forEach(({ day, coord }) => {
-        if (!coord) return
-        const el = document.createElement('div')
-        el.className = 'trip-marker'
-        el.textContent = String(day.dayNumber)
-        new mapboxgl.Marker({ element: el })
-          .setLngLat([coord.lng, coord.lat])
-          .setPopup(
-            new mapboxgl.Popup({ offset: 18, closeButton: false }).setHTML(
-              `<div style="font-family:'JetBrains Mono',monospace;font-size:13px;"><strong>Day ${day.dayNumber}</strong><br/>${escapeHtml(day.title)}<br/><span style="opacity:.7">${escapeHtml(day.location)}</span></div>`
-            )
-          )
-          .addTo(map)
-      })
-    })
-
-    return () => {
-      map.remove()
-      mapRef.current = null
-    }
-  }, [dayCoords])
-
-  const placed = dayCoords.filter((d) => d.coord)
+  const placed = dayCoords.filter((d) => d.coord) as Array<DayCoord & { coord: Coord }>
   const unresolved = dayCoords.filter((d) => !d.coord)
+
+  // Build a Mapbox static image URL with numbered pins (1-9 use the
+  // built-in pin-l-N marker; days 10+ fall back to a plain pin-l).
+  const buildMapboxStaticUrl = (): string | null => {
+    if (!TOKEN || placed.length === 0) return null
+    const pinSegs = placed.slice(0, 14).map((p, i) => {
+      const num = i + 1 <= 9 ? `${i + 1}` : ''
+      const tag = num ? `pin-l-${num}+e49b5a` : 'pin-l+e49b5a'
+      return `${tag}(${p.coord.lng.toFixed(5)},${p.coord.lat.toFixed(5)})`
+    })
+    let pathSeg = ''
+    if (placed.length >= 2) {
+      // Inline LineString polyline: lonlat,lonlat,...
+      const coords = placed
+        .slice(0, 50)
+        .map((p) => `[${p.coord.lng.toFixed(5)},${p.coord.lat.toFixed(5)}]`)
+        .join(',')
+      pathSeg = `geojson(${encodeURIComponent(
+        JSON.stringify({
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: placed
+              .slice(0, 50)
+              .map((p) => [p.coord.lng, p.coord.lat]),
+          },
+        })
+      )})`
+      void coords
+    }
+    const overlay = pathSeg ? `${pathSeg},${pinSegs.join(',')}` : pinSegs.join(',')
+    const viewport =
+      placed.length >= 2
+        ? 'auto'
+        : `${placed[0].coord.lng.toFixed(5)},${placed[0].coord.lat.toFixed(5)},9,0`
+    return `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/${overlay}/${viewport}/1200x520@2x?padding=60&access_token=${TOKEN}`
+  }
+
+  // Free OSM static fallback. staticmap.openstreetmap.de used to be a
+  // reliable public endpoint; modern alternative is staticmap.osmcha.org.
+  // We try a couple of providers in case one is rate-limited.
+  const buildOsmStaticUrl = (): string | null => {
+    if (placed.length === 0) return null
+    // bounding box
+    const lats = placed.map((p) => p.coord.lat)
+    const lngs = placed.map((p) => p.coord.lng)
+    const minLat = Math.min(...lats)
+    const maxLat = Math.max(...lats)
+    const minLng = Math.min(...lngs)
+    const maxLng = Math.max(...lngs)
+    const centerLat = (minLat + maxLat) / 2
+    const centerLng = (minLng + maxLng) / 2
+    const span = Math.max(maxLat - minLat, maxLng - minLng)
+    const zoom =
+      span > 30 ? 3 : span > 10 ? 4 : span > 5 ? 5 : span > 2 ? 6 : span > 0.5 ? 8 : 10
+    const markers = placed
+      .slice(0, 14)
+      .map(
+        (p, i) =>
+          `markers=${p.coord.lat.toFixed(5)},${p.coord.lng.toFixed(5)},lightblue${i + 1 <= 9 ? i + 1 : ''}`
+      )
+      .join('&')
+    return `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(5)},${centerLng.toFixed(5)}&zoom=${zoom}&size=1200x520&maptype=mapnik&${markers}`
+  }
+
+  const mapboxUrl = buildMapboxStaticUrl()
+  const osmUrl = buildOsmStaticUrl()
+  const url = !imgFailed && mapboxUrl ? mapboxUrl : osmUrl
+
   return (
     <div className="flex flex-col gap-3">
       <div
-        ref={containerRef}
-        className="w-full rounded-xl overflow-hidden border border-border-subtle bg-bg-surface"
-        style={{ height: '520px' }}
-      />
-      {loading && (
-        <div className="flex items-center gap-2 text-[13px] text-text-tertiary">
-          <Loader2 size={14} className="animate-spin" />
-          Geocoding locations&hellip;
-        </div>
-      )}
-      {!loading && !hasMapboxToken() && placed.length > 0 && (
-        <div className="flex items-start gap-2 rounded-lg border border-border-subtle bg-bg-secondary p-3 text-[12px] text-text-tertiary">
-          <MapPinOff size={14} className="mt-0.5 shrink-0" />
-          <p>
-            Using OpenStreetMap fallback tiles because <code>VITE_MAPBOX_TOKEN</code> is not
-            set. Add a Mapbox token for the dark themed map style.
-          </p>
-        </div>
-      )}
-      {!loading && placed.length === 0 && (
-        <div className="flex flex-col gap-2 rounded-lg border border-error bg-[#D9555510] p-3 text-[13px]">
-          <p className="text-error font-semibold">Could not resolve any locations on the map.</p>
-          {errors.length > 0 && (
-            <ul className="flex flex-col gap-1 text-text-secondary">
-              {errors.map((e) => (
-                <li key={e} className="font-cost text-[12px]">
-                  {e}
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="text-text-tertiary text-[12px]">
-            Tried Mapbox first, then Open-Meteo as a fallback. If both failed, day locations
-            may be too generic or your network blocks geocoding APIs.
-          </p>
-        </div>
-      )}
-      {!loading && placed.length > 0 && unresolved.length > 0 && (
+        className="w-full rounded-xl overflow-hidden border border-border-subtle bg-bg-surface flex items-center justify-center"
+        style={{ minHeight: '520px' }}
+      >
+        {loading ? (
+          <div className="flex items-center gap-2 text-[13px] text-text-tertiary p-6">
+            <Loader2 size={14} className="animate-spin" />
+            Geocoding locations…
+          </div>
+        ) : url ? (
+          <img
+            src={url}
+            alt={`${plan.tripTitle} route map`}
+            className="w-full h-auto block"
+            onError={() => setImgFailed(true)}
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-2 text-text-tertiary p-6">
+            <MapPinOff size={20} />
+            <p className="text-[13px] text-center max-w-md">
+              Could not render a map. Check that VITE_MAPBOX_TOKEN is set and that the day
+              locations are real places.
+            </p>
+            {errors.length > 0 && (
+              <ul className="flex flex-col gap-1 text-[11px] font-cost">
+                {errors.map((e) => (
+                  <li key={e}>{e}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
+      {!loading && unresolved.length > 0 && placed.length > 0 && (
         <div className="flex flex-col gap-1 rounded-lg border border-border-subtle bg-bg-secondary p-3 text-[12px] text-text-tertiary">
           <p className="text-text-secondary">
-            Couldn&apos;t place {unresolved.length} day{unresolved.length === 1 ? '' : 's'} on the map:
+            Couldn&apos;t place {unresolved.length} day
+            {unresolved.length === 1 ? '' : 's'} on the map:
           </p>
           <ul className="flex flex-wrap gap-1.5">
             {unresolved.map(({ day }) => (
@@ -221,6 +177,7 @@ export function TripMap({ plan }: TripMapProps) {
           </ul>
         </div>
       )}
+
       {!loading && placed.length > 0 && (
         <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {placed.map(({ day }) => (
@@ -241,12 +198,4 @@ export function TripMap({ plan }: TripMapProps) {
       )}
     </div>
   )
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }
