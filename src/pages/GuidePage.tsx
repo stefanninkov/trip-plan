@@ -5,7 +5,6 @@ import {
   Compass,
   Globe,
   Pencil,
-  Map as MapIcon,
   CloudSun,
   Bell,
   Share2,
@@ -55,12 +54,6 @@ const SECTIONS: GuideSection[] = [
     titleKey: 'guide.edit.title',
     bodyKey: 'guide.edit.body',
     tipsKey: 'guide.edit.tips',
-  },
-  {
-    icon: MapIcon,
-    titleKey: 'guide.map.title',
-    bodyKey: 'guide.map.body',
-    tipsKey: 'guide.map.tips',
   },
   {
     icon: CloudSun,

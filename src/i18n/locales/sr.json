@@ -255,12 +255,6 @@
     "stage93": "Završavamo",
     "hint": "Pravimo tvoje putovanje od stvarnih hotela, mesta i letova iz pretrage."
   },
-  "map": {
-    "geocodingLocations": "Pronalaženje lokacija…",
-    "fallbackHint": "Koristimo OpenStreetMap zamenske pločice jer VITE_MAPBOX_TOKEN nije postavljen.",
-    "couldNotResolve": "Nijedna lokacija nije pronađena na mapi.",
-    "cantPlace": "Nismo uspeli da postavimo {{count}} dan{{plural}} na mapu:"
-  },
   "auth": {
     "continueWithGoogle": "Nastavi preko Google-a",
     "signingIn": "Prijavljivanje…",
@@ -367,7 +361,7 @@
     "explore": {
       "title": "Istraži zemlju ili grad",
       "body": "Pre planiranja putovanja koristi Istraži da dobiješ bogat pregled: istoriju, obavezne atrakcije, kvartove, hranu, gde odsesti, šta raditi, savete iznutra i na šta paziti. Nastavlja da radi u pozadini čak i ako promeniš tab.",
-      "tips": "Tvoja Istraži istorija se čuva između sesija — klikni čip iz sidebar-a ili liste Nedavno istraženo da je odmah otvoriš.\nSvako mesto ima \"Otvori u Mapama\" link.\nAko je Mapbox token postavljen, dobijaš mapu sa obojenim pinovima za atrakcije, kvartove i hranu.",
+      "tips": "Tvoja Istraži istorija se čuva između sesija — klikni čip iz sidebar-a ili liste Nedavno istraženo da je odmah otvoriš.\nSvako mesto ima \"Otvori u Mapama\" link koji direktno otvara Google Mape.",
       "cta": "Otvori Istraži"
     },
     "noAi": {
@@ -379,11 +373,6 @@
       "title": "Menjaj plan",
       "body": "Klikni Izmeni na bilo kom putovanju da prevlačiš blokove između dana, preimenuješ ih, menjaš vremena, dodaš/ukloniš troškove, menjaš hotele, brišeš dane, pomeraš datume putovanja ili ponovo generišeš dan sa svojim povratnim informacijama za Claude-a. Svaka izmena se automatski čuva.",
       "tips": "Dnevna lista završenog ti omogućava da obeležiš blokove kako ih radiš — korisno u Danas modu.\n\"Ponovo generiši dan\" prima povratne informacije kao \"opuštenije, manje muzeja, dodaj mesto za zalazak sunca\".\nZa svaki blok, dugme Više info može da obogati podatke uz AI ili da povuče žive detalje o mestu (radno vreme, telefon, sajt) sa Google-a."
-    },
-    "map": {
-      "title": "Prikaz mape",
-      "body": "Svako putovanje ima karticu Mapa koja prikazuje tvoju rutu: po jedan pin po danu, numerisan, povezan isprekidanom linijom po redu. Mapbox tamni stil se koristi ako je token postavljen; inače se koriste OpenStreetMap pločice da mapa i dalje radi.",
-      "tips": "Klikni na pin da vidiš naslov dana i lokaciju.\nAko neki dani ne mogu da se postave (generične lokacije), pojavljuju se u listi \"nerešeno\" ispod mape."
     },
     "weather": {
       "title": "Vreme po danu",

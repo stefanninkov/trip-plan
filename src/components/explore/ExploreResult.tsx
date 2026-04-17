@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import {
   Landmark,
   BookOpen,
@@ -17,8 +16,6 @@ import {
 } from 'lucide-react'
 import type { DestinationOverview } from '@/types/explore'
 import { googleMapsSearchUrl } from '@/utils/maps-link'
-import { geocodeDetailed, type Coord } from '@/utils/geocode'
-import { logger } from '@/utils/logger'
 import { PlacePhoto } from '@/components/shared/PlacePhoto'
 
 export function ExploreResult({ overview }: { overview: DestinationOverview }) {
@@ -44,8 +41,6 @@ export function ExploreResult({ overview }: { overview: DestinationOverview }) {
         </div>
         <p className="text-text-secondary leading-[22px] max-w-3xl">{overview.summary}</p>
       </header>
-
-      <ExploreMap overview={overview} />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <QuickFact icon={<Calendar size={14} />} label="Best time" value={overview.bestTimeToVisit} />
@@ -373,160 +368,3 @@ function MapLink({
   )
 }
 
-interface PlacePin {
-  name: string
-  coord: Coord
-  kind: 'highlight' | 'neighborhood' | 'food' | 'stay' | 'activity'
-}
-
-function ExploreMap({ overview }: { overview: DestinationOverview }) {
-  const [pins, setPins] = useState<PlacePin[]>([])
-  const [center, setCenter] = useState<Coord | null>(null)
-  // Track whether the Mapbox static image failed to load (token might not
-  // have URL access to api.mapbox.com/styles/v1/... even if other endpoints
-  // work). Fall back to the pill list when it errors.
-  const [imageFailed, setImageFailed] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    const run = async () => {
-      const centerQuery =
-        overview.centerQuery ||
-        (overview.country && overview.country !== overview.name
-          ? `${overview.name}, ${overview.country}`
-          : overview.name)
-      const centerRes = await geocodeDetailed(centerQuery)
-      if (cancelled) return
-      setCenter(centerRes.coord)
-
-      // Geocode a capped set of mapsQuery-bearing items so we don't hammer
-      // the public geocoders on every render.
-      const pinSpecs: { name: string; query: string; kind: PlacePin['kind'] }[] = []
-      overview.highlights.slice(0, 8).forEach((h) => {
-        const q = h.mapsQuery || h.address || null
-        if (q) pinSpecs.push({ name: h.name, query: q, kind: 'highlight' })
-      })
-      overview.neighborhoods.slice(0, 4).forEach((n) => {
-        const q = n.mapsQuery || `${n.name}, ${centerQuery}`
-        pinSpecs.push({ name: n.name, query: q, kind: 'neighborhood' })
-      })
-      overview.food.slice(0, 4).forEach((f) => {
-        const q = f.mapsQuery || f.address || null
-        if (q) pinSpecs.push({ name: f.name, query: q, kind: 'food' })
-      })
-
-      const results: PlacePin[] = []
-      for (const spec of pinSpecs) {
-        const r = await geocodeDetailed(spec.query)
-        if (cancelled) return
-        if (r.coord) {
-          results.push({ name: spec.name, coord: r.coord, kind: spec.kind })
-        }
-      }
-      if (!cancelled) setPins(results)
-    }
-    void run().catch((err) => logger.warn('ExploreMap geocode batch failed', err))
-    return () => {
-      cancelled = true
-    }
-  }, [overview])
-
-  if (!center && pins.length === 0) return null
-
-  const token = import.meta.env.VITE_MAPBOX_TOKEN as string | undefined
-  if (token && center && !imageFailed) {
-    // Static Mapbox image with markers — cap to 14 pins to stay under
-    // Mapbox's ~8k URL length limit.
-    const allPoints = [
-      { coord: center, color: 'e49b5a', label: '' },
-      ...pins.slice(0, 14).map((p) => ({
-        coord: p.coord,
-        color: colorFor(p.kind),
-        label: '',
-      })),
-    ]
-    const markerStr = allPoints
-      .map((p) => `pin-s+${p.color}(${p.coord.lng.toFixed(5)},${p.coord.lat.toFixed(5)})`)
-      .join(',')
-    // "auto" needs 2+ markers — fall back to explicit center when only 1.
-    const viewport =
-      allPoints.length >= 2
-        ? 'auto'
-        : `${center.lng.toFixed(5)},${center.lat.toFixed(5)},11,0`
-    const url = `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/${markerStr}/${viewport}/900x380@2x?padding=60&access_token=${token}`
-    return (
-      <div className="flex flex-col gap-2">
-        <img
-          src={url}
-          alt={`${overview.name} map`}
-          className="w-full rounded-xl border border-border-subtle"
-          loading="lazy"
-          onError={() => setImageFailed(true)}
-        />
-        <MapLegend pinCount={pins.length} />
-      </div>
-    )
-  }
-
-  // Fallback: simple list of resolved pins so the user still sees the places
-  // we'd plot, and can click through to Google Maps.
-  if (pins.length === 0) return null
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="rounded-xl border border-border-subtle bg-bg-secondary p-4">
-        <div className="flex items-center gap-2 text-[12px] text-text-tertiary mb-2">
-          <MapPin size={12} />
-          Map preview unavailable — click a place to open it in Google Maps.
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {pins.map((p, i) => (
-            <a
-              key={i}
-              href={googleMapsSearchUrl(p.name)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[11px] px-2 py-1 rounded-full border border-border-subtle bg-bg-elevated text-text-secondary hover:text-text-primary transition-colors"
-            >
-              {p.name}
-            </a>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function MapLegend({ pinCount }: { pinCount: number }) {
-  return (
-    <div className="flex flex-wrap items-center gap-3 text-[11px] text-text-tertiary">
-      <span>Plotted {pinCount} places:</span>
-      <LegendDot color="#c87e43" label="Highlights" />
-      <LegendDot color="#6a8cff" label="Neighborhoods" />
-      <LegendDot color="#5bbd8a" label="Food" />
-    </div>
-  )
-}
-
-function LegendDot({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
-      {label}
-    </span>
-  )
-}
-
-function colorFor(kind: PlacePin['kind']): string {
-  switch (kind) {
-    case 'highlight':
-      return 'c87e43'
-    case 'neighborhood':
-      return '6a8cff'
-    case 'food':
-      return '5bbd8a'
-    case 'stay':
-      return 'a07cc6'
-    default:
-      return '9aa0a6'
-  }
-}

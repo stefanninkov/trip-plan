@@ -8,50 +8,9 @@ export interface Coord {
 export interface GeocodeResult {
   coord: Coord | null
   error: string | null
-  /** Which provider successfully resolved the coord, if any. */
-  provider?: 'mapbox' | 'open-meteo'
 }
-
-const TOKEN: string = import.meta.env.VITE_MAPBOX_TOKEN ?? ''
 
 const cache = new Map<string, GeocodeResult>()
-
-async function mapboxGeocode(place: string): Promise<GeocodeResult> {
-  if (!TOKEN) {
-    return { coord: null, error: 'VITE_MAPBOX_TOKEN not set' }
-  }
-  try {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(place)}.json?access_token=${TOKEN}&limit=1&language=en`
-    const res = await fetch(url)
-    if (!res.ok) {
-      if (res.status === 401) {
-        return { coord: null, error: 'Mapbox token is invalid (401 Unauthorized)' }
-      }
-      if (res.status === 403) {
-        return {
-          coord: null,
-          error:
-            'Mapbox token is not authorized for the geocoding API (403). Check URL restrictions on the token.',
-        }
-      }
-      if (res.status === 429) {
-        return { coord: null, error: 'Mapbox rate limit exceeded (429)' }
-      }
-      return { coord: null, error: `Mapbox geocoding HTTP ${res.status}` }
-    }
-    const data = (await res.json()) as {
-      features: Array<{ center?: [number, number] }>
-    }
-    const center = data.features?.[0]?.center
-    if (!center) {
-      return { coord: null, error: null }
-    }
-    return { coord: { lng: center[0], lat: center[1] }, error: null, provider: 'mapbox' }
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : 'unknown error'
-    return { coord: null, error: `Mapbox geocoding failed: ${msg}` }
-  }
-}
 
 async function openMeteoGeocode(place: string): Promise<GeocodeResult> {
   try {
@@ -67,11 +26,7 @@ async function openMeteoGeocode(place: string): Promise<GeocodeResult> {
     if (!top) {
       return { coord: null, error: null }
     }
-    return {
-      coord: { lng: top.longitude, lat: top.latitude },
-      error: null,
-      provider: 'open-meteo',
-    }
+    return { coord: { lng: top.longitude, lat: top.latitude }, error: null }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'unknown error'
     return { coord: null, error: `Open-Meteo geocoding failed: ${msg}` }
@@ -79,9 +34,7 @@ async function openMeteoGeocode(place: string): Promise<GeocodeResult> {
 }
 
 /**
- * Geocode a place name. Tries Mapbox first (richer results), then falls back to
- * Open-Meteo's free keyless API so the map works even when VITE_MAPBOX_TOKEN
- * is missing or misconfigured. Cached per-session.
+ * Geocode a place name via Open-Meteo's free keyless API. Cached per-session.
  */
 export async function geocode(place: string): Promise<Coord | null> {
   const result = await geocodeDetailed(place)
@@ -91,7 +44,7 @@ export async function geocode(place: string): Promise<Coord | null> {
 /**
  * Generate progressively simpler candidate queries from a complex location
  * string so "Lisbon Alfama district, Portugal" still resolves to Lisbon if
- * the full string draws a blank. Order: full, each comma part, first word.
+ * the full string draws a blank.
  */
 function buildCandidates(place: string): string[] {
   const trimmed = place.trim()
@@ -118,19 +71,7 @@ export async function geocodeDetailed(place: string): Promise<GeocodeResult> {
   let lastError: string | null = null
 
   for (const candidate of candidates) {
-    // Try Mapbox first when a token is present.
-    let result: GeocodeResult = TOKEN
-      ? await mapboxGeocode(candidate)
-      : { coord: null, error: 'No Mapbox token — using Open-Meteo fallback' }
-
-    if (!result.coord) {
-      const fallback = await openMeteoGeocode(candidate)
-      if (fallback.coord) {
-        result = fallback
-      } else if (!result.error && fallback.error) {
-        result = fallback
-      }
-    }
+    const result = await openMeteoGeocode(candidate)
     if (result.coord) {
       cache.set(key, result)
       return result
@@ -142,8 +83,4 @@ export async function geocodeDetailed(place: string): Promise<GeocodeResult> {
   if (lastError) logger.warn('geocode failed for', place, lastError)
   cache.set(key, final)
   return final
-}
-
-export function hasMapboxToken(): boolean {
-  return Boolean(TOKEN)
 }

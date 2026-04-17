@@ -255,12 +255,6 @@
     "stage93": "Finalising",
     "hint": "Building your trip from real hotel, place and flight search results."
   },
-  "map": {
-    "geocodingLocations": "Geocoding locations…",
-    "fallbackHint": "Using OpenStreetMap fallback tiles because VITE_MAPBOX_TOKEN is not set.",
-    "couldNotResolve": "Could not resolve any locations on the map.",
-    "cantPlace": "Couldn't place {{count}} day{{plural}} on the map:"
-  },
   "auth": {
     "continueWithGoogle": "Continue with Google",
     "signingIn": "Signing in…",
@@ -367,7 +361,7 @@
     "explore": {
       "title": "Explore a country or city",
       "body": "Before planning a trip, use Explore to get a rich overview: history, must-see highlights, neighborhoods, food, where to stay, things to do, insider tips and what to watch out for. Keeps running in the background if you switch tabs.",
-      "tips": "Your Explore history is saved across sessions — click a chip from the sidebar or the Recently Explored list to reopen instantly, no re-fetching.\nEvery place has an \"Open in Maps\" link.\nIf a Mapbox token is set, you get a map with colored pins for highlights, neighborhoods and food.",
+      "tips": "Your Explore history is saved across sessions — click a chip from the sidebar or the Recently Explored list to reopen instantly, no re-fetching.\nEvery place has an \"Open in Maps\" link that deep-links into Google Maps.",
       "cta": "Open Explore"
     },
     "noAi": {
@@ -379,11 +373,6 @@
       "title": "Edit your plan",
       "body": "Click Edit on any trip to drag blocks between days, rename them, change times, add/remove costs, swap hotels, delete days, shift the trip dates, or regenerate a single day with custom feedback to Claude. Every edit saves automatically.",
       "tips": "The day progress checklist lets you tick off blocks as you do them during the trip — useful in Today mode.\n\"Regenerate day\" accepts feedback like \"more relaxed, less museums, add a sunset viewpoint\".\nFor any block, the More Info button can enrich it with AI or pull live place details (hours, phone, website) from Google."
-    },
-    "map": {
-      "title": "Map view",
-      "body": "Every trip has a Map tab showing your route: one pin per day, numbered, connected by a dashed line in route order. The Mapbox dark style is used when a token is present; otherwise OpenStreetMap tiles are used so the map still works.",
-      "tips": "Click a pin to see the day title and location.\nIf some days can't be placed (generic locations), they appear in an \"unresolved\" list below the map."
     },
     "weather": {
       "title": "Weather per day",

@@ -34,7 +34,6 @@ jobs:
 
       - name: Build
         env:
-          VITE_MAPBOX_TOKEN: ${{ secrets.MAPBOX_TOKEN }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
         run: npm run build
 
