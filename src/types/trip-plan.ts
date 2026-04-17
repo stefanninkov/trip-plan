@@ -54,6 +54,7 @@ export interface CostItem {
   amount: CostRange
   currency: string
   note: string | null
+  actual?: number | null
 }
 
 export interface HotelOption {

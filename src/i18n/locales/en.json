@@ -320,6 +320,12 @@
     "bannerMessage": "This plan is in a different language than your interface.",
     "bannerCta": "Translate to {{lang}}"
   },
+  "budget": {
+    "title": "Budget tracker",
+    "totalSpent": "Total spent",
+    "logActual": "Log actual spend",
+    "actual": "Actual"
+  },
   "packing": {
     "title": "Packing list",
     "intro": "Generate a tailored packing list based on weather, activities and destinations in this trip. Check items off as you pack.",

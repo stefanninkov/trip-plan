@@ -8,6 +8,7 @@ import { useUiStore } from '@/store/ui-store'
 import { Button } from '@/components/shared/Button'
 import { cn } from '@/utils/cn'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
+import { currencySymbol } from '@/utils/format-currency'
 import { EditableText } from '@/components/shared/EditableText'
 import { CATEGORIES } from '@/constants/categories'
 import { TRAVEL_MODES } from '@/constants/travel-modes'
@@ -32,6 +33,7 @@ export interface DayCardProps {
    * so users can still mark blocks done during travel without entering edit mode.
    */
   onToggleCompleted?: (dayId: string, blockId: string) => void
+  onLogActual?: (dayId: string, costId: string, actual: number | null) => void
 }
 
 export function DayCard({
@@ -43,6 +45,7 @@ export function DayCard({
   allDays,
   tripInputs,
   onToggleCompleted,
+  onLogActual,
 }: DayCardProps) {
   const [open, setOpen] = useState(defaultOpen)
   const [regenOpen, setRegenOpen] = useState(false)
@@ -306,7 +309,13 @@ export function DayCard({
               homeCurrency={homeCurrency}
             />
           ) : (
-            day.costs.length > 0 && <ReadOnlyCosts day={day} homeCurrency={homeCurrency} />
+            day.costs.length > 0 && (
+              <ReadOnlyCosts
+                day={day}
+                homeCurrency={homeCurrency}
+                onLogActual={onLogActual ? (costId, val) => onLogActual(day.id, costId, val) : undefined}
+              />
+            )
           )}
 
           {readOnly && day.blocks.length === 0 && day.costs.length === 0 && (
@@ -434,7 +443,15 @@ function ReadOnlyHotels({ day, homeCurrency }: { day: DayPlan; homeCurrency?: st
   )
 }
 
-function ReadOnlyCosts({ day, homeCurrency }: { day: DayPlan; homeCurrency?: string }) {
+function ReadOnlyCosts({
+  day,
+  homeCurrency,
+  onLogActual,
+}: {
+  day: DayPlan
+  homeCurrency?: string
+  onLogActual?: (costId: string, actual: number | null) => void
+}) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="text-[12px] font-semibold uppercase tracking-[1.5px] text-text-secondary">
@@ -444,31 +461,92 @@ function ReadOnlyCosts({ day, homeCurrency }: { day: DayPlan; homeCurrency?: str
         {day.costs.map((c) => (
           <div
             key={c.id}
-            className="flex items-center justify-between gap-3 py-2 text-[13px]"
+            className="flex flex-col gap-1 py-2"
             style={{ borderLeft: `3px solid var(--color-cat-${c.category})`, paddingLeft: 8 }}
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="truncate">{c.item}</span>
-              <span
-                className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded"
-                style={{
-                  color: `var(--color-cat-${c.category})`,
-                  backgroundColor: `var(--cat-${c.category}-muted)`,
-                }}
-              >
-                {CATEGORIES[c.category].label}
-              </span>
+            <div className="flex items-center justify-between gap-3 text-[13px]">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="truncate">{c.item}</span>
+                <span
+                  className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded"
+                  style={{
+                    color: `var(--color-cat-${c.category})`,
+                    backgroundColor: `var(--cat-${c.category}-muted)`,
+                  }}
+                >
+                  {CATEGORIES[c.category].label}
+                </span>
+              </div>
+              <CurrencyDisplay
+                min={c.amount.min}
+                max={c.amount.max}
+                currency={c.currency}
+                homeCurrency={homeCurrency}
+                size="sm"
+              />
             </div>
-            <CurrencyDisplay
-              min={c.amount.min}
-              max={c.amount.max}
-              currency={c.currency}
-              homeCurrency={homeCurrency}
-              size="sm"
-            />
+            {onLogActual && (
+              <InlineActual
+                actual={c.actual}
+                currency={c.currency}
+                onChange={(val) => onLogActual(c.id, val)}
+              />
+            )}
           </div>
         ))}
       </div>
+    </div>
+  )
+}
+
+function InlineActual({
+  actual,
+  currency,
+  onChange,
+}: {
+  actual: number | null | undefined
+  currency: string
+  onChange: (val: number | null) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const sym = CATEGORIES ? currencySymbol(currency) : currency
+
+  if (!editing && actual == null) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        className="text-[11px] text-text-tertiary hover:text-accent transition-colors self-start print:hidden"
+      >
+        + Log actual spend
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-[11px] print:hidden">
+      <span className="text-text-tertiary">Actual:</span>
+      <span className="text-text-tertiary">{sym}</span>
+      <input
+        type="number"
+        defaultValue={actual ?? ''}
+        autoFocus={editing && actual == null}
+        onBlur={(e) => {
+          const v = Number(e.target.value)
+          onChange(v > 0 ? v : null)
+          if (!v) setEditing(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+        }}
+        className="w-20 bg-transparent border-b border-border-subtle focus:border-accent text-[12px] font-cost py-0.5 outline-none"
+        placeholder="0"
+      />
+      {actual != null && (
+        <span className="font-cost font-semibold text-[12px] text-accent">
+          {sym} {Math.round(actual).toLocaleString()}
+        </span>
+      )}
     </div>
   )
 }

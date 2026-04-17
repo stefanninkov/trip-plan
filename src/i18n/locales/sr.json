@@ -320,6 +320,12 @@
     "bannerMessage": "Ovaj plan je na drugom jeziku od tvog interfejsa.",
     "bannerCta": "Prevedi na {{lang}}"
   },
+  "budget": {
+    "title": "Praćenje budžeta",
+    "totalSpent": "Ukupno potrošeno",
+    "logActual": "Upiši stvarni trošak",
+    "actual": "Stvarno"
+  },
   "packing": {
     "title": "Spisak za pakovanje",
     "intro": "Napravi prilagođen spisak za pakovanje na osnovu vremena, aktivnosti i destinacija na ovom putovanju. Označavaj stavke kako pakuješ.",

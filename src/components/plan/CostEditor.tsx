@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { CostItem, CostCategory } from '@/types/trip-plan'
 import type { TripEditor } from '@/hooks/useTripEditor'
 import { CATEGORIES } from '@/constants/categories'
 import { CURRENCIES, DEFAULT_CURRENCY } from '@/constants/currencies'
+import { currencySymbol } from '@/utils/format-currency'
 import { Button } from '@/components/shared/Button'
 import { Input } from '@/components/shared/Input'
 import { Select } from '@/components/shared/Select'
@@ -39,38 +41,45 @@ export function CostList({ dayId, costs, editor, defaultCurrency, homeCurrency }
         {costs.map((c) => (
           <div
             key={c.id}
-            className="group flex items-center justify-between gap-3 py-2 text-[13px]"
+            className="group flex flex-col gap-1 py-2 text-[13px]"
             style={{ borderLeft: `3px solid var(--color-cat-${c.category})`, paddingLeft: 8 }}
           >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="truncate">{c.item}</span>
-              <span
-                className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded"
-                style={{
-                  color: `var(--color-cat-${c.category})`,
-                  backgroundColor: `var(--cat-${c.category}-muted)`,
-                }}
-              >
-                {CATEGORIES[c.category].label}
-              </span>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="truncate">{c.item}</span>
+                <span
+                  className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.5px] px-1.5 py-0.5 rounded"
+                  style={{
+                    color: `var(--color-cat-${c.category})`,
+                    backgroundColor: `var(--cat-${c.category}-muted)`,
+                  }}
+                >
+                  {CATEGORIES[c.category].label}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CurrencyDisplay
+                  min={c.amount.min}
+                  max={c.amount.max}
+                  currency={c.currency}
+                  homeCurrency={homeCurrency}
+                  size="sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => editor.deleteCost(dayId, c.id)}
+                  aria-label="Delete cost"
+                  className="opacity-0 group-hover:opacity-100 transition-opacity text-text-tertiary hover:text-error p-1"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <CurrencyDisplay
-                min={c.amount.min}
-                max={c.amount.max}
-                currency={c.currency}
-                homeCurrency={homeCurrency}
-                size="sm"
-              />
-              <button
-                type="button"
-                onClick={() => editor.deleteCost(dayId, c.id)}
-                aria-label="Delete cost"
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-text-tertiary hover:text-error p-1"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
+            <ActualSpendInput
+              actual={c.actual}
+              currency={c.currency}
+              onChange={(val) => editor.logActual(dayId, c.id, val)}
+            />
           </div>
         ))}
       </div>
@@ -171,6 +180,58 @@ function AddCostForm({
           Add cost
         </Button>
       </div>
+    </div>
+  )
+}
+
+function ActualSpendInput({
+  actual,
+  currency,
+  onChange,
+}: {
+  actual: number | null | undefined
+  currency: string
+  onChange: (val: number | null) => void
+}) {
+  const { t } = useTranslation()
+  const [editing, setEditing] = useState(false)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const sym = currencySymbol(currency)
+
+  if (!editing && actual == null) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          setEditing(true)
+          requestAnimationFrame(() => inputRef.current?.focus())
+        }}
+        className="text-[11px] text-text-tertiary hover:text-accent transition-colors self-start"
+      >
+        + {t('budget.logActual')}
+      </button>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-1.5 text-[11px]">
+      <span className="text-text-tertiary">{t('budget.actual')}:</span>
+      <span className="text-text-tertiary">{sym}</span>
+      <input
+        ref={inputRef}
+        type="number"
+        defaultValue={actual ?? ''}
+        onBlur={(e) => {
+          const v = Number(e.target.value)
+          onChange(v > 0 ? v : null)
+          if (!v) setEditing(false)
+        }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+        }}
+        className="w-20 bg-transparent border-b border-border-subtle focus:border-accent text-[12px] font-cost py-0.5 outline-none"
+        placeholder="0"
+      />
     </div>
   )
 }

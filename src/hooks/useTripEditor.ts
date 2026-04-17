@@ -282,6 +282,21 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       ),
     }))
 
+  const logActual = (dayId: string, costId: string, actual: number | null) =>
+    apply((p) => ({
+      ...p,
+      days: p.days.map((d) =>
+        d.id === dayId
+          ? {
+              ...d,
+              costs: d.costs.map((c) =>
+                c.id === costId ? { ...c, actual: actual === 0 ? null : actual } : c
+              ),
+            }
+          : d
+      ),
+    }))
+
   // === Hotels ===
   const addHotel = (dayId: string, hotel: HotelOption) =>
     apply((p) => ({
@@ -340,6 +355,7 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     addCost,
     updateCost,
     deleteCost,
+    logActual,
     addHotel,
     updateHotel,
     deleteHotel,

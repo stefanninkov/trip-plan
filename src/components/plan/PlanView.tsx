@@ -21,6 +21,7 @@ import { PlanHeader } from './PlanHeader'
 import { PracticalInfo } from './PracticalInfo'
 import { DayCard } from './DayCard'
 import { GrandTotal } from './GrandTotal'
+import { BudgetTracker } from './BudgetTracker'
 import { ExportMenu } from './ExportMenu'
 import { PackingListPanel } from './PackingListPanel'
 import { SearchPanel } from '@/components/search/SearchPanel'
@@ -281,10 +282,14 @@ export function PlanView({
             onToggleCompleted={
               readOnly ? undefined : (dayId, blockId) => editor.toggleBlockCompleted(dayId, blockId)
             }
+            onLogActual={
+              readOnly ? undefined : (dayId, costId, actual) => editor.logActual(dayId, costId, actual)
+            }
           />
         ))}
       </section>
       <GrandTotal plan={current} homeCurrency={homeCurrency} />
+      <BudgetTracker plan={current} homeCurrency={homeCurrency} />
       <PackingListPanel
         tripId={tripId}
         plan={current}
