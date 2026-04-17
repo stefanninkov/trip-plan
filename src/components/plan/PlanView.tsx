@@ -1,6 +1,20 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Eye, Pencil, Wand2, Plus, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable'
 import type { TripPlan } from '@/types/trip-plan'
 import type { PackingList } from '@/types/packing'
 import type { TripInputs } from '@/types/wizard'
@@ -80,6 +94,23 @@ export function PlanView({
   const [editing, setEditing] = useState(false)
   const current = editor.plan
   const currency = current.totalBudget.currency
+
+  const daySensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  )
+  const dayIds = useMemo(() => current.days.map((d) => d.id), [current.days])
+  const handleDayDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event
+      if (!over || active.id === over.id) return
+      const oldIndex = current.days.findIndex((d) => d.id === active.id)
+      const newIndex = current.days.findIndex((d) => d.id === over.id)
+      if (oldIndex === -1 || newIndex === -1) return
+      editor.reorderDays(oldIndex, newIndex)
+    },
+    [current.days, editor]
+  )
   // Force EUR as the primary display currency so every price (new trips AND
   // historical ones) shows Euro first with the local currency underneath.
   const homeCurrency = 'EUR'
@@ -265,28 +296,52 @@ export function PlanView({
             </Button>
           )}
         </div>
-        {current.days.map((day, idx) => (
-          <DayCard
-            key={day.id}
-            day={day}
-            currency={currency}
-            homeCurrency={homeCurrency}
-            editor={canEdit ? editor : undefined}
-            defaultOpen={idx === defaultOpenIndex}
-            tripInputs={canEdit ? inputs : undefined}
-            allDays={current.days.map((d) => ({
-              id: d.id,
-              dayNumber: d.dayNumber,
-              title: d.title,
-            }))}
-            onToggleCompleted={
-              readOnly ? undefined : (dayId, blockId) => editor.toggleBlockCompleted(dayId, blockId)
-            }
-            onLogActual={
-              readOnly ? undefined : (dayId, costId, actual) => editor.logActual(dayId, costId, actual)
-            }
-          />
-        ))}
+        {canEdit ? (
+          <DndContext sensors={daySensors} collisionDetection={closestCenter} onDragEnd={handleDayDragEnd}>
+            <SortableContext items={dayIds} strategy={verticalListSortingStrategy}>
+              {current.days.map((day, idx) => (
+                <DayCard
+                  key={day.id}
+                  day={day}
+                  currency={currency}
+                  homeCurrency={homeCurrency}
+                  editor={editor}
+                  defaultOpen={idx === defaultOpenIndex}
+                  tripInputs={inputs}
+                  sortable
+                  allDays={current.days.map((d) => ({
+                    id: d.id,
+                    dayNumber: d.dayNumber,
+                    title: d.title,
+                  }))}
+                  onToggleCompleted={(dayId, blockId) => editor.toggleBlockCompleted(dayId, blockId)}
+                  onLogActual={(dayId, costId, actual) => editor.logActual(dayId, costId, actual)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        ) : (
+          current.days.map((day, idx) => (
+            <DayCard
+              key={day.id}
+              day={day}
+              currency={currency}
+              homeCurrency={homeCurrency}
+              defaultOpen={idx === defaultOpenIndex}
+              allDays={current.days.map((d) => ({
+                id: d.id,
+                dayNumber: d.dayNumber,
+                title: d.title,
+              }))}
+              onToggleCompleted={
+                readOnly ? undefined : (dayId, blockId) => editor.toggleBlockCompleted(dayId, blockId)
+              }
+              onLogActual={
+                readOnly ? undefined : (dayId, costId, actual) => editor.logActual(dayId, costId, actual)
+              }
+            />
+          ))
+        )}
       </section>
       <GrandTotal plan={current} homeCurrency={homeCurrency} />
       <BudgetTracker plan={current} homeCurrency={homeCurrency} />

@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
-import { ChevronDown, Sparkles, Loader2, Trash2 } from 'lucide-react'
+import { ChevronDown, GripVertical, Sparkles, Loader2, Trash2 } from 'lucide-react'
+import { useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import type { DayPlan } from '@/types/trip-plan'
 import type { TripInputs } from '@/types/wizard'
 import type { TripEditor } from '@/hooks/useTripEditor'
@@ -34,6 +36,7 @@ export interface DayCardProps {
    */
   onToggleCompleted?: (dayId: string, blockId: string) => void
   onLogActual?: (dayId: string, costId: string, actual: number | null) => void
+  sortable?: boolean
 }
 
 export function DayCard({
@@ -46,7 +49,20 @@ export function DayCard({
   tripInputs,
   onToggleCompleted,
   onLogActual,
+  sortable = false,
 }: DayCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef: sortableRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: day.id, disabled: !sortable })
+  const sortableStyle = sortable
+    ? { transform: CSS.Transform.toString(transform), transition }
+    : undefined
+
   const [open, setOpen] = useState(defaultOpen)
   const [regenOpen, setRegenOpen] = useState(false)
   const [feedback, setFeedback] = useState('')
@@ -75,24 +91,38 @@ export function DayCard({
   const allDone = totalCount > 0 && completedCount === totalCount
   const rel = relativeDay(day.date)
 
-  const ref = useRef<HTMLDivElement>(null)
+  const localRef = useRef<HTMLDivElement>(null)
   // The print CSS forces everything visible regardless of local open state.
   return (
     <div
-      ref={ref}
+      ref={sortable ? sortableRef : localRef}
       id={`day-${day.dayNumber}`}
+      style={sortableStyle}
       className={cn(
         'bg-bg-surface border border-border-subtle rounded-xl overflow-hidden print:overflow-visible print:break-inside-avoid print:bg-white print:border-neutral-300 day-card scroll-mt-24',
         rel === 'past' && 'opacity-70',
-        rel === 'today' && 'ring-1 ring-accent'
+        rel === 'today' && 'ring-1 ring-accent',
+        isDragging && 'opacity-50 z-50'
       )}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="w-full flex items-center gap-4 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
-      >
+      <div className="flex items-stretch">
+        {sortable && (
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="flex items-center justify-center w-8 shrink-0 cursor-grab active:cursor-grabbing text-text-tertiary hover:text-text-secondary hover:bg-bg-elevated transition-colors print:hidden"
+            aria-label="Drag to reorder"
+          >
+            <GripVertical size={16} />
+          </button>
+        )}
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          className="flex-1 min-w-0 flex items-center gap-4 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
+        >
         {/* Left: day number */}
         <div
           className={cn(
@@ -166,7 +196,8 @@ export function DayCard({
             )}
           />
         </div>
-      </button>
+        </button>
+      </div>
 
       <div
         className={cn(

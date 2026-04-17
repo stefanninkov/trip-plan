@@ -155,6 +155,16 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
       return { ...p, days: renumbered }
     })
 
+  const reorderDays = (fromIndex: number, toIndex: number) =>
+    apply((p) => {
+      if (fromIndex === toIndex) return p
+      const days = [...p.days]
+      const [moved] = days.splice(fromIndex, 1)
+      days.splice(toIndex, 0, moved)
+      const renumbered = days.map((d, i) => ({ ...d, dayNumber: i + 1 }))
+      return { ...p, days: renumbered }
+    })
+
   const deleteDay = (dayId: string) =>
     apply((p) => {
       const remaining = p.days.filter((d) => d.id !== dayId)
@@ -344,6 +354,7 @@ export function useTripEditor(tripId: string | undefined, initial: TripPlan) {
     canUndo,
     canRedo,
     addDay,
+    reorderDays,
     deleteDay,
     shiftTripDates,
     addBlock,
