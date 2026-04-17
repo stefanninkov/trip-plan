@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { Eye, Pencil, Wand2, Plus, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -28,7 +28,6 @@ import { DayNav } from './DayNav'
 import { TripCover } from './TripCover'
 import { PresenceAvatars } from './PresenceAvatars'
 import { RemindersToggle } from './RemindersToggle'
-import { TripChat } from './TripChat'
 import { TranslateTripButton } from './TranslateTripButton'
 import { TranslateBanner } from './TranslateBanner'
 import { PlanHeader } from './PlanHeader'
@@ -38,7 +37,13 @@ import { GrandTotal } from './GrandTotal'
 import { BudgetTracker } from './BudgetTracker'
 import { ExportMenu } from './ExportMenu'
 import { PackingListPanel } from './PackingListPanel'
-import { SearchPanel } from '@/components/search/SearchPanel'
+
+const SearchPanel = lazy(() =>
+  import('@/components/search/SearchPanel').then((m) => ({ default: m.SearchPanel }))
+)
+const TripChat = lazy(() =>
+  import('./TripChat').then((m) => ({ default: m.TripChat }))
+)
 
 export interface PlanViewProps {
   plan: TripPlan
@@ -353,15 +358,21 @@ export function PlanView({
       />
       {!readOnly && (
         <div className="print:hidden">
-          <SearchPanel
-            editor={editor}
-            days={current.days}
-            currency={currency}
-            origin={inputs?.origin}
-          />
+          <Suspense fallback={null}>
+            <SearchPanel
+              editor={editor}
+              days={current.days}
+              currency={currency}
+              origin={inputs?.origin}
+            />
+          </Suspense>
         </div>
       )}
-      {!readOnly && <TripChat plan={current} editor={editor} />}
+      {!readOnly && (
+        <Suspense fallback={null}>
+          <TripChat plan={current} editor={editor} />
+        </Suspense>
+      )}
     </div>
   )
 }

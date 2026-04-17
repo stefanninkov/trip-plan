@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Trash2, Plane, AlertTriangle, Calendar, CalendarRange, Users, Wrench, Copy, List } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +11,9 @@ import { Modal } from '@/components/shared/Modal'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
 import { formatDateRange } from '@/utils/date-helpers'
 import { ROUTES } from '@/constants/routes'
-import { TripTimeline } from '@/components/plan/TripTimeline'
+const TripTimeline = lazy(() =>
+  import('@/components/plan/TripTimeline').then((m) => ({ default: m.TripTimeline }))
+)
 
 /**
  * A trip is "stuck" if it's been in the generating state for more than 10
@@ -157,7 +159,9 @@ export function HistoryPage() {
 
       {view === 'timeline' && trips.length > 0 && (
         <Card className="p-5">
-          <TripTimeline trips={trips} />
+          <Suspense fallback={<CardSkeleton />}>
+            <TripTimeline trips={trips} />
+          </Suspense>
         </Card>
       )}
 
