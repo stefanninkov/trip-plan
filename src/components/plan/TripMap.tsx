@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Loader2, MapPinOff } from 'lucide-react'
 import type { TripPlan } from '@/types/trip-plan'
 import { geocodeDetailed, type Coord } from '@/utils/geocode'
+import { RouteSvg } from './RouteSvg'
 
 interface DayCoord {
   day: TripPlan['days'][number]
@@ -92,36 +93,18 @@ export function TripMap({ plan }: TripMapProps) {
     return `https://api.mapbox.com/styles/v1/mapbox/dark-v11/static/${overlay}/${viewport}/1200x520@2x?padding=60&access_token=${TOKEN}`
   }
 
-  // Free OSM static fallback. staticmap.openstreetmap.de used to be a
-  // reliable public endpoint; modern alternative is staticmap.osmcha.org.
-  // We try a couple of providers in case one is rate-limited.
-  const buildOsmStaticUrl = (): string | null => {
-    if (placed.length === 0) return null
-    // bounding box
-    const lats = placed.map((p) => p.coord.lat)
-    const lngs = placed.map((p) => p.coord.lng)
-    const minLat = Math.min(...lats)
-    const maxLat = Math.max(...lats)
-    const minLng = Math.min(...lngs)
-    const maxLng = Math.max(...lngs)
-    const centerLat = (minLat + maxLat) / 2
-    const centerLng = (minLng + maxLng) / 2
-    const span = Math.max(maxLat - minLat, maxLng - minLng)
-    const zoom =
-      span > 30 ? 3 : span > 10 ? 4 : span > 5 ? 5 : span > 2 ? 6 : span > 0.5 ? 8 : 10
-    const markers = placed
-      .slice(0, 14)
-      .map(
-        (p, i) =>
-          `markers=${p.coord.lat.toFixed(5)},${p.coord.lng.toFixed(5)},lightblue${i + 1 <= 9 ? i + 1 : ''}`
-      )
-      .join('&')
-    return `https://staticmap.openstreetmap.de/staticmap.php?center=${centerLat.toFixed(5)},${centerLng.toFixed(5)}&zoom=${zoom}&size=1200x520&maptype=mapnik&${markers}`
-  }
-
   const mapboxUrl = buildMapboxStaticUrl()
-  const osmUrl = buildOsmStaticUrl()
-  const url = !imgFailed && mapboxUrl ? mapboxUrl : osmUrl
+
+  // SVG fallback data: one entry per placed day, used when Mapbox static
+  // fails (no token, token restrictions, URL too long, etc.).
+  const svgDays = placed.map((p) => ({
+    dayNumber: p.day.dayNumber,
+    title: p.day.title,
+    location: p.day.location,
+    coord: p.coord,
+  }))
+
+  const showMapbox = !imgFailed && mapboxUrl
 
   return (
     <div className="flex flex-col gap-3">
@@ -134,19 +117,20 @@ export function TripMap({ plan }: TripMapProps) {
             <Loader2 size={14} className="animate-spin" />
             Geocoding locations…
           </div>
-        ) : url ? (
+        ) : showMapbox ? (
           <img
-            src={url}
+            src={mapboxUrl}
             alt={`${plan.tripTitle} route map`}
             className="w-full h-auto block"
             onError={() => setImgFailed(true)}
           />
+        ) : svgDays.length > 0 ? (
+          <RouteSvg days={svgDays} />
         ) : (
           <div className="flex flex-col items-center gap-2 text-text-tertiary p-6">
             <MapPinOff size={20} />
             <p className="text-[13px] text-center max-w-md">
-              Could not render a map. Check that VITE_MAPBOX_TOKEN is set and that the day
-              locations are real places.
+              Could not render a map. The day locations may be too generic.
             </p>
             {errors.length > 0 && (
               <ul className="flex flex-col gap-1 text-[11px] font-cost">
