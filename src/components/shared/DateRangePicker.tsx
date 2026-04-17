@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { cn } from '@/utils/cn'
@@ -83,6 +84,13 @@ export function DateRangePicker({
   const [pickingEnd, setPickingEnd] = useState<boolean>(Boolean(startDate && !endDate))
   const popRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  // Popover position (fixed-coord, portal-rendered) — recomputed on open/resize.
+  const [popStyle, setPopStyle] = useState<{ top: number; left: number; width: number } | null>(
+    null
+  )
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false
+  )
 
   // Keep the calendar anchor in sync when caller-provided dates change.
   useEffect(() => {
@@ -110,6 +118,58 @@ export function DateRangePicker({
       document.removeEventListener('keydown', onKey)
     }
   }, [open])
+
+  // Track viewport size so we can pick mobile-sheet vs. anchored-popover layout.
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 640)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  // Compute the fixed-position coordinates for the popover so it flips above
+  // the trigger when there's not enough room below, and stays within the
+  // viewport horizontally. Uses layout effect to avoid a visible flash.
+  useLayoutEffect(() => {
+    if (!open || isMobile) {
+      setPopStyle(null)
+      return
+    }
+    const compute = () => {
+      const trigger = triggerRef.current
+      if (!trigger) return
+      const rect = trigger.getBoundingClientRect()
+      const popH = popRef.current?.offsetHeight ?? 380
+      const popW = Math.min(320, window.innerWidth - 16)
+      const margin = 8
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      // Flip up only when below is too short AND above has more room.
+      const placeAbove = spaceBelow < popH + margin && spaceAbove > spaceBelow
+      const top = placeAbove
+        ? Math.max(8, rect.top - popH - margin)
+        : Math.min(window.innerHeight - popH - 8, rect.bottom + margin)
+      const left = Math.max(8, Math.min(window.innerWidth - popW - 8, rect.left))
+      setPopStyle({ top, left, width: popW })
+    }
+    compute()
+    window.addEventListener('resize', compute)
+    window.addEventListener('scroll', compute, true)
+    return () => {
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('scroll', compute, true)
+    }
+  }, [open, isMobile])
+
+  // Prevent body scroll while the mobile sheet is open so the user isn't
+  // scrolling the page behind the sheet.
+  useEffect(() => {
+    if (!open || !isMobile) return
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open, isMobile])
 
   const grid = useMemo(() => buildMonthGrid(anchor), [anchor])
   const today = todayIso()
@@ -225,13 +285,41 @@ export function DateRangePicker({
       </button>
       {error && <span className="text-[12px] text-error">{error}</span>}
 
-      {open && (
-        <div
-          ref={popRef}
-          role="dialog"
-          aria-label={title ?? 'Pick dates'}
-          className="absolute z-20 top-full left-0 mt-2 w-[320px] max-w-[calc(100vw-32px)] rounded-xl border border-border-default bg-bg-surface shadow-lg p-3 flex flex-col gap-3"
-        >
+      {open &&
+        createPortal(
+          <>
+            {isMobile && (
+              <div
+                className="fixed inset-0 z-40 bg-black/50 backdrop-blur-[2px]"
+                onClick={() => setOpen(false)}
+                aria-hidden="true"
+              />
+            )}
+            <div
+              ref={popRef}
+              role="dialog"
+              aria-modal={isMobile ? true : undefined}
+              aria-label={title ?? 'Pick dates'}
+              style={
+                isMobile
+                  ? undefined
+                  : popStyle
+                    ? {
+                        position: 'fixed',
+                        top: popStyle.top,
+                        left: popStyle.left,
+                        width: popStyle.width,
+                        maxHeight: 'calc(100vh - 16px)',
+                        overflowY: 'auto',
+                      }
+                    : { visibility: 'hidden', position: 'fixed' }
+              }
+              className={cn(
+                'z-50 rounded-xl border border-border-default bg-bg-surface shadow-lg p-3 flex flex-col gap-3',
+                isMobile &&
+                  'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[calc(100vw-24px)] max-w-[360px] max-h-[calc(100vh-32px)] overflow-y-auto'
+              )}
+            >
           <div className="flex items-center justify-between">
             {title ? (
               <span className="text-[12px] uppercase tracking-[1px] text-text-tertiary font-semibold">
@@ -347,8 +435,10 @@ export function DateRangePicker({
               </div>
             </div>
           )}
-        </div>
-      )}
+            </div>
+          </>,
+          document.body
+        )}
     </div>
   )
 }
