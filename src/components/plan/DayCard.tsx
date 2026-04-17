@@ -121,6 +121,7 @@ export function DayCard({
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-expanded={open}
+          aria-label={`Day ${day.dayNumber}: ${day.title}`}
           className="flex-1 min-w-0 flex items-center gap-4 px-4 py-4 lg:px-5 lg:py-5 hover:bg-bg-elevated transition-colors text-left print:p-3"
         >
         {/* Left: day number */}

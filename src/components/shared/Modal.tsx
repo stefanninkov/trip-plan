@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/utils/cn'
@@ -12,6 +12,8 @@ export interface ModalProps {
   className?: string
 }
 
+const FOCUSABLE = 'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])'
+
 export function Modal({
   open,
   onClose,
@@ -20,13 +22,36 @@ export function Modal({
   footer,
   className,
 }: ModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null)
+  const previousFocus = useRef<HTMLElement | null>(null)
+
   useEffect(() => {
     if (!open) return
+    previousFocus.current = document.activeElement as HTMLElement | null
     const onKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab' || !panelRef.current) return
+      const focusable = Array.from(panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (focusable.length === 0) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault()
+        last.focus()
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault()
+        first.focus()
+      }
     }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    requestAnimationFrame(() => {
+      const first = panelRef.current?.querySelector<HTMLElement>(FOCUSABLE)
+      first?.focus()
+    })
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      previousFocus.current?.focus()
+    }
   }, [open, onClose])
 
   if (!open) return null
@@ -40,6 +65,7 @@ export function Modal({
       aria-labelledby={title ? 'modal-title' : undefined}
     >
       <div
+        ref={panelRef}
         className={cn(
           'w-full max-w-[480px] bg-bg-surface border border-border-subtle rounded-2xl',
           'p-6 lg:p-8 shadow-[0_8px_32px_#00000066]',
