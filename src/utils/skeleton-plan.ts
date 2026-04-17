@@ -1,3 +1,4 @@
+import i18n from 'i18next'
 import type { TripInputs } from '@/types/wizard'
 import type { TripPlan, DayPlan, CostRange } from '@/types/trip-plan'
 import { daysBetween } from '@/utils/date-helpers'
@@ -10,6 +11,7 @@ const EMPTY_RANGE: CostRange = { min: 0, max: 0 }
  * a final return-home day when the total adds up.
  */
 export function buildSkeletonPlan(inputs: TripInputs): TripPlan {
+  const t = i18n.t.bind(i18n)
   const start = new Date(inputs.startDate)
   const totalDays = Math.max(1, daysBetween(inputs.startDate, inputs.endDate) + 1)
 
@@ -35,7 +37,12 @@ export function buildSkeletonPlan(inputs: TripInputs): TripPlan {
       id: `day-${i + 1}`,
       dayNumber: i + 1,
       date: date.toISOString().slice(0, 10),
-      title: i === 0 ? 'Arrival' : i === totalDays - 1 ? 'Return home' : `Day in ${location}`,
+      title:
+        i === 0
+          ? t('planGen.arrival')
+          : i === totalDays - 1
+            ? t('planGen.returnHome')
+            : t('planGen.dayIn', { city: location }),
       location,
       blocks: [],
       costs: [],
@@ -46,13 +53,12 @@ export function buildSkeletonPlan(inputs: TripInputs): TripPlan {
 
   const destList = inputs.destinations.map((d) => d.city).filter(Boolean).join(' → ')
   const title = destList
-    ? `${destList} · ${totalDays} days`
-    : `Trip starting ${inputs.startDate}`
+    ? t('planGen.tripTitle', { destinations: destList, count: totalDays })
+    : t('planGen.tripTitleFallback', { date: inputs.startDate })
 
   return {
     tripTitle: title,
-    summary:
-      'Empty plan created manually. Click any day to add time blocks, costs and hotel options.',
+    summary: t('planGen.summaryBlank'),
     totalBudget: { ...EMPTY_RANGE, currency: inputs.homeCurrency || 'EUR' },
     travelers: inputs.travelers,
     bookAhead: [],

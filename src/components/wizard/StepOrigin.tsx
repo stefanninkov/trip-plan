@@ -31,24 +31,32 @@ export function StepOrigin() {
         onSelect={(s) => {
           setField('origin', s.displayName)
           setField('originCountry', s.country)
-          rememberDestination({
-            city: s.city,
-            country: s.country,
-            displayName: s.displayName,
-          })
+          rememberDestination(
+            {
+              city: s.city,
+              country: s.country,
+              displayName: s.displayName,
+            },
+            'origin'
+          )
         }}
         placeholder={t('wizard.originPlaceholder')}
         autoFocus
       />
       <RecentDestinationChips
+        kind="origin"
+        exclude={origin ? [origin] : []}
         onPick={(r) => {
           setField('origin', r.displayName)
           setField('originCountry', r.country)
-          rememberDestination({
-            city: r.city,
-            country: r.country,
-            displayName: r.displayName,
-          })
+          rememberDestination(
+            {
+              city: r.city,
+              country: r.country,
+              displayName: r.displayName,
+            },
+            'origin'
+          )
         }}
       />
       {!originCountry && origin.length >= 2 && (

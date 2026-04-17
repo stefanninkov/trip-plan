@@ -42,28 +42,33 @@ export function StepDestinations() {
                     }}
                     onSelect={(s) => {
                       updateDestination(index, { city: s.displayName, country: s.country })
-                      rememberDestination({
-                        city: s.city,
-                        country: s.country,
-                        displayName: s.displayName,
-                      })
+                      rememberDestination(
+                        {
+                          city: s.city,
+                          country: s.country,
+                          displayName: s.displayName,
+                        },
+                        'destination'
+                      )
                     }}
                     placeholder={t('wizard.destinationPlaceholder')}
                   />
                   <RecentDestinationChips
-                    exclude={destinations
-                      .map((d) => d.city)
-                      .filter((c) => c && c !== dest.city)}
+                    kind="destination"
+                    exclude={destinations.map((d) => d.city).filter(Boolean)}
                     onPick={(r) => {
                       updateDestination(index, {
                         city: r.displayName,
                         country: r.country,
                       })
-                      rememberDestination({
-                        city: r.city,
-                        country: r.country,
-                        displayName: r.displayName,
-                      })
+                      rememberDestination(
+                        {
+                          city: r.city,
+                          country: r.country,
+                          displayName: r.displayName,
+                        },
+                        'destination'
+                      )
                     }}
                   />
                 </div>

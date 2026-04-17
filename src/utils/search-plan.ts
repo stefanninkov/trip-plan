@@ -1,3 +1,4 @@
+import i18n from 'i18next'
 import { FUNCTIONS_BASE_URL } from '@/lib/firebase'
 import { logger } from '@/utils/logger'
 import { daysBetween, addDays } from '@/utils/date-helpers'
@@ -95,22 +96,28 @@ function buildDayFromPlaces(
   travelers: number,
   currency: string
 ): DayPlan {
+  const t = i18n.t.bind(i18n)
   const slots = [
-    { time: '09:00-11:30', role: 'Morning' },
-    { time: '12:30-14:00', role: 'Lunch' },
-    { time: '15:00-17:30', role: 'Afternoon' },
-    { time: '19:30-21:30', role: 'Dinner' },
+    { time: '09:00-11:30', role: t('planGen.slotMorning') },
+    { time: '12:30-14:00', role: t('planGen.slotLunch') },
+    { time: '15:00-17:30', role: t('planGen.slotAfternoon') },
+    { time: '19:30-21:30', role: t('planGen.slotDinner') },
   ]
+  const lunchRole = t('planGen.slotLunch')
+  const dinnerRole = t('planGen.slotDinner')
 
   const blocks: TimeBlock[] = places.slice(0, slots.length).map((p, i) => {
-    const isFood = slots[i].role === 'Lunch' || slots[i].role === 'Dinner'
+    const isFood = slots[i].role === lunchRole || slots[i].role === dinnerRole
+    const fallbackType = isFood ? t('planGen.roleRestaurant') : t('planGen.roleActivity')
+    const ratingPart = p.rating > 0 ? `${p.rating}★` : t('planGen.starRated')
+    const reviewsPart = p.reviewCount ? ` (${t('planGen.reviewsN', { n: p.reviewCount })})` : ''
     return {
       id: `block-${dayNumber}-${i + 1}`,
       time: slots[i].time,
       title: p.name,
       description:
         p.description ||
-        `${p.type || (isFood ? 'Restaurant' : 'Activity')} — ${p.rating > 0 ? `${p.rating}★` : 'highly rated'}${p.reviewCount ? ` (${p.reviewCount} reviews)` : ''}${p.address ? ` · ${p.address}` : ''}`,
+        `${p.type || fallbackType} — ${ratingPart}${reviewsPart}${p.address ? ` · ${p.address}` : ''}`,
       tip: p.hours || null,
       warning: null,
       whyPicked: null,
@@ -136,18 +143,18 @@ function buildDayFromPlaces(
   const costs: CostItem[] = [
     {
       id: `cost-${dayNumber}-meals`,
-      item: `Meals (3/day × ${travelers})`,
+      item: t('planGen.costMeals', { travelers }),
       category: 'food',
       amount: {
         min: meals.min * 3 * travelers,
         max: meals.max * 3 * travelers,
       },
       currency,
-      note: `~${meals.min}–${meals.max} per person per meal`,
+      note: t('planGen.costMealsNote', { min: meals.min, max: meals.max }),
     },
     {
       id: `cost-${dayNumber}-transit`,
-      item: `Local transit (${travelers} pax)`,
+      item: t('planGen.costTransit', { travelers }),
       category: 'transport',
       amount: {
         min: transit.min * travelers,
@@ -163,7 +170,7 @@ function buildDayFromPlaces(
     tier === 'luxury' ? { min: 40, max: 90 } : tier === 'comfortable' ? { min: 20, max: 45 } : tier === 'mid' ? { min: 10, max: 25 } : { min: 0, max: 12 }
   costs.push({
     id: `cost-${dayNumber}-activities`,
-    item: `Attractions & tickets (${travelers} pax)`,
+    item: t('planGen.costActivities', { travelers }),
     category: 'activity',
     amount: {
       min: activityUnit.min * 2 * travelers,
@@ -182,7 +189,9 @@ function buildDayFromPlaces(
     id: `day-${dayNumber}`,
     dayNumber,
     date,
-    title: blocks[0]?.title ? `Day in ${location}` : `Explore ${location}`,
+    title: blocks[0]?.title
+      ? t('planGen.dayIn', { city: location })
+      : t('planGen.explore', { city: location }),
     location,
     blocks,
     costs,
@@ -198,6 +207,7 @@ function buildHotelOptions(
   hotels: HotelResult[],
   tier: BudgetTier
 ): HotelOption[] {
+  const t = i18n.t.bind(i18n)
   // Map top 3 results onto tier-appropriate slots.
   return hotels.slice(0, 3).map((h, i) => {
     const optionTier: BudgetTier =
@@ -210,14 +220,14 @@ function buildHotelOptions(
           : tier === 'luxury'
             ? 'luxury'
             : 'comfortable'
+    const ratingPart = h.rating > 0 ? `${h.rating}★` : t('planGen.hotelHighlightFallback')
+    const reviewsPart = h.reviewCount ? ` · ${t('planGen.reviewsN', { count: h.reviewCount })}` : ''
     return {
       name: h.name,
       stars: h.stars || 3,
       pricePerNight: h.pricePerNight || 0,
       currency: h.currency || 'EUR',
-      highlight:
-        h.highlights.join(' · ') ||
-        `${h.rating > 0 ? `${h.rating}★` : 'Well-rated'}${h.reviewCount ? ` · ${h.reviewCount} reviews` : ''}`,
+      highlight: h.highlights.join(' · ') || `${ratingPart}${reviewsPart}`,
       tier: optionTier,
     }
   })
@@ -237,6 +247,7 @@ export async function buildTripFromSearch(
   inputs: TripInputs,
   onProgress?: (p: SearchPlanProgress) => void
 ): Promise<TripPlan> {
+  const t = i18n.t.bind(i18n)
   const start = inputs.startDate
   const end = inputs.endDate
   const totalDays = Math.max(1, daysBetween(start, end) + 1)
@@ -353,14 +364,17 @@ export async function buildTripFromSearch(
       if (primary && primary.pricePerNight > 0 && nights > 0) {
         day.costs.push({
           id: `cost-${day.dayNumber}-hotel`,
-          item: `${primary.name} × ${nights} night${nights === 1 ? '' : 's'}`,
+          item: t('planGen.costHotelStay', {
+            name: primary.name,
+            count: nights,
+          }),
           category: 'hotel',
           amount: {
             min: primary.pricePerNight * nights * 0.95,
             max: primary.pricePerNight * nights * 1.05,
           },
           currency: primary.currency,
-          note: `~${primary.pricePerNight}/night`,
+          note: t('planGen.costHotelNote', { price: primary.pricePerNight }),
         })
       }
     }
@@ -368,14 +382,22 @@ export async function buildTripFromSearch(
     // Inbound transport block + cost on the first day.
     if (i === 0 && flightCost) {
       const firstFlight = flights[0]
+      const stopsLabel = firstFlight && firstFlight.stops > 0
+        ? ` · ${t('planGen.flightStop', { count: firstFlight.stops })}`
+        : firstFlight
+          ? ` · ${t('planGen.flightDirect')}`
+          : ''
       day.blocks.unshift({
         id: `block-${day.dayNumber}-transport`,
         time: firstFlight ? `${firstFlight.departure}-${firstFlight.arrival}` : '08:00-12:00',
-        title: `Fly ${inputs.origin} → ${destStays[0]?.city}`,
+        title: t('planGen.flightBlockTitle', {
+          origin: inputs.origin,
+          destination: destStays[0]?.city ?? '',
+        }),
         description: firstFlight
-          ? `${firstFlight.airline}${firstFlight.stops > 0 ? ` · ${firstFlight.stops} stop${firstFlight.stops > 1 ? 's' : ''}` : ' · direct'} · ${firstFlight.duration}`
-          : 'Flight to your first destination.',
-        tip: 'Check in online 24h before departure.',
+          ? `${firstFlight.airline}${stopsLabel} · ${firstFlight.duration}`
+          : t('planGen.flightFallbackDesc'),
+        tip: t('planGen.flightCheckInTip'),
         warning: null,
         whyPicked: null,
         historicalContext: null,
@@ -385,7 +407,11 @@ export async function buildTripFromSearch(
       })
       day.costs.push({
         id: `cost-${day.dayNumber}-flights-out`,
-        item: `Flights ${inputs.origin} ⇄ ${destStays[0]?.city} (${inputs.travelers} pax)`,
+        item: t('planGen.costFlights', {
+          origin: inputs.origin,
+          destination: destStays[0]?.city ?? '',
+          travelers: inputs.travelers,
+        }),
         category: 'transport',
         amount: flightCost,
         currency,
@@ -425,20 +451,25 @@ export async function buildTripFromSearch(
     },
   }
 
-  const title =
-    destStays.map((s) => s.city).filter(Boolean).join(' → ') +
-    ` · ${totalDays} days`
+  const destList = destStays.map((s) => s.city).filter(Boolean).join(' → ')
+  const title = destList
+    ? t('planGen.tripTitle', { destinations: destList, count: totalDays })
+    : t('planGen.tripTitleFallback', { date: start })
 
   onProgress?.({ label: 'Finalising', pct: 95 })
 
   return {
-    tripTitle: title || `Trip starting ${start}`,
-    summary:
-      'Built from real Google search data — hotels, top places and restaurants, flight pricing. Edit any block to fine-tune.',
+    tripTitle: title,
+    summary: t('planGen.summarySearch'),
     totalBudget: { ...grandTotal.total, currency },
     travelers: inputs.travelers,
     bookAhead: flights.length
-      ? [`Book flights early — cheapest fare found around €${Math.round(flightCost?.min ?? 0)} for ${inputs.travelers} pax`]
+      ? [
+          t('planGen.bookFlightsEarly', {
+            price: Math.round(flightCost?.min ?? 0),
+            travelers: inputs.travelers,
+          }),
+        ]
       : [],
     packingTips: [],
     weatherNote: '',
