@@ -316,7 +316,24 @@
     "title": "Prevedi ceo plan na {{lang}}",
     "translating": "Prevođenje…",
     "done": "Putovanje prevedeno",
-    "failed": "Nije uspelo prevođenje putovanja"
+    "failed": "Nije uspelo prevođenje putovanja",
+    "bannerMessage": "Ovaj plan je na drugom jeziku od tvog interfejsa.",
+    "bannerCta": "Prevedi na {{lang}}"
+  },
+  "packing": {
+    "title": "Spisak za pakovanje",
+    "intro": "Napravi prilagođen spisak za pakovanje na osnovu vremena, aktivnosti i destinacija na ovom putovanju. Označavaj stavke kako pakuješ.",
+    "generate": "Generiši uz AI",
+    "regenerate": "Ponovo generiši",
+    "generating": "Generisanje…",
+    "generated": "Spisak za pakovanje je spreman",
+    "cleared": "Spisak je obrisan",
+    "clear": "Obriši spisak",
+    "check": "Označi kao spakovano",
+    "uncheck": "Označi kao nespakovano",
+    "remove": "Ukloni",
+    "addItem": "Dodaj stavku",
+    "addItemPlaceholder": "Dodaj stavku…"
   },
   "voice": {
     "buttonLabel": "Diktiraj putovanje",

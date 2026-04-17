@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react'
 import { Eye, Pencil, Wand2, Plus, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { TripPlan } from '@/types/trip-plan'
+import type { PackingList } from '@/types/packing'
 import type { TripInputs } from '@/types/wizard'
+import type { ShareOptions } from '@/types/api'
 import { useTripEditor } from '@/hooks/useTripEditor'
 import { prefetchRates } from '@/utils/currency-rates'
 import { Button } from '@/components/shared/Button'
@@ -14,11 +16,13 @@ import { PresenceAvatars } from './PresenceAvatars'
 import { RemindersToggle } from './RemindersToggle'
 import { TripChat } from './TripChat'
 import { TranslateTripButton } from './TranslateTripButton'
+import { TranslateBanner } from './TranslateBanner'
 import { PlanHeader } from './PlanHeader'
 import { PracticalInfo } from './PracticalInfo'
 import { DayCard } from './DayCard'
 import { GrandTotal } from './GrandTotal'
 import { ExportMenu } from './ExportMenu'
+import { PackingListPanel } from './PackingListPanel'
 import { SearchPanel } from '@/components/search/SearchPanel'
 
 export interface PlanViewProps {
@@ -27,7 +31,9 @@ export interface PlanViewProps {
   inputs?: TripInputs
   shared?: boolean
   shareToken?: string | null
+  shareOptions?: ShareOptions
   readOnly?: boolean
+  packingList?: PackingList | null
 }
 
 export function PlanView({
@@ -36,7 +42,9 @@ export function PlanView({
   inputs,
   shared = false,
   shareToken = null,
+  shareOptions,
   readOnly = false,
+  packingList,
 }: PlanViewProps) {
   const editor = useTripEditor(tripId, plan)
 
@@ -150,6 +158,7 @@ export function PlanView({
             tripId={tripId}
             shared={shared}
             shareToken={shareToken}
+            shareOptions={shareOptions}
           />
         </div>
       )}
@@ -165,6 +174,8 @@ export function PlanView({
           <RemindersToggle tripId={tripId} plan={current} />
         </div>
       </div>
+
+      {!readOnly && <TranslateBanner plan={current} editor={editor} />}
 
       <PlanHeader plan={current} editor={canEdit ? editor : undefined} homeCurrency={homeCurrency} />
 
@@ -248,6 +259,12 @@ export function PlanView({
         ))}
       </section>
       <GrandTotal plan={current} homeCurrency={homeCurrency} />
+      <PackingListPanel
+        tripId={tripId}
+        plan={current}
+        packingList={packingList}
+        readOnly={readOnly}
+      />
       {!readOnly && (
         <div className="print:hidden">
           <SearchPanel

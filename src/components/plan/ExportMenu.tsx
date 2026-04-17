@@ -6,6 +6,7 @@ import { Modal } from '@/components/shared/Modal'
 import { useUiStore } from '@/store/ui-store'
 import { planToText } from '@/utils/export-text'
 import { downloadIcs } from '@/utils/export-ics'
+import type { ShareOptions } from '@/types/api'
 import { buildShareUrl, disableSharing, enableSharing } from '@/utils/share-link'
 import { getCalendarAccessToken, hasGoogleClientId, pushPlanToGoogleCalendar } from '@/utils/google-calendar'
 import { logger } from '@/utils/logger'
@@ -15,9 +16,10 @@ export interface ExportMenuProps {
   tripId: string
   shared: boolean
   shareToken: string | null
+  shareOptions?: ShareOptions
 }
 
-export function ExportMenu({ plan, tripId, shared, shareToken }: ExportMenuProps) {
+export function ExportMenu({ plan, tripId, shared, shareToken, shareOptions }: ExportMenuProps) {
   const [open, setOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -131,6 +133,7 @@ export function ExportMenu({ plan, tripId, shared, shareToken }: ExportMenuProps
           tripId={tripId}
           shared={shared}
           shareToken={shareToken}
+          initialLanguage={shareOptions?.language ?? 'en'}
           copied={copied}
           setCopied={setCopied}
           onClose={() => setShareOpen(false)}
@@ -165,6 +168,7 @@ function ShareContent({
   tripId,
   shared,
   shareToken,
+  initialLanguage,
   copied,
   setCopied,
   onClose,
@@ -172,6 +176,7 @@ function ShareContent({
   tripId: string
   shared: boolean
   shareToken: string | null
+  initialLanguage: 'en' | 'sr'
   copied: boolean
   setCopied: (c: boolean) => void
   onClose: () => void
@@ -179,24 +184,28 @@ function ShareContent({
   const [working, setWorking] = useState(false)
   const [excludeNotes, setExcludeNotes] = useState(false)
   const [excludeCosts, setExcludeCosts] = useState(false)
+  const [language, setLanguage] = useState<'en' | 'sr'>(initialLanguage)
   // Track locally so the UI updates instantly after enable/disable without
   // waiting for the Firestore snapshot to round-trip.
   const [localShared, setLocalShared] = useState(shared)
   const [localToken, setLocalToken] = useState<string | null>(shareToken)
+  const [localLanguage, setLocalLanguage] = useState<'en' | 'sr'>(initialLanguage)
   const addToast = useUiStore((s) => s.addToast)
 
   useEffect(() => {
     setLocalShared(shared)
     setLocalToken(shareToken)
-  }, [shared, shareToken])
+    setLocalLanguage(initialLanguage)
+  }, [shared, shareToken, initialLanguage])
 
-  const url = localToken ? buildShareUrl(localToken) : null
+  const url = localToken ? buildShareUrl(localToken, localLanguage) : null
 
   const enable = async () => {
     setWorking(true)
     try {
-      const token = await enableSharing(tripId, { excludeNotes, excludeCosts })
+      const token = await enableSharing(tripId, { excludeNotes, excludeCosts, language })
       setLocalToken(token)
+      setLocalLanguage(language)
       setLocalShared(true)
       addToast('success', 'Sharing enabled')
     } catch (err) {
@@ -259,6 +268,15 @@ function ShareContent({
             <span>Hide costs and budget</span>
           </label>
         </div>
+        <div className="flex flex-col gap-1.5">
+          <span className="text-[12px] uppercase tracking-[1px] text-text-tertiary">
+            Show the plan to the viewer in
+          </span>
+          <div className="flex gap-1.5">
+            <LanguagePill active={language === 'en'} onClick={() => setLanguage('en')} label="English" />
+            <LanguagePill active={language === 'sr'} onClick={() => setLanguage('sr')} label="Srpski" />
+          </div>
+        </div>
         <div className="flex items-center justify-end gap-2">
           <Button variant="ghost" onClick={onClose}>
             Cancel
@@ -287,6 +305,21 @@ function ShareContent({
           {copied ? 'Copied' : 'Copy'}
         </Button>
       </div>
+      <div className="flex items-center gap-2 text-[12px] text-text-tertiary">
+        <span>Viewer language:</span>
+        <LanguagePill
+          active={localLanguage === 'en'}
+          onClick={() => setLocalLanguage('en')}
+          label="English"
+          size="sm"
+        />
+        <LanguagePill
+          active={localLanguage === 'sr'}
+          onClick={() => setLocalLanguage('sr')}
+          label="Srpski"
+          size="sm"
+        />
+      </div>
       <div className="flex items-center justify-between pt-3 border-t border-border-subtle">
         <Button variant="ghost" onClick={disable} disabled={working}>
           Disable sharing
@@ -294,5 +327,33 @@ function ShareContent({
         <Button onClick={onClose}>Done</Button>
       </div>
     </div>
+  )
+}
+
+function LanguagePill({
+  active,
+  onClick,
+  label,
+  size = 'md',
+}: {
+  active: boolean
+  onClick: () => void
+  label: string
+  size?: 'sm' | 'md'
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border transition-colors ${
+        size === 'sm' ? 'px-2.5 py-0.5 text-[11px]' : 'px-3 py-1.5 text-[12px]'
+      } ${
+        active
+          ? 'border-accent bg-accent-muted text-text-primary'
+          : 'border-border-default bg-bg-secondary text-text-secondary hover:text-text-primary hover:border-border-strong'
+      }`}
+    >
+      {label}
+    </button>
   )
 }

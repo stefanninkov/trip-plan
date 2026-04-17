@@ -1,5 +1,7 @@
-import { useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { AlertTriangle } from 'lucide-react'
+import i18n from 'i18next'
 import { useSharedTrip } from '@/hooks/useSharedTrip'
 import { PlanView } from '@/components/plan/PlanView'
 import { Card } from '@/components/shared/Card'
@@ -8,7 +10,27 @@ import { applyShareOptions } from '@/utils/sanitize-plan'
 
 export function SharedTripPage() {
   const { shareToken } = useParams<{ shareToken: string }>()
+  const [searchParams] = useSearchParams()
   const { trip, isLoading, error } = useSharedTrip(shareToken)
+
+  // Pick the language the sharer picked when they made the link (?lang=xx
+  // wins over the stored shareOptions.language). We change i18n for the
+  // duration of the shared view so UI labels match the plan language.
+  const urlLang = searchParams.get('lang')
+  const storedLang = trip?.shareOptions?.language
+  const targetLang =
+    urlLang === 'sr' || urlLang === 'en'
+      ? urlLang
+      : storedLang === 'sr' || storedLang === 'en'
+        ? storedLang
+        : null
+
+  useEffect(() => {
+    if (!targetLang) return
+    if (i18n.resolvedLanguage !== targetLang) {
+      void i18n.changeLanguage(targetLang)
+    }
+  }, [targetLang])
 
   if (isLoading) {
     return (

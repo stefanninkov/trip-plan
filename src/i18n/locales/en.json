@@ -316,7 +316,24 @@
     "title": "Re-translate the whole plan to {{lang}}",
     "translating": "Translating…",
     "done": "Trip translated",
-    "failed": "Could not translate the trip"
+    "failed": "Could not translate the trip",
+    "bannerMessage": "This plan is in a different language than your interface.",
+    "bannerCta": "Translate to {{lang}}"
+  },
+  "packing": {
+    "title": "Packing list",
+    "intro": "Generate a tailored packing list based on weather, activities and destinations in this trip. Check items off as you pack.",
+    "generate": "Generate with AI",
+    "regenerate": "Regenerate",
+    "generating": "Generating…",
+    "generated": "Packing list ready",
+    "cleared": "Packing list cleared",
+    "clear": "Clear list",
+    "check": "Mark packed",
+    "uncheck": "Mark not packed",
+    "remove": "Remove item",
+    "addItem": "Add item",
+    "addItemPlaceholder": "Add item…"
   },
   "voice": {
     "buttonLabel": "Dictate your trip",

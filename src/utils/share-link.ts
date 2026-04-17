@@ -6,6 +6,8 @@ export interface SharingOptions {
   excludeNotes?: boolean
   /** If true, strip all cost data (per-item costs and daily/grand totals). */
   excludeCosts?: boolean
+  /** Preferred viewer language for the shared link. */
+  language?: 'en' | 'sr'
 }
 
 export function randomToken(length = 20): string {
@@ -27,6 +29,7 @@ export async function enableSharing(
     shareOptions: {
       excludeNotes: options.excludeNotes ?? false,
       excludeCosts: options.excludeCosts ?? false,
+      language: options.language ?? 'en',
     },
     updatedAt: serverTimestamp(),
   })
@@ -41,10 +44,11 @@ export async function disableSharing(tripId: string): Promise<void> {
   })
 }
 
-export function buildShareUrl(token: string): string {
+export function buildShareUrl(token: string, language?: 'en' | 'sr'): string {
   const base =
     typeof window !== 'undefined'
       ? `${window.location.origin}${window.location.pathname.split('/').slice(0, 2).join('/')}`
       : ''
-  return `${base}/shared/${token}`
+  const suffix = language ? `?lang=${language}` : ''
+  return `${base}/shared/${token}${suffix}`
 }

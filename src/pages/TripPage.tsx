@@ -127,6 +127,8 @@ export function TripPage() {
       inputs={trip.inputs}
       shared={trip.shared}
       shareToken={trip.shareToken}
+      shareOptions={trip.shareOptions}
+      packingList={trip.packingList}
     />
   )
 }

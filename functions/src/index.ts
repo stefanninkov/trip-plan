@@ -13,6 +13,7 @@ export { chatWithTrip } from './chat-trip.js'
 export { parseWizardVoice } from './parse-wizard-voice.js'
 export { importTrip } from './import-trip.js'
 export { translateTrip } from './translate-trip.js'
+export { packingList } from './packing-list.js'
 
 setGlobalOptions({ region: 'europe-west1', maxInstances: 5 })
 
