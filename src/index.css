@@ -238,27 +238,33 @@ html[data-theme='light'] {
 @media print {
   @page {
     size: A4;
-    margin: 16mm 14mm;
+    margin: 14mm 12mm 18mm 12mm;
   }
 
+  /* ── Reset colour scheme ── */
   html,
   body {
     background: white !important;
-    color: black !important;
+    color: #111 !important;
+    font-size: 11px !important;
+    line-height: 17px !important;
   }
 
   :root {
     --color-bg-primary: #ffffff;
     --color-bg-secondary: #ffffff;
     --color-bg-surface: #ffffff;
-    --color-bg-elevated: #fafafa;
+    --color-bg-elevated: #f7f7f5;
     --color-text-primary: #111111;
     --color-text-secondary: #333333;
-    --color-text-tertiary: #666666;
-    --color-border-subtle: #d0d0d0;
-    --color-border-default: #b0b0b0;
+    --color-text-tertiary: #555555;
+    --color-border-subtle: #d8d8d5;
+    --color-border-default: #c0c0bb;
+    --color-border-strong: #999;
+    --color-accent: #c97f3d;
   }
 
+  /* ── Hide app chrome ── */
   header,
   aside,
   nav[aria-label='Primary mobile'] {
@@ -269,25 +275,74 @@ html[data-theme='light'] {
     padding: 0 !important;
   }
 
-  /* Make page content use the full print width */
   .max-w-\[960px\] {
     max-width: 100% !important;
   }
 
-  /* Every card / section should stay together where possible */
-  .day-card,
+  /* ── Print-only elements ── */
+  .print-only {
+    display: block !important;
+  }
+
+  /* ── Typography ── */
+  h1 {
+    font-size: 22px !important;
+    line-height: 28px !important;
+    letter-spacing: -0.4px;
+  }
+
+  h2 {
+    font-size: 16px !important;
+    line-height: 22px !important;
+  }
+
+  h3 {
+    font-size: 13px !important;
+    line-height: 18px !important;
+  }
+
+  /* ── Force category colours to print ── */
+  [style*='--color-cat-transport'] { color-adjust: exact; print-color-adjust: exact; }
+  [style*='--color-cat-hotel']     { color-adjust: exact; print-color-adjust: exact; }
+  [style*='--color-cat-food']      { color-adjust: exact; print-color-adjust: exact; }
+  [style*='--color-cat-activity']  { color-adjust: exact; print-color-adjust: exact; }
+  [style*='border-left'] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .bg-accent-muted {
+    background-color: #e49b5a15 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Card / Day styling ── */
+  .day-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    border: 1px solid #d8d8d5 !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    margin-bottom: 8px !important;
+  }
+
+  .day-card + .day-card {
+    break-before: auto;
+  }
+
+  /* Force collapsibles open */
+  .day-card > button {
+    pointer-events: none;
+  }
+
   section,
   article {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  /* Force all collapsibles open when printing */
-  .day-card > button {
-    pointer-events: none;
-  }
-
-  /* Kill the auto-shim backgrounds so text stays legible */
+  /* ── Kill auto-shim backgrounds ── */
   .bg-bg-surface,
   .bg-bg-secondary,
   .bg-bg-elevated,
@@ -295,15 +350,104 @@ html[data-theme='light'] {
     background: #ffffff !important;
   }
 
-  /* Ensure link colours print */
+  /* ── Link styling ── */
   a {
-    color: #000;
+    color: #333;
     text-decoration: underline;
   }
 
-  /* Hide interactive chrome */
+  /* ── Hide interactive elements ── */
   button:not(.day-card button),
   [role='button'] {
     display: none !important;
+  }
+
+  /* ── Print cover header ── */
+  .print-cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .print-cover h1 {
+    font-size: 32px !important;
+    line-height: 40px !important;
+    letter-spacing: -0.6px;
+    margin: 0;
+  }
+
+  .print-cover .print-cover-meta {
+    font-size: 13px;
+    color: #555;
+    margin-top: 4px;
+  }
+
+  .print-cover .print-cover-summary {
+    font-size: 13px;
+    color: #333;
+    max-width: 400px;
+    line-height: 20px;
+  }
+
+  .print-cover .print-cover-divider {
+    width: 60px;
+    height: 2px;
+    background: #c97f3d;
+    margin: 8px auto;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-cover .print-cover-brand {
+    font-size: 11px;
+    color: #999;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 24px;
+  }
+
+  /* ── Print footer (repeats every page) ── */
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 9px;
+    color: #bbb;
+    padding: 4px 0;
+  }
+
+  /* ── Practical info: tighter in print ── */
+  .grid {
+    gap: 8px !important;
+  }
+
+  /* ── Cost row borders print in colour ── */
+  [style*='padding-left: 8px'] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Day number circle ── */
+  .day-card .rounded-full {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Category badges ── */
+  [style*='backgroundColor'] {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── Packing list: compact two-column grid ── */
+  .packing-grid-print {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 }
