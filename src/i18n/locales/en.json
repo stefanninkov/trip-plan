@@ -320,6 +320,11 @@
     "bannerMessage": "This plan is in a different language than your interface.",
     "bannerCta": "Translate to {{lang}}"
   },
+  "timeline": {
+    "listView": "List",
+    "timelineView": "Timeline",
+    "empty": "No trips with dates to show on the timeline."
+  },
   "budget": {
     "title": "Budget tracker",
     "totalSpent": "Total spent",

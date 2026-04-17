@@ -320,6 +320,11 @@
     "bannerMessage": "Ovaj plan je na drugom jeziku od tvog interfejsa.",
     "bannerCta": "Prevedi na {{lang}}"
   },
+  "timeline": {
+    "listView": "Lista",
+    "timelineView": "Vremenska linija",
+    "empty": "Nema putovanja sa datumima za prikaz na vremenskoj liniji."
+  },
   "budget": {
     "title": "Praćenje budžeta",
     "totalSpent": "Ukupno potrošeno",

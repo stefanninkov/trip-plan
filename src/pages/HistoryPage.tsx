@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Trash2, Plane, AlertTriangle, Calendar, Users, Wrench, Copy } from 'lucide-react'
+import { Trash2, Plane, AlertTriangle, Calendar, CalendarRange, Users, Wrench, Copy, List } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useTrips } from '@/hooks/useTrips'
 import { useUiStore } from '@/store/ui-store'
@@ -11,6 +11,7 @@ import { Modal } from '@/components/shared/Modal'
 import { CurrencyDisplay } from '@/components/shared/CurrencyDisplay'
 import { formatDateRange } from '@/utils/date-helpers'
 import { ROUTES } from '@/constants/routes'
+import { TripTimeline } from '@/components/plan/TripTimeline'
 
 /**
  * A trip is "stuck" if it's been in the generating state for more than 10
@@ -25,6 +26,7 @@ export function HistoryPage() {
   const { trips, isLoading, error, deleteTrip, duplicateTrip } = useTrips()
   const addToast = useUiStore((s) => s.addToast)
   const [toDelete, setToDelete] = useState<string | null>(null)
+  const [view, setView] = useState<'list' | 'timeline'>('list')
 
   const handleDuplicate = async (tripId: string): Promise<void> => {
     const newId = await duplicateTrip(tripId)
@@ -83,16 +85,48 @@ export function HistoryPage() {
           </p>
           <h1>{t('history.heading')}</h1>
         </div>
-        {stuckTrips.length > 0 && (
-          <Button
-            variant="secondary"
-            onClick={cleanStuck}
-            className="flex items-center gap-1.5"
-          >
-            <Wrench size={14} />
-            {t('history.cleanStuck', { count: stuckTrips.length })}
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {trips.length > 0 && (
+            <div className="flex items-center rounded-lg border border-border-default overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setView('list')}
+                className={`px-3 py-1.5 text-[12px] flex items-center gap-1.5 transition-colors ${
+                  view === 'list'
+                    ? 'bg-bg-elevated text-text-primary'
+                    : 'text-text-tertiary hover:text-text-secondary'
+                }`}
+                aria-label={t('timeline.listView')}
+              >
+                <List size={13} />
+                {t('timeline.listView')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setView('timeline')}
+                className={`px-3 py-1.5 text-[12px] flex items-center gap-1.5 transition-colors ${
+                  view === 'timeline'
+                    ? 'bg-bg-elevated text-text-primary'
+                    : 'text-text-tertiary hover:text-text-secondary'
+                }`}
+                aria-label={t('timeline.timelineView')}
+              >
+                <CalendarRange size={13} />
+                {t('timeline.timelineView')}
+              </button>
+            </div>
+          )}
+          {stuckTrips.length > 0 && (
+            <Button
+              variant="secondary"
+              onClick={cleanStuck}
+              className="flex items-center gap-1.5"
+            >
+              <Wrench size={14} />
+              {t('history.cleanStuck', { count: stuckTrips.length })}
+            </Button>
+          )}
+        </div>
       </div>
 
       {isLoading && (
@@ -121,7 +155,13 @@ export function HistoryPage() {
         </Card>
       )}
 
-      <div className="flex flex-col gap-3">
+      {view === 'timeline' && trips.length > 0 && (
+        <Card className="p-5">
+          <TripTimeline trips={trips} />
+        </Card>
+      )}
+
+      <div className={`flex flex-col gap-3 ${view === 'timeline' ? 'hidden' : ''}`}>
         {trips.map((trip) => {
           const title =
             trip.plan?.tripTitle ??
